@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="jquery-2.0.0.js"></script>
+    <script src="d3.js"></script>
+    <script src="viewBox.js"></script>
+    <script src="transform.js"></script>
+    <script src="egm.js"></script>
+    <script>
+      $(function() {
+        resetViewBox();
+
+        $(window).resize(resizeViewBox);
+
+        $("#resetButton").click(resetViewBox);
+        $("#zoomInButton").click(zoomIn);
+        $("#zoomOutButton").click(zoomOut);
+
+        var items = []
+        var margin = 50;
+
+        $("#addItemButton").click(function() {
+          var name = prompt("追加する要素の名前を入力してください");
+          if (name) {
+            items.push({name: name});
+            var elements = d3.select("svg").selectAll(".element")
+              .data(items)
+              .enter()
+                .append("g")
+                .call(d3.behavior.drag()) // reset parent's behavior
+                .attr("class", "element")
+
+            var rect = elements.append("rect")
+            var rx = 10;
+            elements.append("text")
+              .text(function(d) {return d.name})
+              .each(function(d) {
+                d.width = this.getComputedTextLength()
+                d.height = Number(getComputedStyle(this)["font-size"].split("px")[0]);
+              })
+              .attr("x", rx)
+              .attr("y", function(d) {return d.height + rx})
+              ;
+            rect.attr("x", 0)
+              .attr("y", 0)
+              .attr("rx", rx)
+              .attr("width", function(d) {return d.width + rx * 2})
+              .attr("height", function(d) {return d.height + rx + rx})
+              .attr("fill", "lightpink")
+              .attr("stroke", "black")
+              ;
+            //d3.selectAll("#contents rect")
+
+            var totalWidth = d3.sum(d3.selectAll(".element text")[0], function(text) {
+              console.log(text.getComputedTextLength());
+              return text.getComputedTextLength();
+
+            }) + rx * 2 * items.length + margin * (items.length - 1);
+
+            console.log(totalWidth);
+
+            var offset = - totalWidth / 2;
+            d3.selectAll(".element")
+              .each(function() {
+                d3.select(this).attr("transform", (new Translate(offset, 0).toString()));
+                console.log(offset);
+                offset += d3.select(this).select("text").node().getComputedTextLength() + margin + rx * 2;
+                console.log(offset);
+              })
+              ;
+          }
+        });
+
+
+        d3.select("#contents")
+          .call(dragContents())
+          ;
+
+        d3.selectAll(".element")
+          .call(d3.behavior.drag()
+            .on("drag", function() {
+              console.log("hoge");
+            })
+          )
+          ;
+      });
+    </script>
+    <link rel="stylesheet" href="egm.css"/>
+  </head>
+  <body>
+    <svg id="contents" width="100%" height="100%">
+      <circle r="5" cx="0" cy="0"/>
+    </svg>
+    <div id="controller">
+      <button id="addItemButton">アイテムの追加</button>
+      <button id="resetButton">中心に戻る</button>
+      <button id="zoomInButton">拡大</button>
+      <button id="zoomOutButton">縮小</button>
+    </div>
+  </body>
+</html>

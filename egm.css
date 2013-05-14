@@ -1,0 +1,28 @@
+body {
+  margin: 0;
+}
+
+
+#controller {
+  margin: 0;
+  padding: 10px;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: gray;
+}
+
+
+#controller button {
+  font-size: 1.5em;
+}
+
+
+#contents {
+  position: absolute;
+}
+
+
+.element text{
+  font-size: 2em;
+}
