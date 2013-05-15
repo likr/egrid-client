@@ -12,7 +12,9 @@ function resetViewBox() {
   viewBox.height = scale * winHeight;
   viewBox.minX = - viewBox.width / 2;
   viewBox.minY = - viewBox.height / 2;
-  d3.select("#contents").attr("viewBox", viewBox.toString());
+  d3.select("#contents")
+    .transition()
+    .attr("viewBox", viewBox.toString());
 }
 
 
@@ -24,7 +26,9 @@ function scaleViewBox() {
   viewBox.height = scale * $(document).height();
   viewBox.minX = viewBox.minX + w0 / 2 - viewBox.width / 2;
   viewBox.minY = viewBox.minY + h0 / 2 - viewBox.height / 2;
-  d3.select("#contents").attr("viewBox", viewBox.toString());
+  d3.select("#contents")
+    .transition()
+    .attr("viewBox", viewBox.toString());
 }
 
 
@@ -34,7 +38,9 @@ function resizeViewBox() {
   var viewBox = viewBoxFromString(d3.select("#contents").attr("viewBox"));
   viewBox.width = winWidth;
   viewBox.height = winHeight;
-  d3.select("#contents").attr("viewBox", viewBox.toString());
+  d3.select("#contents")
+    .transition()
+    .attr("viewBox", viewBox.toString());
 }
 
 
