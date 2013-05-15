@@ -55,6 +55,27 @@ function dragContents() {
 }
 
 
+function dragElement(selection) {
+  var source;
+  return d3.behavior.drag()
+    .on("dragstart", function() {
+      source = d3.select(d3.event.sourceEvent.target.parentNode);
+    })
+    .on("dragend", function() {
+      var target = d3.select(d3.event.sourceEvent.target.parentNode);
+      if (target.datum() && source.datum() != target.datum()
+          && source.datum().layer != target.datum().layer) {
+        data.links.push({
+          source: source.datum().index,
+          target: target.datum().index
+        });
+        draw(data);
+      }
+    })
+    ;
+}
+
+
 function zoomIn() {
   scale *= 0.9;  
   scaleViewBox();
@@ -71,7 +92,7 @@ function appendElement(selection) {
   var rx = 20;
 
   selection
-    .call(d3.behavior.drag()) // reset parent's behavior
+    .call(dragElement())
     .attr("class", "element")
     ;
 

@@ -23,7 +23,7 @@
           var name = prompt("追加する要素の名前を入力してください");
           if (name) {
             data.nodes.push({
-              index: data.nodes.length,
+              index: data.nodes.length + 1,
               text: name,
               layer: 1
             });
@@ -34,13 +34,6 @@
 
         d3.select("#contents")
           .call(dragContents())
-          ;
-
-        d3.selectAll(".element")
-          .call(d3.behavior.drag()
-            .on("drag", function() {
-            })
-          )
           ;
 
         d3.json("test.json", function(d) {
