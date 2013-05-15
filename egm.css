@@ -23,6 +23,17 @@ body {
 }
 
 
-.element text{
+.element text {
   font-size: 2em;
+}
+
+
+.element rect {
+  fill: lightpink;
+  stroke: black;
+}
+
+
+.link {
+  stroke: black;
 }

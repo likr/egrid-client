@@ -1,0 +1,431 @@
+{
+  "layers": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "nodes": [
+    {
+      "index": 1,
+      "text": "仕事の効率が上がる",
+      "layer": 1
+    },
+    {
+      "index": 2,
+      "text": "気持ちよく仕事ができる",
+      "layer": 1
+    },
+    {
+      "index": 3,
+      "text": "やる気がわく",
+      "layer": 1
+    },
+    {
+      "index": 4,
+      "text": "プライドを持てる",
+      "layer": 1
+    },
+    {
+      "index": 5,
+      "text": "よい発送がわく",
+      "layer": 1
+    },
+    {
+      "index": 6,
+      "text": "図面収納が楽にできる",
+      "layer": 2
+    },
+    {
+      "index": 7,
+      "text": "他部門とのコミュニケーションが楽",
+      "layer": 2
+    },
+    {
+      "index": 8,
+      "text": "OA機器の順番待ちがない",
+      "layer": 2
+    },
+    {
+      "index": 9,
+      "text": "複数の仕事を同時に進められる",
+      "layer": 2
+    },
+    {
+      "index": 10,
+      "text": "資料を参照しながら作業ができる",
+      "layer": 2
+    },
+    {
+      "index": 11,
+      "text": "書類仕事がすぐにできる",
+      "layer": 2
+    },
+    {
+      "index": 12,
+      "text": "大画面コピー機が欲しい",
+      "layer": 2
+    },
+    {
+      "index": 13,
+      "text": "仕事が中断されない",
+      "layer": 2
+    },
+    {
+      "index": 14,
+      "text": "プライバシーを保てる",
+      "layer": 2
+    },
+    {
+      "index": 15,
+      "text": "圧迫感がない",
+      "layer": 2
+    },
+    {
+      "index": 16,
+      "text": "自然光がはいる",
+      "layer": 2
+    },
+    {
+      "index": 17,
+      "text": "気分転換しやすい",
+      "layer": 2
+    },
+    {
+      "index": 18,
+      "text": "インテリアがカッコイイ",
+      "layer": 2
+    },
+    {
+      "index": 19,
+      "text": "オフィスのロケーションが良い",
+      "layer": 2
+    },
+    {
+      "index": 20,
+      "text": "フレックスタイム制を導入する",
+      "layer": 2
+    },
+    {
+      "index": 21,
+      "text": "OA化を進める",
+      "layer": 3
+    },
+    {
+      "index": 22,
+      "text": "仕事をそのまま置いておける",
+      "layer": 3
+    },
+    {
+      "index": 23,
+      "text": "ドラフターの他に机が欲しい",
+      "layer": 3
+    },
+    {
+      "index": 24,
+      "text": "オフィスが静かである",
+      "layer": 3
+    },
+    {
+      "index": 25,
+      "text": "人と人との距離が近すぎない",
+      "layer": 3
+    },
+    {
+      "index": 26,
+      "text": "4方向に窓がある",
+      "layer": 3
+    },
+    {
+      "index": 27,
+      "text": "オフィスが高い階にある",
+      "layer": 3
+    },
+    {
+      "index": 28,
+      "text": "窓際の席である",
+      "layer": 3
+    },
+    {
+      "index": 29,
+      "text": "BGMが欲しい",
+      "layer": 3
+    },
+    {
+      "index": 30,
+      "text": "画一的でないレイアウト",
+      "layer": 3
+    },
+    {
+      "index": 31,
+      "text": "ドラフターのデザインをそろえる",
+      "layer": 3
+    },
+    {
+      "index": 32,
+      "text": "室内の色彩を上手に使い分ける",
+      "layer": 3
+    },
+    {
+      "index": 33,
+      "text": "収納をカッコ良くきめる",
+      "layer": 3
+    },
+    {
+      "index": 34,
+      "text": "トレンディーな街にある",
+      "layer": 3
+    },
+    {
+      "index": 35,
+      "text": "飲みに行きやすい",
+      "layer": 3
+    },
+    {
+      "index": 36,
+      "text": "昼食場所に不自由しない",
+      "layer": 3
+    },
+    {
+      "index": 37,
+      "text": "専用スタッフをはりつける(CAD)",
+      "layer": 4
+    },
+    {
+      "index": 38,
+      "text": "CAD機器を増やす",
+      "layer": 4
+    },
+    {
+      "index": 39,
+      "text": "コピー，FAXを増やす",
+      "layer": 4
+    },
+    {
+      "index": 40,
+      "text": "十分な個人スペースを確保する",
+      "layer": 4
+    },
+    {
+      "index": 41,
+      "text": "しっかりした大テーブルが欲しい",
+      "layer": 4
+    },
+    {
+      "index": 42,
+      "text": "電話を処理してくれるスタッフがいる",
+      "layer": 4
+    },
+    {
+      "index": 43,
+      "text": "システマティックな収納用具を採用する",
+      "layer": 4
+    }
+  ],
+  "links": [
+    {
+      "source": 1,
+      "target": 6
+    },
+    {
+      "source": 1,
+      "target": 7
+    },
+    {
+      "source": 1,
+      "target": 8
+    },
+    {
+      "source": 1,
+      "target": 9
+    },
+    {
+      "source": 1,
+      "target": 10
+    },
+    {
+      "source": 1,
+      "target": 11
+    },
+    {
+      "source": 1,
+      "target": 12
+    },
+    {
+      "source": 1,
+      "target": 13
+    },
+    {
+      "source": 2,
+      "target": 14
+    },
+    {
+      "source": 2,
+      "target": 15
+    },
+    {
+      "source": 2,
+      "target": 16
+    },
+    {
+      "source": 2,
+      "target": 17
+    },
+    {
+      "source": 2,
+      "target": 18
+    },
+    {
+      "source": 3,
+      "target": 18
+    },
+    {
+      "source": 4,
+      "target": 18
+    },
+    {
+      "source": 4,
+      "target": 19
+    },
+    {
+      "source": 5,
+      "target": 18
+    },
+    {
+      "source": 5,
+      "target": 19
+    },
+    {
+      "source": 5,
+      "target": 20
+    },
+    {
+      "source": 6,
+      "target": 21
+    },
+    {
+      "source": 7,
+      "target": 21
+    },
+    {
+      "source": 8,
+      "target": 38
+    },
+    {
+      "source": 8,
+      "target": 39
+    },
+    {
+      "source": 9,
+      "target": 22
+    },
+    {
+      "source": 10,
+      "target": 23
+    },
+    {
+      "source": 11,
+      "target": 23
+    },
+    {
+      "source": 13,
+      "target": 24
+    },
+    {
+      "source": 14,
+      "target": 24
+    },
+    {
+      "source": 14,
+      "target": 25
+    },
+    {
+      "source": 15,
+      "target": 25
+    },
+    {
+      "source": 15,
+      "target": 26
+    },
+    {
+      "source": 15,
+      "target": 27
+    },
+    {
+      "source": 15,
+      "target": 28
+    },
+    {
+      "source": 16,
+      "target": 26
+    },
+    {
+      "source": 16,
+      "target": 28
+    },
+    {
+      "source": 17,
+      "target": 28
+    },
+    {
+      "source": 17,
+      "target": 29
+    },
+    {
+      "source": 18,
+      "target": 30
+    },
+    {
+      "source": 18,
+      "target": 31
+    },
+    {
+      "source": 18,
+      "target": 32
+    },
+    {
+      "source": 18,
+      "target": 33
+    },
+    {
+      "source": 19,
+      "target": 34
+    },
+    {
+      "source": 19,
+      "target": 35
+    },
+    {
+      "source": 19,
+      "target": 36
+    },
+    {
+      "source": 21,
+      "target": 37
+    },
+    {
+      "source": 21,
+      "target": 38
+    },
+    {
+      "source": 22,
+      "target": 40
+    },
+    {
+      "source": 23,
+      "target": 40
+    },
+    {
+      "source": 23,
+      "target": 41
+    },
+    {
+      "source": 24,
+      "target": 42
+    },
+    {
+      "source": 33,
+      "target": 43
+    }
+  ]
+}

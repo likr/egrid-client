@@ -65,3 +65,126 @@ function zoomOut() {
   scale /= 0.9;
   scaleViewBox();
 }
+
+
+function appendElement(selection) {
+  var rx = 20;
+
+  selection
+    .call(d3.behavior.drag()) // reset parent's behavior
+    .attr("class", "element")
+    ;
+
+  var rect = selection.append("rect")
+  selection.append("text")
+    .text(function(d) {return d.name || d.text})
+    .attr("x", rx)
+    .attr("y", function(d) {
+      return this.getBBox().height + rx
+    })
+    ;
+  rect.attr("x", 0)
+    .attr("y", 0)
+    .attr("rx", rx)
+    .attr("width", function(d) {
+      return this.parentNode.lastChild.getBBox().width + rx * 2
+    })
+    .attr("height", function(d) {
+      return this.parentNode.lastChild.getBBox().height + rx * 2
+    })
+    ;
+}
+
+
+function translate(node) {
+  var str = d3.select(node).attr("transform");
+  var vals = str.slice(10, -1).split(",").map(Number);
+  return new Translate(vals[0], vals[1]);
+}
+
+
+function draw(data) {
+  var hMargin = 50;
+  var vMargin = 150;
+
+  var numLayers = data.layers.length;
+
+  var elements = d3.select("#contents").selectAll(".element")
+    .data(data.nodes)
+    .enter()
+    .append("g")
+    .call(appendElement)
+    ;
+
+  var totalHeight = d3.sum(data.layers, function(layerId) {
+    return d3.max(
+      elements.filter(function(d) {return d.layer == layerId})[0],
+      function(element) {return element.getBBox().height});
+  }) + vMargin * (numLayers - 1)
+
+  var vOffset = - totalHeight / 2;
+  data.layers.forEach(function(layerId) {
+    var layerElements = elements.filter(function(d) {return d.layer == layerId});
+    var totalWidth = d3.sum(layerElements[0], function(element) {
+      return element.getBBox().width;
+    }) + hMargin * (layerElements[0].length - 1);
+
+    var hOffset = - totalWidth / 2;
+    layerElements
+      .attr("transform", function(d) {
+        var x = hOffset;
+        var y = vOffset;
+        hOffset += this.getBBox().width + hMargin;
+        return (new Translate(x, y)).toString();
+      })
+      ;
+
+    vOffset += d3.max(layerElements[0], function(e) {
+      return e.getBBox().height;
+    }) + vMargin;
+  });
+
+  var links = d3.select("#contents").selectAll(".link")
+    .data(data.links)
+    .enter()
+    .append("line")
+    .attr("class", "link")
+    .each(function(d) {
+      var sourceT = translate(elements.filter(function(e) {
+        return e.index == d.source;
+      }).node());
+      var targetT = translate(elements.filter(function(e) {
+        return e.index == d.target;
+      }).node());
+      if (sourceT.y > targetT.y) {
+        var tmp = d.source;
+        d.source = d.target;
+        d.target = tmp; 
+      }
+    })
+    .attr("x1", function(d) {
+      var node = elements.filter(function(e) {
+        return e.index == d.source;
+      }).node();
+      return translate(node).x + node.getBBox().width / 2;
+    })
+    .attr("y1", function(d) {
+      var node = elements.filter(function(e) {
+        return e.index == d.source;
+      }).node();
+      return translate(node).y + node.getBBox().height;
+    })
+    .attr("x2", function(d) {
+      var node = elements.filter(function(e) {
+        return e.index == d.target;
+      }).node();
+      return translate(node).x + node.getBBox().width / 2;
+    })
+    .attr("y2", function(d) {
+      var node = elements.filter(function(e) {
+        return e.index == d.target;
+      }).node();
+      return translate(node).y;
+    })
+    ;
+}

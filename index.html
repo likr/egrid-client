@@ -27,46 +27,24 @@
             var elements = d3.select("svg").selectAll(".element")
               .data(items)
               .enter()
-                .append("g")
-                .call(d3.behavior.drag()) // reset parent's behavior
-                .attr("class", "element")
-
-            var rect = elements.append("rect")
-            var rx = 10;
-            elements.append("text")
-              .text(function(d) {return d.name})
-              .each(function(d) {
-                d.width = this.getComputedTextLength()
-                d.height = Number(getComputedStyle(this)["font-size"].split("px")[0]);
-              })
-              .attr("x", rx)
-              .attr("y", function(d) {return d.height + rx})
+              .append("g")
+              .call(appendElement)
               ;
-            rect.attr("x", 0)
-              .attr("y", 0)
-              .attr("rx", rx)
-              .attr("width", function(d) {return d.width + rx * 2})
-              .attr("height", function(d) {return d.height + rx + rx})
-              .attr("fill", "lightpink")
-              .attr("stroke", "black")
-              ;
-            //d3.selectAll("#contents rect")
 
-            var totalWidth = d3.sum(d3.selectAll(".element text")[0], function(text) {
-              console.log(text.getComputedTextLength());
-              return text.getComputedTextLength();
+            var totalWidth = d3.sum(d3.selectAll(".element")[0], function(element) {
+              return element.getBBox()["width"];
 
-            }) + rx * 2 * items.length + margin * (items.length - 1);
-
-            console.log(totalWidth);
+            }) + margin * (items.length - 1);
 
             var offset = - totalWidth / 2;
             d3.selectAll(".element")
               .each(function() {
-                d3.select(this).attr("transform", (new Translate(offset, 0).toString()));
-                console.log(offset);
-                offset += d3.select(this).select("text").node().getComputedTextLength() + margin + rx * 2;
-                console.log(offset);
+                d3.select(this)
+                  .attr("transform", (new Translate(offset, 0).toString()));
+                offset += d3.select(this)
+                  .node()
+                  .getBBox()['width'] + margin
+                  ;
               })
               ;
           }
@@ -80,10 +58,11 @@
         d3.selectAll(".element")
           .call(d3.behavior.drag()
             .on("drag", function() {
-              console.log("hoge");
             })
           )
           ;
+
+        d3.json("test.json", draw);
       });
     </script>
     <link rel="stylesheet" href="egm.css"/>
