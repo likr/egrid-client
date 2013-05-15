@@ -8,6 +8,8 @@
     <script src="transform.js"></script>
     <script src="egm.js"></script>
     <script>
+      var data;
+
       $(function() {
         resetViewBox();
 
@@ -17,36 +19,15 @@
         $("#zoomInButton").click(zoomIn);
         $("#zoomOutButton").click(zoomOut);
 
-        var items = []
-        var margin = 50;
-
         $("#addItemButton").click(function() {
           var name = prompt("追加する要素の名前を入力してください");
           if (name) {
-            items.push({name: name});
-            var elements = d3.select("svg").selectAll(".element")
-              .data(items)
-              .enter()
-              .append("g")
-              .call(appendElement)
-              ;
-
-            var totalWidth = d3.sum(d3.selectAll(".element")[0], function(element) {
-              return element.getBBox()["width"];
-
-            }) + margin * (items.length - 1);
-
-            var offset = - totalWidth / 2;
-            d3.selectAll(".element")
-              .each(function() {
-                d3.select(this)
-                  .attr("transform", (new Translate(offset, 0).toString()));
-                offset += d3.select(this)
-                  .node()
-                  .getBBox()['width'] + margin
-                  ;
-              })
-              ;
+            data.nodes.push({
+              index: data.nodes.length,
+              text: name,
+              layer: 1
+            });
+            draw(data);
           }
         });
 
@@ -62,7 +43,10 @@
           )
           ;
 
-        d3.json("test.json", draw);
+        d3.json("test.json", function(d) {
+          data = d;
+          draw(data);
+        });
       });
     </script>
     <link rel="stylesheet" href="egm.css"/>

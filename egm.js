@@ -111,6 +111,8 @@ function draw(data) {
 
   var elements = d3.select("#contents").selectAll(".element")
     .data(data.nodes)
+    ;
+  elements
     .enter()
     .append("g")
     .call(appendElement)
@@ -144,6 +146,7 @@ function draw(data) {
     }) + vMargin;
   });
 
+  d3.selectAll("#contents .link").remove();
   var links = d3.select("#contents").selectAll(".link")
     .data(data.links)
     .enter()
