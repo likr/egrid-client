@@ -18,6 +18,7 @@
         $("#resetButton").click(resetViewBox);
         $("#zoomInButton").click(zoomIn);
         $("#zoomOutButton").click(zoomOut);
+        $("#resetZoomButton").click(resetZoom);
 
         $("#addItemButton").click(function() {
           var name = prompt("追加する要素の名前を入力してください");
@@ -52,6 +53,7 @@
       <button id="addItemButton">アイテムの追加</button>
       <button id="resetButton">中心に戻る</button>
       <button id="zoomInButton">拡大</button>
+      <button id="resetZoomButton">元の大きさ</button>
       <button id="zoomOutButton">縮小</button>
     </div>
   </body>

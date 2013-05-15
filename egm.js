@@ -94,6 +94,12 @@ function zoomOut() {
 }
 
 
+function resetZoom() {
+  scale = 1;
+  scaleViewBox();
+}
+
+
 function appendElement(selection) {
   var rx = 20;
 
