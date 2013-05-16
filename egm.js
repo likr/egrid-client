@@ -61,25 +61,66 @@ function dragContents() {
 }
 
 
-function dragElement(selection) {
-  var source;
-  return d3.behavior.drag()
+function radderUp(selection) {
+  var target;
+  selection.call(d3.behavior.drag()
     .on("dragstart", function() {
-      source = d3.select(d3.event.sourceEvent.target.parentNode);
-      source.classed("dragSource", true);
+      target = d3.select(".selected");
+      target.classed("dragSource", true);
+      dragging = true;
     })
     .on("dragend", function() {
-      var target = d3.select(d3.event.sourceEvent.target.parentNode);
+      var source = d3.select(d3.event.sourceEvent.target.parentNode);
       if (target.datum() && source.datum() != target.datum()
-          && source.datum().layer != target.datum().layer) {
+          && !hasPath(data.nodes, target.datum().index, source.datum().index)) {
+        if (target.datum().layer <= source.datum().layer) {
+          updateLayer(data.nodes, target.datum(), source.datum().layer + 1);
+        }
+        source.datum().children.push(target.datum().index);
         data.links.push({
           source: source.datum().index,
           target: target.datum().index
         });
         draw(data);
+        unselectElement();
       }
-      source.classed("dragSource", false);
+      target.classed("dragSource", false);
+      source.classed("droppable", false);
+      source.classed("undroppable", false);
+      dragging = false;
+    }))
+    ;
+}
+
+
+function radderDown(selection) {
+  var source;
+  selection.call(d3.behavior.drag()
+    .on("dragstart", function() {
+      source = d3.select(".selected");
+      source.classed("dragSource", true);
+      dragging = true;
     })
+    .on("dragend", function() {
+      var target = d3.select(d3.event.sourceEvent.target.parentNode);
+      if (target.datum() && source.datum() != target.datum()
+          && !hasPath(data.nodes, target.datum().index, source.datum().index)) {
+        if (target.datum().layer <= source.datum().layer) {
+          updateLayer(data.nodes, target.datum(), source.datum().layer + 1);
+        }
+        source.datum().children.push(target.datum().index);
+        data.links.push({
+          source: source.datum().index,
+          target: target.datum().index
+        });
+        draw(data);
+        unselectElement();
+      }
+      target.classed("droppable", false);
+      target.classed("undroppable", false);
+      source.classed("dragSource", false);
+      dragging = false;
+    }))
     ;
 }
 
@@ -106,13 +147,37 @@ function appendElement(selection) {
   var rx = 20;
 
   selection
-    .call(dragElement())
     .classed("element", true)
+    .on("click", function() {
+      selectElement(this);
+      d3.event.stopPropagation();
+    })
+    .on("mouseover", function() {
+      if (dragging) {
+        var s = d3.select(this);
+        var t = d3.select(".selected");
+        if (!s.classed("selected")) {
+          if (hasPath(data.nodes, t.datum().index, s.datum().index)) {
+            s.classed("undroppable", true);
+          } else {
+            s.classed("droppable", true);
+          }
+        }
+      }
+    })
+    .on("mouseout", function() {
+      if (dragging) {
+        d3.select(this)
+          .classed("droppable", false)
+          .classed("undroppable", false);
+          ;
+      }
+    })
     ;
 
   var rect = selection.append("rect")
   selection.append("text")
-    .text(function(d) {return d.name || d.text})
+    .text(function(d) {return d.text})
     .attr("x", rx)
     .attr("y", function(d) {
       return this.getBBox().height + rx
@@ -131,144 +196,97 @@ function appendElement(selection) {
 }
 
 
-function translate(node) {
-  var str = d3.select(node).attr("transform");
-  var vals = str.slice(10, -1).split(",").map(Number);
-  return new Translate(vals[0], vals[1]);
+function initData(data) {
+  data.links = [];
+  data.nodes.forEach(function(d, i) {
+    d.index = i;
+    d.children.forEach(function(c) {
+      data.links.push({
+        source: d.index,
+        target: c
+      });
+    });
+  });
+}
+
+
+function layout(layers, links) {
+  var hMargin = 50;
+  var vMargin = 150;
+
+  var totalHeight = d3.sum(layers, function(layer) {
+    return d3.max(layer, function(d) {
+      return d.height;
+    });
+  }) + vMargin * (layers.length - 1);
+
+  var vOffset = - totalHeight / 2;
+  layers.forEach(function(layer) {
+    var totalWidth = d3.sum(layer, function(d) {
+      return d.width;
+    }) + hMargin * (layer.length - 1);
+    var hOffset = - totalWidth / 2;
+    layer.forEach(function(d) {
+      d.x = hOffset;
+      d.y = vOffset;
+      hOffset += d.width + hMargin;
+    });
+    vOffset += d3.max(layer, function(d) {return d.height}) + vMargin;
+  });
 }
 
 
 function draw(data) {
-  var hMargin = 50;
-  var vMargin = 150;
+  var layers = data.layers.map(function(layer, i) {
+    return data.nodes.filter(function(d) {return d.layer == i});
+  });
 
-  var numLayers = data.layers.length;
-
-  var elements = d3.select("#contents").selectAll(".element")
-    .data(data.nodes)
-    ;
-  elements
-    .enter()
-    .append("g")
-    .call(appendElement)
-    ;
-
-  var totalHeight = d3.sum(data.layers, function(layerId) {
-    return d3.max(
-      elements.filter(function(d) {return d.layer == layerId})[0],
-      function(element) {return element.getBBox().height});
-  }) + vMargin * (numLayers - 1)
-
-  var vOffset = - totalHeight / 2;
-  data.layers.forEach(function(layerId) {
-    var layerElements = elements.filter(function(d) {return d.layer == layerId});
-    var totalWidth = d3.sum(layerElements[0], function(element) {
-      return element.getBBox().width;
-    }) + hMargin * (layerElements[0].length - 1);
-
-    var hOffset = - totalWidth / 2;
-    layerElements
-      .attr("transform", function(d) {
-        var x = hOffset;
-        var y = vOffset;
-        hOffset += this.getBBox().width + hMargin;
-        return (new Translate(x, y)).toString();
+  d3.select("#contents #elements")
+      .selectAll(".element")
+      .data(data.nodes)
+      .enter()
+      .append("g")
+      .call(appendElement)
+      .each(function(d) {
+        var bbox = this.getBBox();
+        d.width = bbox.width;
+        d.height = bbox.height;
       })
       ;
 
-    vOffset += d3.max(layerElements[0], function(e) {
-      return e.getBBox().height;
-    }) + vMargin;
-  });
+  d3.select("#contents #links")
+      .selectAll(".link")
+      .data(data.links)
+      .enter()
+      .append("line")
+      .classed("link", true)
+      ;
 
-  d3.selectAll("#contents .link").remove();
-  var links = d3.select("#contents").selectAll(".link")
-    .data(data.links)
-    .enter()
-    .append("line")
-    .classed("link", true)
-    .each(function(d) {
-      var sourceT = translate(elements.filter(function(e) {
-        return e.index == d.source;
-      }).node());
-      var targetT = translate(elements.filter(function(e) {
-        return e.index == d.target;
-      }).node());
-      if (sourceT.y > targetT.y) {
-        var tmp = d.source;
-        d.source = d.target;
-        d.target = tmp; 
-      }
-    })
-    .attr("x1", function(d) {
-      var node = elements.filter(function(e) {
-        return e.index == d.source;
-      }).node();
-      return translate(node).x + node.getBBox().width / 2;
-    })
-    .attr("y1", function(d) {
-      var node = elements.filter(function(e) {
-        return e.index == d.source;
-      }).node();
-      return translate(node).y + node.getBBox().height;
-    })
-    .attr("x2", function(d) {
-      var node = elements.filter(function(e) {
-        return e.index == d.target;
-      }).node();
-      return translate(node).x + node.getBBox().width / 2;
-    })
-    .attr("y2", function(d) {
-      var node = elements.filter(function(e) {
-        return e.index == d.target;
-      }).node();
-      return translate(node).y;
-    })
-    ;
+  layout(layers, data.links);
+
+  d3.selectAll(".element")
+      .transition()
+      .attr("transform", function(d) {return (new Translate(d.x, d.y)).toString()})
+      ;
+
+  d3.selectAll(".link")
+      .transition()
+      .attr("x1", function(d) {return rectCenterX(data.nodes[d.source])})
+      .attr("y1", function(d) {return rectBottom(data.nodes[d.source])})
+      .attr("x2", function(d) {return rectCenterX(data.nodes[d.target])})
+      .attr("y2", function(d) {return rectTop(data.nodes[d.target])})
+      ;
 }
 
 
-function parse(data) {
-  var processedFlags = data.map(function() {return false});
-  var hasParentFlags = data.map(function() {return false});
-  var layers = [];
-
-  while (!processedFlags.every(function(f) {return f})) {
-    hasParentFlags.forEach(function(d, i, a) {a[i] = processedFlags[i]});
-    data.forEach(function(d, i) {
-      if (!processedFlags[i]) {
-        d.children.forEach(function(c) {hasParentFlags[c] = true});
-      }
-    });
-    var nextRoots = data.map(function(d, i) {
-      return {
-        index: i,
-        data: d
-      };
-    }).filter(function(d, i) {
-      if (hasParentFlags[i]) {
-        return false;
-      } else {
-        processedFlags[i] = true;
-        return true;
-      }
-    });
-    layers.push(nextRoots);
+function updateLayer(nodes, startNode, depth) {
+  startNode.layer = Math.max(depth, startNode.layer);
+  while (startNode.layer >= data.layers.length) {
+    data.layers.push({});
   }
-  console.log(layers);
-
-  var links = [];
-  layers.forEach(function(layer) {
-    layer.forEach(function(d) {
-      d.data.children.forEach(function(c) {
-        links.push({
-          source: d.index,
-          target: c
-        });
-      });
-    });
+  startNode.children.forEach(function(c) {
+    updateLayer(nodes, nodes[c], depth + 1);
   });
-  console.log(links);
 }
 
 
@@ -285,4 +303,28 @@ function hasPath(data, from, to) {
     }
   }
   return false;
+}
+
+
+function selectElement(node) {
+  var d = d3.select(node).datum();
+  d3.selectAll(".selected").classed("selected", false);
+  d3.select(node).classed("selected", true);
+  d3.select("#radderUpButton")
+    .attr("transform", (new Translate(rectCenterX(d), rectTop(d))).toString())
+    ;
+  d3.select("#radderDownButton")
+    .attr("transform", (new Translate(rectCenterX(d), rectBottom(d))).toString())
+    ;
+  d3.selectAll(".radderButton.invisible")
+    .classed("invisible", false)
+    ;
+}
+
+
+function unselectElement() {
+  d3.selectAll(".selected").classed("selected", false);
+  d3.selectAll(".radderButton")
+    .classed("invisible", true)
+    ;
 }

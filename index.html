@@ -4,11 +4,13 @@
     <meta charset="utf-8">
     <script src="jquery-2.0.0.js"></script>
     <script src="d3.js"></script>
-    <script src="viewBox.js"></script>
-    <script src="transform.js"></script>
+    <script src="svg/viewBox.js"></script>
+    <script src="svg/transform.js"></script>
+    <script src="svg/rect.js"></script>
     <script src="egm.js"></script>
     <script>
       var data;
+      var dragging = false;
 
       $(function() {
         resetViewBox();
@@ -24,23 +26,54 @@
           var name = prompt("追加する要素の名前を入力してください");
           if (name) {
             data.nodes.push({
-              index: data.nodes.length + 1,
+              index: data.nodes.length,
               text: name,
-              layer: 1
+              layer: 0,
+              children: []
             });
             draw(data);
           }
         });
 
-
         d3.select("#contents")
           .call(dragContents())
+          .on("click", function() {
+            unselectElement();
+          })
+          ;
+
+
+        d3.selectAll(".radderButton")
+          .each(function() {
+            var bbox = this.lastChild.getBBox();
+            var xOffset = - bbox.width / 2;
+            if (this.id == "radderUpButton") {
+              var yOffset = - bbox.height - 10;
+            } else {
+              var yOffset = - 10;
+            }
+            d3.select(this.firstChild)
+              .attr("x", xOffset)
+              .attr("y", yOffset)
+              .attr("rx", 10)
+              .attr("width", bbox.width + 20)
+              .attr("height", bbox.height + 20)
+              ;
+            d3.select(this.lastChild)
+              .attr("x", 10 + xOffset)
+              .attr("y", bbox.height + 10 + yOffset)
+              ;
+          })
+          ;
+        d3.select("#radderUpButton")
+          .call(radderUp)
+          ;
+        d3.select("#radderDownButton")
+          .call(radderDown)
           ;
 
         d3.json("test2.json", function(d) {
-          parse(d);
-        });
-        d3.json("test.json", function(d) {
+          initData(d);
           data = d;
           draw(data);
         });
@@ -50,6 +83,12 @@
   </head>
   <body>
     <svg id="contents" width="100%" height="100%">
+      <g id="elements">
+      </g>
+      <g id="links">
+      </g>
+      <g id="radderUpButton" class="radderButton invisible"><rect/><text>ラダーアップ</text></g>
+      <g id="radderDownButton" class="radderButton invisible"><rect/><text>ラダーダウン</text></g>
     </svg>
     <div id="controller">
       <button id="addItemButton">アイテムの追加</button>

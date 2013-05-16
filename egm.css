@@ -23,7 +23,7 @@ body {
 }
 
 
-.element text {
+.element text, .radderButton text {
   font-size: 2em;
 }
 
@@ -38,6 +38,28 @@ body {
   stroke: black;
 }
 
-.element.dragSource rect {
+
+.element.selected rect, .element.droppable rect {
   fill: red;
+}
+
+
+.element.undroppable rect {
+  fill: gray;
+}
+
+
+.radderButton {
+  cursor: pointer;
+}
+
+
+.radderButton rect {
+  fill: lightgray;
+  stroke: black;
+}
+
+
+.invisible {
+  opacity: 0;
 }
