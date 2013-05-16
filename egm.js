@@ -66,6 +66,7 @@ function dragElement(selection) {
   return d3.behavior.drag()
     .on("dragstart", function() {
       source = d3.select(d3.event.sourceEvent.target.parentNode);
+      source.classed("dragSource", true);
     })
     .on("dragend", function() {
       var target = d3.select(d3.event.sourceEvent.target.parentNode);
@@ -77,6 +78,7 @@ function dragElement(selection) {
         });
         draw(data);
       }
+      source.classed("dragSource", false);
     })
     ;
 }
@@ -105,7 +107,7 @@ function appendElement(selection) {
 
   selection
     .call(dragElement())
-    .attr("class", "element")
+    .classed("element", true)
     ;
 
   var rect = selection.append("rect")
@@ -184,7 +186,7 @@ function draw(data) {
     .data(data.links)
     .enter()
     .append("line")
-    .attr("class", "link")
+    .classed("link", true)
     .each(function(d) {
       var sourceT = translate(elements.filter(function(e) {
         return e.index == d.source;

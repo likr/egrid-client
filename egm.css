@@ -37,3 +37,7 @@ body {
 .link {
   stroke: black;
 }
+
+.element.dragSource rect {
+  fill: red;
+}
