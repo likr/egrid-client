@@ -226,3 +226,63 @@ function draw(data) {
     })
     ;
 }
+
+
+function parse(data) {
+  var processedFlags = data.map(function() {return false});
+  var hasParentFlags = data.map(function() {return false});
+  var layers = [];
+
+  while (!processedFlags.every(function(f) {return f})) {
+    hasParentFlags.forEach(function(d, i, a) {a[i] = processedFlags[i]});
+    data.forEach(function(d, i) {
+      if (!processedFlags[i]) {
+        d.children.forEach(function(c) {hasParentFlags[c] = true});
+      }
+    });
+    var nextRoots = data.map(function(d, i) {
+      return {
+        index: i,
+        data: d
+      };
+    }).filter(function(d, i) {
+      if (hasParentFlags[i]) {
+        return false;
+      } else {
+        processedFlags[i] = true;
+        return true;
+      }
+    });
+    layers.push(nextRoots);
+  }
+  console.log(layers);
+
+  var links = [];
+  layers.forEach(function(layer) {
+    layer.forEach(function(d) {
+      d.data.children.forEach(function(c) {
+        links.push({
+          source: d.index,
+          target: c
+        });
+      });
+    });
+  });
+  console.log(links);
+}
+
+
+function hasPath(data, from, to) {
+  var checkedFlags = data.map(function() {return false});
+  var front = [from];
+  while (front.length > 0) {
+    var i = front.pop();
+    if (i == to) {
+      return true;
+    }
+    if (!checkedFlags[i]) {
+      data[i].children.filter(function(d) {return !checkedFlags[d]}).forEach(function(d) {front.push(d)});
+    }
+  }
+  return false;
+}

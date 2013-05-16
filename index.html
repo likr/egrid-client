@@ -37,6 +37,9 @@
           .call(dragContents())
           ;
 
+        d3.json("test2.json", function(d) {
+          parse(d);
+        });
         d3.json("test.json", function(d) {
           data = d;
           draw(data);
