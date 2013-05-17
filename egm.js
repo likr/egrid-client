@@ -68,26 +68,78 @@ function radderUp(selection) {
       target = d3.select(".selected");
       target.classed("dragSource", true);
       dragging = true;
+      dragType = "radderup";
+      var pos = d3.mouse(d3.select("#contents").node());
+      d3.select("#contents")
+        .append("line")
+        .classed("dragLine", true)
+        .attr("x1", pos[0])
+        .attr("y1", pos[1])
+        .attr("x2", pos[0])
+        .attr("y2", pos[1])
+        ;
+    })
+    .on("drag", function() {
+      var x1 = Number(d3.select(".dragLine").attr("x1"));
+      var y1 = Number(d3.select(".dragLine").attr("y1"));
+      var x2 = d3.event.x;
+      var y2 = d3.event.y;
+      var theta = Math.atan2(y2 - y1, x2 - x1);
+      var r = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1)) - 10;
+      d3.select(".dragLine")
+        .attr("x2", x1 + r * Math.cos(theta))
+        .attr("y2", y1 + r * Math.sin(theta))
+        ;
     })
     .on("dragend", function() {
       var source = d3.select(d3.event.sourceEvent.target.parentNode);
-      if (target.datum() && source.datum() != target.datum()
-          && !hasPath(data.nodes, target.datum().index, source.datum().index)) {
-        if (target.datum().layer <= source.datum().layer) {
-          updateLayer(data.nodes, target.datum(), source.datum().layer + 1);
+      if (source.datum() && source.datum() != target.datum()) {
+        if (!hasPath(data.nodes, target.datum().index, source.datum().index)) {
+          if (target.datum().layer <= source.datum().layer) {
+            updateLayer(data.nodes, target.datum(), source.datum().layer + 1);
+          }
+          source.datum().children.push(target.datum().index);
+          data.links.push({
+            source: source.datum().index,
+            target: target.datum().index
+          });
+          draw(data);
         }
-        source.datum().children.push(target.datum().index);
-        data.links.push({
-          source: source.datum().index,
-          target: target.datum().index
-        });
-        draw(data);
-        unselectElement();
+      } else {
+        var text = prompt("追加する要素の名前を入力してください");
+        if (text) {
+          var sourceDatum = {
+            index: data.nodes.length,
+            text: text,
+            layer: target.datum().layer - 1,
+            children: []
+          }
+          data.nodes.push(sourceDatum);
+          if (sourceDatum.layer < 0) {
+            var delta = - sourceDatum.layer;
+            console.log(delta);
+            for (var i = 0; i < delta; ++i) {
+              data.layers.unshift({});
+            }
+            data.nodes.forEach(function(node) {
+              node.layer += delta;
+            });
+            console.log(data.nodes);
+          }
+          sourceDatum.children.push(target.datum().index);
+          data.links.push({
+            source: sourceDatum.index,
+            target: target.datum().index
+          });
+          draw(data);
+        }
       }
+      unselectElement();
       target.classed("dragSource", false);
       source.classed("droppable", false);
       source.classed("undroppable", false);
       dragging = false;
+      d3.selectAll(".dragLine").remove();
     }))
     ;
 }
@@ -100,26 +152,70 @@ function radderDown(selection) {
       source = d3.select(".selected");
       source.classed("dragSource", true);
       dragging = true;
+      dragType = "radderdown";
+      var pos = d3.mouse(d3.select("#contents").node());
+      d3.select("#contents")
+        .append("line")
+        .classed("dragLine", true)
+        .attr("x1", pos[0])
+        .attr("y1", pos[1])
+        .attr("x2", pos[0])
+        .attr("y2", pos[1])
+        ;
+    })
+    .on("drag", function() {
+      var x1 = Number(d3.select(".dragLine").attr("x1"));
+      var y1 = Number(d3.select(".dragLine").attr("y1"));
+      var x2 = d3.event.x;
+      var y2 = d3.event.y;
+      var theta = Math.atan2(y2 - y1, x2 - x1);
+      var r = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1)) - 10;
+      d3.select(".dragLine")
+        .attr("x2", x1 + r * Math.cos(theta))
+        .attr("y2", y1 + r * Math.sin(theta))
+        ;
     })
     .on("dragend", function() {
       var target = d3.select(d3.event.sourceEvent.target.parentNode);
-      if (target.datum() && source.datum() != target.datum()
-          && !hasPath(data.nodes, target.datum().index, source.datum().index)) {
-        if (target.datum().layer <= source.datum().layer) {
-          updateLayer(data.nodes, target.datum(), source.datum().layer + 1);
+      if (target.datum() && source.datum() != target.datum()) {
+        if (!hasPath(data.nodes, target.datum().index, source.datum().index)) {
+          if (target.datum().layer <= source.datum().layer) {
+            updateLayer(data.nodes, target.datum(), source.datum().layer + 1);
+          }
+          source.datum().children.push(target.datum().index);
+          data.links.push({
+            source: source.datum().index,
+            target: target.datum().index
+          });
+          draw(data);
         }
-        source.datum().children.push(target.datum().index);
-        data.links.push({
-          source: source.datum().index,
-          target: target.datum().index
-        });
-        draw(data);
-        unselectElement();
+      } else {
+        var text = prompt("追加する要素の名前を入力してください");
+        if (text) {
+          var targetDatum = {
+            index: data.nodes.length,
+            text: text,
+            layer: source.datum().layer + 1,
+            children: []
+          }
+          while (targetDatum.layer >= data.layers.length) {
+            data.layers.push({});
+          }
+          source.datum().children.push(targetDatum.index);
+          data.nodes.push(targetDatum);
+          data.links.push({
+            source: source.datum().index,
+            target: targetDatum.index
+          });
+          draw(data);
+        }
       }
+      unselectElement();
       target.classed("droppable", false);
       target.classed("undroppable", false);
       source.classed("dragSource", false);
       dragging = false;
+      d3.selectAll(".dragLine").remove();
     }))
     ;
 }
@@ -157,7 +253,8 @@ function appendElement(selection) {
         var s = d3.select(this);
         var t = d3.select(".selected");
         if (!s.classed("selected")) {
-          if (hasPath(data.nodes, t.datum().index, s.datum().index)) {
+          if ((dragType == "radderup" && hasPath(data.nodes, t.datum().index, s.datum().index))
+            || (dragType == "radderdown" && hasPath(data.nodes, s.datum().index, t.datum().index))) {
             s.classed("undroppable", true);
           } else {
             s.classed("droppable", true);
@@ -264,13 +361,12 @@ function draw(data) {
 
   layout(layers, data.links);
 
-  d3.selectAll(".element")
-      .transition()
+  var transition = d3.select("#contents").transition();
+  transition.selectAll(".element")
       .attr("transform", function(d) {return (new Translate(d.x, d.y)).toString()})
       ;
 
-  d3.selectAll(".link")
-      .transition()
+  transition.selectAll(".link")
       .attr("x1", function(d) {return rectCenterX(data.nodes[d.source])})
       .attr("y1", function(d) {return rectBottom(data.nodes[d.source])})
       .attr("x2", function(d) {return rectCenterX(data.nodes[d.target])})

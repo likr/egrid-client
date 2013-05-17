@@ -30,12 +30,12 @@ body {
 
 .element rect {
   fill: lightpink;
-  stroke: black;
 }
 
 
-.link {
-  stroke: black;
+.element rect, .link, .dragLine {
+  stroke: purple;
+  stroke-width: 5;
 }
 
 
