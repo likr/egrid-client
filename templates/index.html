@@ -2,12 +2,12 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <script src="jquery-2.0.0.js"></script>
-    <script src="d3.js"></script>
-    <script src="svg/viewBox.js"></script>
-    <script src="svg/transform.js"></script>
-    <script src="svg/rect.js"></script>
-    <script src="egm.js"></script>
+    <script src="scripts/jquery-2.0.0.js"></script>
+    <script src="scripts/d3.js"></script>
+    <script src="scripts/svg/viewBox.js"></script>
+    <script src="scripts/svg/transform.js"></script>
+    <script src="scripts/svg/rect.js"></script>
+    <script src="scripts/egm.js"></script>
     <script>
       var data;
       var dragging = false;
@@ -73,14 +73,14 @@
           .call(radderDown)
           ;
 
-        d3.json("kaikyo2.json", function(d) {
+        d3.json("data/kaikyo2.json", function(d) {
           initData(d);
           data = d;
           draw(data);
         });
       });
     </script>
-    <link rel="stylesheet" href="egm.css"/>
+    <link rel="stylesheet" href="stylesheets/egm.css"/>
   </head>
   <body>
     <svg id="contents" width="100%" height="100%">
