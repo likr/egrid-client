@@ -339,6 +339,51 @@ function layout(layers, links) {
     });
     vOffset += d3.max(layer, function(d) {return d.height}) + vMargin;
   });
+
+  var nodes = d3.selectAll(".element").data();
+  var connections = nodes.map(function() {
+    return nodes.map(function() {return false});
+  });
+  links.forEach(function(link) {
+    connections[link.source][link.target] = true;
+    connections[link.target][link.source] = true;
+  });
+  var dt = 0.1;
+  var k = 0.1;
+  var l = vMargin;
+  var g = 1000000;
+  var myu = 0.3;
+  var v = nodes.map(function() {return 0});
+  var count = 1000;
+  for (var iter = 0; iter < count; ++iter) {
+    nodes.forEach(function (d1, i) {
+      var F = 0;
+      var x1 = rectCenterX(d1);
+      var y1 = rectCenterY(d1);
+      nodes.forEach(function (d2, j) {
+        if (i != j) {
+          var x2 = rectCenterX(d2);
+          var y2 = rectCenterY(d2);
+          var d = distance(x1, y1, x2, y2);
+          var theta = Math.atan2(y2 - y1, x2 - x1);
+          F -= g / (d * d) * Math.cos(theta);
+          if (connections[i][j]) {
+            F += k * (d - l) * Math.cos(theta);
+          }
+        }
+      });
+      F -= myu * v[i];
+      v[i] += F * dt;
+      d1.x += v[i] * dt;
+    });
+  }
+}
+
+
+function distance(x1, y1, x2, y2) {
+  var dx = x2 - x1;
+  var dy = y2 - y1;
+  return Math.sqrt(dx * dx + dy * dy);
 }
 
 
