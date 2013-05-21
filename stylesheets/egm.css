@@ -39,6 +39,11 @@ body {
 }
 
 
+.element.connected rect {
+  fill: orange;
+}
+
+
 .element.selected rect, .element.droppable rect {
   fill: red;
 }

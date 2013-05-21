@@ -352,7 +352,7 @@ function layout(layers, links) {
   var k = 0.1;
   var l = vMargin;
   var g = 1000000;
-  var myu = 0.3;
+  var myu = 0.6;
   var v = nodes.map(function() {return 0});
   var count = 1000;
   for (var iter = 0; iter < count; ++iter) {
@@ -366,7 +366,11 @@ function layout(layers, links) {
           var y2 = rectCenterY(d2);
           var d = distance(x1, y1, x2, y2);
           var theta = Math.atan2(y2 - y1, x2 - x1);
-          F -= g / (d * d) * Math.cos(theta);
+          if (d1.layer == d2.layer) {
+            var minD = 100;
+            var d2 = d < minD ? minD : d * d;
+            F -= g / d2 * Math.cos(theta);
+          }
           if (connections[i][j]) {
             F += k * (d - l) * Math.cos(theta);
           }
@@ -459,6 +463,7 @@ function hasPath(data, from, to) {
 function selectElement(node) {
   var d = d3.select(node).datum();
   d3.selectAll(".selected").classed("selected", false);
+  d3.selectAll(".connected").classed("connected", false);
   d3.select(node).classed("selected", true);
   d3.select("#radderUpButton")
     .attr("transform", (new Translate(rectCenterX(d), rectTop(d))).toString())
@@ -469,6 +474,13 @@ function selectElement(node) {
   d3.selectAll(".radderButton.invisible")
     .classed("invisible", false)
     ;
+
+  d3.selectAll(".element")
+    .filter(function(d2) {
+      return hasPath(data.nodes, d.index, d2.index) || hasPath(data.nodes, d2.index, d.index);
+    })
+    .classed("connected", true)
+    ;
 }
 
 
@@ -477,4 +489,5 @@ function unselectElement() {
   d3.selectAll(".radderButton")
     .classed("invisible", true)
     ;
+  d3.selectAll(".connected").classed("connected", false);
 }
