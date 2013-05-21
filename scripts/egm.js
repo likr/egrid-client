@@ -246,9 +246,9 @@ function radderDown(selection) {
 
 
 function getPos() {
-  return d3.event.sourceEvent instanceof TouchEvent
-    ? d3.touches(document.body, d3.event.sourceEvent.changedTouches)[0]
-    : d3.mouse(document.body);
+  return d3.event.sourceEvent instanceof MouseEvent
+    ? d3.mouse(document.body)
+    : d3.touches(document.body, d3.event.sourceEvent.changedTouches)[0];
 }
 
 
