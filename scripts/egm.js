@@ -67,8 +67,6 @@ function radderUp(selection) {
     .on("dragstart", function() {
       target = d3.select(".selected");
       target.classed("dragSource", true);
-      dragging = true;
-      dragType = "radderup";
       var pos = d3.mouse(d3.select("#contents").node());
       d3.select("#contents")
         .append("line")
@@ -78,6 +76,7 @@ function radderUp(selection) {
         .attr("x2", pos[0])
         .attr("y2", pos[1])
         ;
+      d3.event.sourceEvent.stopPropagation();
     })
     .on("drag", function() {
       var x1 = Number(d3.select(".dragLine").attr("x1"));
@@ -90,9 +89,24 @@ function radderUp(selection) {
         .attr("x2", x1 + r * Math.cos(theta))
         .attr("y2", y1 + r * Math.sin(theta))
         ;
+      var pos = getPos();
+      var s = d3.select(document.elementFromPoint(pos[0], pos[1]).parentNode);
+      var t = d3.select(".selected");
+      if (s.classed("element") && !s.classed("selected")) {
+        if (hasPath(data.nodes, t.datum().index, s.datum().index)) {
+            s.classed("undroppable", true);
+          } else {
+            s.classed("droppable", true);
+          }
+      } else {
+        d3.selectAll(".droppable, .undroppable")
+          .classed("droppable", false)
+          .classed("undroppable", false);
+      }
     })
     .on("dragend", function() {
-      var source = d3.select(d3.event.sourceEvent.target.parentNode);
+      var pos = getPos();
+      var source = d3.select(document.elementFromPoint(pos[0], pos[1]).parentNode);
       if (source.datum() && source.datum() != target.datum()) {
         if (!hasPath(data.nodes, target.datum().index, source.datum().index)) {
           if (target.datum().layer <= source.datum().layer) {
@@ -117,14 +131,12 @@ function radderUp(selection) {
           data.nodes.push(sourceDatum);
           if (sourceDatum.layer < 0) {
             var delta = - sourceDatum.layer;
-            console.log(delta);
             for (var i = 0; i < delta; ++i) {
               data.layers.unshift({});
             }
             data.nodes.forEach(function(node) {
               node.layer += delta;
             });
-            console.log(data.nodes);
           }
           sourceDatum.children.push(target.datum().index);
           data.links.push({
@@ -138,7 +150,6 @@ function radderUp(selection) {
       target.classed("dragSource", false);
       source.classed("droppable", false);
       source.classed("undroppable", false);
-      dragging = false;
       d3.selectAll(".dragLine").remove();
     }))
     ;
@@ -151,8 +162,6 @@ function radderDown(selection) {
     .on("dragstart", function() {
       source = d3.select(".selected");
       source.classed("dragSource", true);
-      dragging = true;
-      dragType = "radderdown";
       var pos = d3.mouse(d3.select("#contents").node());
       d3.select("#contents")
         .append("line")
@@ -162,6 +171,7 @@ function radderDown(selection) {
         .attr("x2", pos[0])
         .attr("y2", pos[1])
         ;
+      d3.event.sourceEvent.stopPropagation();
     })
     .on("drag", function() {
       var x1 = Number(d3.select(".dragLine").attr("x1"));
@@ -174,9 +184,24 @@ function radderDown(selection) {
         .attr("x2", x1 + r * Math.cos(theta))
         .attr("y2", y1 + r * Math.sin(theta))
         ;
+      var pos = getPos();
+      var s = d3.select(document.elementFromPoint(pos[0], pos[1]).parentNode);
+      var t = d3.select(".selected");
+      if (s.classed("element") && !s.classed("selected")) {
+        if (hasPath(data.nodes, s.datum().index, t.datum().index)) {
+            s.classed("undroppable", true);
+          } else {
+            s.classed("droppable", true);
+          }
+      } else {
+        d3.selectAll(".droppable, .undroppable")
+          .classed("droppable", false)
+          .classed("undroppable", false);
+      }
     })
     .on("dragend", function() {
-      var target = d3.select(d3.event.sourceEvent.target.parentNode);
+      var pos = getPos();
+      var target = d3.select(document.elementFromPoint(pos[0], pos[1]).parentNode);
       if (target.datum() && source.datum() != target.datum()) {
         if (!hasPath(data.nodes, target.datum().index, source.datum().index)) {
           if (target.datum().layer <= source.datum().layer) {
@@ -214,10 +239,16 @@ function radderDown(selection) {
       target.classed("droppable", false);
       target.classed("undroppable", false);
       source.classed("dragSource", false);
-      dragging = false;
       d3.selectAll(".dragLine").remove();
     }))
     ;
+}
+
+
+function getPos() {
+  return d3.event.sourceEvent instanceof TouchEvent
+    ? d3.touches(document.body, d3.event.sourceEvent.changedTouches)[0]
+    : d3.mouse(document.body);
 }
 
 
@@ -247,28 +278,6 @@ function appendElement(selection) {
     .on("click", function() {
       selectElement(this);
       d3.event.stopPropagation();
-    })
-    .on("mouseover", function() {
-      if (dragging) {
-        var s = d3.select(this);
-        var t = d3.select(".selected");
-        if (!s.classed("selected")) {
-          if ((dragType == "radderup" && hasPath(data.nodes, t.datum().index, s.datum().index))
-            || (dragType == "radderdown" && hasPath(data.nodes, s.datum().index, t.datum().index))) {
-            s.classed("undroppable", true);
-          } else {
-            s.classed("droppable", true);
-          }
-        }
-      }
-    })
-    .on("mouseout", function() {
-      if (dragging) {
-        d3.select(this)
-          .classed("droppable", false)
-          .classed("undroppable", false);
-          ;
-      }
     })
     ;
 
