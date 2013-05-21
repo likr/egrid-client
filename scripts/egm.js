@@ -354,6 +354,7 @@ function layout(layers, links) {
   var g = 1000000;
   var myu = 0.6;
   var v = nodes.map(function() {return 0});
+  var minMargin = 10;
   var count = 1000;
   for (var iter = 0; iter < count; ++iter) {
     nodes.forEach(function (d1, i) {
@@ -378,7 +379,22 @@ function layout(layers, links) {
       });
       F -= myu * v[i];
       v[i] += F * dt;
-      d1.x += v[i] * dt;
+      var cx = d3.extent(
+          nodes.filter(function(d2) {return d1.layer == d2.layer && d1.index != d2.index}),
+          function(d2) {
+            var x1 = rectCenterX(d1);
+            var x2 = rectCenterX(d2);
+            if (Math.abs(x2 - x1) < (d1.width + d2.width) / 2) {
+              if (x2 > x1) {
+                return (x2 - x1) - (d1.width + d2.width) / 2 - minMargin;
+              } else {
+                return (d1.width + d2.width) / 2 - (x1 - x2) + minMargin;
+              }
+            } else {
+              return 0;
+            }
+          });
+      d1.x += v[i] * dt + (Math.abs(cx[0]) > Math.abs(cx[1]) ? cx[0] : cx[1]);
     });
   }
 }
