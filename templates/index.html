@@ -16,7 +16,7 @@
 
         $(window).resize(resizeViewBox);
 
-        $("#resetButton").click(resetViewBox);
+        $("#resetPosButton").click(resetViewBox);
         $("#zoomInButton").click(zoomIn);
         $("#zoomOutButton").click(zoomOut);
         $("#resetZoomButton").click(resetZoom);
@@ -32,6 +32,33 @@
             });
             draw(data);
           }
+        });
+
+        $("#resetButton").click(function() {
+          d3.json("data/empty.json", function(d) {
+            d3.selectAll(".element, .link").remove();
+            initData(d);
+            data = d;
+            draw(data);
+          });
+        });
+
+        $("#data1Button").click(function() {
+          d3.json("data/test2.json", function(d) {
+            d3.selectAll(".element, .link").remove();
+            initData(d);
+            data = d;
+            draw(data);
+          });
+        });
+
+        $("#data2Button").click(function() {
+          d3.json("data/kaikyo2.json", function(d) {
+            d3.selectAll(".element, .link").remove();
+            initData(d);
+            data = d;
+            draw(data);
+          });
         });
 
         d3.select("#contents")
@@ -71,7 +98,7 @@
           .call(radderDown)
           ;
 
-        d3.json("data/test2.json", function(d) {
+        d3.json("data/empty.json", function(d) {
           initData(d);
           data = d;
           draw(data);
@@ -89,9 +116,14 @@
       <g id="radderUpButton" class="radderButton invisible"><rect/><text>ラダーアップ</text></g>
       <g id="radderDownButton" class="radderButton invisible"><rect/><text>ラダーダウン</text></g>
     </svg>
-    <div id="controller">
+    <div id="controller1" class="controller">
+      <button id="resetButton">リセット</button>
+      <button id="data1Button">オフィス</button>
+      <button id="data2Button">海況</button>
+    </div>
+    <div id="controller2" class="controller">
       <button id="addItemButton">アイテムの追加</button>
-      <button id="resetButton">中心に戻る</button>
+      <button id="resetPosButton">中心に戻る</button>
       <button id="zoomInButton">拡大</button>
       <button id="resetZoomButton">元の大きさ</button>
       <button id="zoomOutButton">縮小</button>

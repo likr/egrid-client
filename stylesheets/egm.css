@@ -3,17 +3,28 @@ body {
 }
 
 
-#controller {
+.controller {
   margin: 0;
   padding: 10px;
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
   background-color: gray;
 }
 
 
-#controller button {
+#controller1 {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
+
+
+#controller2 {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+
+.controller button {
   font-size: 1.5em;
 }
 
