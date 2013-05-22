@@ -352,7 +352,7 @@ function layout(layers, links) {
   var k = 0.1;
   var l = vMargin;
   var g = 1000000;
-  var myu = 0.6;
+  var myu = 0.3;
   var v = nodes.map(function() {return 0});
   var count = 1000;
   for (var iter = 0; iter < count; ++iter) {
