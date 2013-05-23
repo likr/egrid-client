@@ -394,7 +394,9 @@ function layout(layers, links) {
               return 0;
             }
           });
-      d1.x += (Math.abs(cx[0]) > Math.abs(cx[1]) ? cx[0] : cx[1]);
+      if (cx[0] || cx[1]) {
+        d1.x += (Math.abs(cx[0]) > Math.abs(cx[1]) ? cx[0] : cx[1]);
+      }
     });
   }
 }
