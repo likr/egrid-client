@@ -34,8 +34,13 @@ body {
 }
 
 
-.element text, .radderButton text {
+.element text, .radderButton text, text#measure {
   font-size: 2em;
+}
+
+
+text#measure {
+  visibility: hidden;
 }
 
 

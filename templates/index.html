@@ -6,10 +6,13 @@
     <script src="scripts/d3.js"></script>
     <script src="scripts/svg/viewBox.js"></script>
     <script src="scripts/svg/transform.js"></script>
+    <script src="scripts/svg/point.js"></script>
     <script src="scripts/svg/rect.js"></script>
+    <script src="scripts/egm/grid.js"></script>
     <script src="scripts/egm.js"></script>
+    <link rel="stylesheet" href="stylesheets/egm.css"/>
     <script>
-      var data;
+      var grid;
 
       $(function() {
         resetViewBox();
@@ -24,41 +27,24 @@
         $("#addItemButton").click(function() {
           var name = prompt("追加する要素の名前を入力してください");
           if (name) {
-            data.nodes.push({
-              index: data.nodes.length,
-              text: name,
-              layer: data.baseLayer,
-              children: []
-            });
-            draw(data);
+            grid.appendNode({text: name});
+            draw(grid);
           }
         });
 
         $("#resetButton").click(function() {
-          d3.json("data/empty.json", function(d) {
-            d3.selectAll(".element, .link").remove();
-            initData(d);
-            data = d;
-            draw(data);
-          });
+          d3.selectAll(".element, .link").remove();
+          readGrid("data/empty.json");
         });
 
         $("#data1Button").click(function() {
-          d3.json("data/test2.json", function(d) {
-            d3.selectAll(".element, .link").remove();
-            initData(d);
-            data = d;
-            draw(data);
-          });
+          d3.selectAll(".element, .link").remove();
+          readGrid("data/test2.json");
         });
 
         $("#data2Button").click(function() {
-          d3.json("data/kaikyo2.json", function(d) {
-            d3.selectAll(".element, .link").remove();
-            initData(d);
-            data = d;
-            draw(data);
-          });
+          d3.selectAll(".element, .link").remove();
+          readGrid("data/kaikyo2.json");
         });
 
         d3.select("#contents")
@@ -97,18 +83,12 @@
         d3.select("#radderDownButton")
           .call(radderDown)
           ;
-
-        d3.json("data/empty.json", function(d) {
-          initData(d);
-          data = d;
-          draw(data);
-        });
       });
     </script>
-    <link rel="stylesheet" href="stylesheets/egm.css"/>
   </head>
   <body>
     <svg id="contents" width="100%" height="100%">
+      <text id="measure"></text>
       <g id="elements">
       </g>
       <g id="links">

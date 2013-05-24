@@ -3,7 +3,7 @@ var egm = egm || {};
 
 (function() {
   function hasPath(nodes, fromIndex, toIndex) {
-    var checkedFlags = data.map(function() {return false});
+    var checkedFlags = nodes.map(function() {return false});
     var front = [fromIndex];
     while (front.length > 0) {
       var i = front.pop();
@@ -11,7 +11,11 @@ var egm = egm || {};
         return true;
       }
       if (!checkedFlags[i]) {
-        data[i].children.filter(function(d) {return !checkedFlags[d]}).forEach(function(d) {front.push(d)});
+        nodes[i].children.filter(function(d) {
+          return !checkedFlags[d];
+        }).forEach(function(d) {
+          front.push(d);
+        });
       }
     }
     return false;
@@ -31,73 +35,64 @@ var egm = egm || {};
     function rowMajorLayout(grid) {
       var hMargin = 50;
       var vMargin = 150;
-      var totalHeight = d3.sum(grid.layers, function(layer) {
-        return d3.max(layer, function(node) {
-          return node.height;
+      var layerRange = d3.extent(grid.nodes, function(node) {
+        return node.layer;
+      });
+      var layers = [];
+      for (var k = layerRange[0]; k <= layerRange[1]; ++k) {
+        layers.push({
+          nodes: grid.nodes.filter(function(node) {return node.layer == k})
+        });
+      }
+      var totalHeight = d3.sum(layers, function(layer) {
+        return d3.max(layer.nodes, function(node) {
+          return node.rect.height;
         });
       }) + vMargin * (layers.length - 1);
 
       var vOffset = - totalHeight / 2;
-      grid.layers.forEach(function(layer) {
-        var totalWidth = d3.sum(layer, function(node) {
-          return node.width;
-        }) + hMargin * (layer.length - 1);
-        var hOffset = - totalWidth / 2;
-        layer.forEach(function(node) {
-          node.x = hOffset;
-          node.y = vOffset;
-          hOffset += d.width + hMargin;
-        });
-        vOffset += d3.max(layer, function(d) {return d.height}) + vMargin;
-      });
-    }
-
-    function columnMajorLayout(grid) {
-      var hMargin = 150;
-      var vMargin = 50;
-      var totalWidth = d3.sum(layers, function(layer) {
-        return d3.max(layer, function(d) {
-          return d.width;
-        });
-      }) + hMargin * (layers.length - 1);
-
-      var hOffset = - totalWidth / 2;
       layers.forEach(function(layer) {
-        var totalHeight = d3.sum(layer, function(d) {
-          return d.height;
-        }) + vMargin * (layer.length - 1);
-        var vOffset = - totalHeight / 2;
-        layer.forEach(function(d) {
-          d.x = vOffset;
-          d.y = hOffset;
-          vOffset += d.height + vMargin;
+        var totalWidth = d3.sum(layer.nodes, function(node) {
+          return node.rect.width;
+        }) + hMargin * (layer.nodes.length - 1);
+        var hOffset = - totalWidth / 2;
+        layer.nodes.forEach(function(node) {
+          node.rect.x = hOffset;
+          node.rect.y = vOffset;
+          hOffset += node.rect.width + hMargin;
         });
-        hOffset += d3.max(layer, function(d) {return d.width}) + hMargin;
+        vOffset += d3.max(layer.nodes, function(node) {
+          return node.rect.height;
+        }) + vMargin;
       });
     }
+
 
     function adjustLayout(nodes, target) {
       var cx = d3.extent(
           nodes.filter(function(node) {
-            return targetNode.layer == node.layer && targetNode.index != node.index;
+            return target.layer == node.layer && target.index != node.index;
           }),
           function(node) {
-            var x1 = target.rect.center.x;
-            var x2 = node.rect.center.x;
-            if (Math.abs(x2 - x1) < (target.width + node.width) / 2) {
+            var x1 = target.rect.center().x;
+            var x2 = node.rect.center().x;
+            var realDistance = Math.abs(x2 - x1);
+            var expectedDistance = (target.rect.width + node.rect.width) / 2;
+            if (realDistance < expectedDistance) {
               if (x2 > x1) {
-                return (x2 - x1) - (target.width + node.width) / 2;
+                return realDistance - expectedDistance;
               } else {
-                return (target.width + node.width) / 2 - (x1 - x2);
+                return expectedDistance - realDistance;
               }
             } else {
               return 0;
             }
           });
       if (cx[0] || cx[1]) {
-        target.x += (Math.abs(cx[0]) > Math.abs(cx[1]) ? cx[0] : cx[1]);
+        target.rect.x += (Math.abs(cx[0]) > Math.abs(cx[1]) ? cx[0] : cx[1]);
       }
     }
+
 
     function forceLayout(grid) {
       function Vector(x, y) {
@@ -107,17 +102,17 @@ var egm = egm || {};
 
       var dt = 0.1;
       var k = 0.1;
-      var l = vMargin;
+      var l = 150;
       var g = 1000000;
       var myu = 0.3;
       var stop = 1000;
-      var v = nodes.map(function() {return new Vector(0, 0)});
+      var v = grid.nodes.map(function() {return new Vector(0, 0)});
 
       for (var loop = 0; loop < stop; ++loop) {
         grid.nodes.forEach(function(d1, i) {
           var F = new Vector();
           var p1 = d1.rect.center();
-          grid.nodes.forEach(function(d2, i) {
+          grid.nodes.forEach(function(d2, j) {
             if (i != j) {
               var p2 = d2.rect.center();
               var d = p1.distanceTo(p2);
@@ -125,113 +120,147 @@ var egm = egm || {};
               if (d1.layer == d2.layer) {
                 var d2 = Math.max(d * d, 100);
                 F.x -= g / d2 * Math.cos(theta);
-                F.y -= g / d2 * Math.sin(theta);
+                //F.y -= g / d2 * Math.sin(theta);
               }
               if (grid.hasConnection(d1, d2)) {
                 F.x += k * (d - l) * Math.cos(theta);
-                F.y += k * (d - l) * Math.sin(theta);
+                //F.y += k * (d - l) * Math.sin(theta);
               }
             }
           });
           F.x -= myu * v[i].x;
-          F.y -= myu * v[i].y;
+          //F.y -= myu * v[i].y;
           v[i].x += F.x * dt;
           //v[i].y += F.y * dt;
-          d1.x += v[i].x * dt;
-          dx.y += v[i].y * dt;
+          d1.rect.x += v[i].x * dt;
+          //d1.rect.y += v[i].y * dt;
 
-          adjustLayout(grid.nodes, i);
+          adjustLayout(grid.nodes, d1);
         });
       }
     }
 
     return function layout(grid) {
+      grid.nodes.forEach(function(node) {
+        node.prect =
+          new Rect(node.rect.x, node.rect.y, node.rect.width, node.rect.height);
+      });
       if (grid.columnMajorLayout) {
         columnMajorLayout(grid);
         forceLayout(grid);
       } else {
         rowMajorLayout(grid);
+        forceLayout(grid);
       }
     };
   })();
 
 
   egm.Grid = function Grid(data) {
-    this.baseLayer = data.baseLayer;
+    var grid = this;
 
-    this.layers = data.layers.map(function(layer, i) {
-      return new this.Layer(data.nodes.filter(function(node) {
-        return node.layer == i;
-      }));
-    });
-    this.layers.forEach(function(layer, i) {
-      layer.index = i;
-    });
+    grid.baseLayer = data.baseLayer;
 
-    this.nodes = data.nodes.map(function(node, i) {
-      return new this.Node();
+    grid.nodes = data.nodes.map(function(node) {
+      return new Node(node);
     });
-    this.nodes.forEach(function(node, i) {
+    grid.nodes.forEach(function(node, i) {
       node.index = i;
     });
 
-    this.links = [];
-    this.nodes.forEach(function(d) {
+    grid.links = [];
+    grid.nodes.forEach(function(d) {
       d.children.forEach(function(c) {
-        this.links.push(new this.Link(d.index, c));
+        grid.links.push(new Link(d, grid.nodes[c]));
       });
     });
 
-    this.connections = connections(this.nodes);
+    grid.connections = connections(grid.nodes);
+
+    layout(grid);
   };
 
 
-  egm.Grid.prototype.hasConnection = function hasPath(fromIndex, toIndex) {
+  egm.Grid.prototype.hasConnection = function hasPath(from, to) {
+    var fromIndex = typeof from == "number" ? from : from.index;
+    var toIndex = typeof to == "number" ? to : to.index;
     return this.connections[fromIndex][toIndex];
   };
 
 
   egm.Grid.prototype.appendNode = function appendNode(obj) {
-    var node = new this.Node(obj);
-    node
+    var node = new Node(obj);
+    node.index = this.nodes.length;
     this.nodes.push(node);
+    grid.connections = connections(grid.nodes);
   };
 
 
-  egm.Grid.prototype.appendLink = function appendLink(fromIndex, toIndex) {
-    if (this.hasConnection(toIndex, fromIndex)) {
+  egm.Grid.prototype.radderUp = function radderDown(from, to) {
+    var grid = this;
+    if (typeof from == "number") {
+      from = grid.nodes[from];
+    }
+    if (typeof to == "number") {
+      to = grid.nodes[to];
+    }
+    if (grid.hasConnection(from.index, to.index)) {
       throw new Error("the new link makes cyclic connection");
     }
-    var fromNode = this.nodes[fromIndex];
-    var toNode = this.nodes[toIndex];
-    this.links.push(new this.Link(fromIndex, toIndex));
+    to.children.push(from.index);
+    grid.links.push(new Link(to, from));
+    if (to.layer >= from.layer) {
+      var delta = from.layer - to.layer + 1;
+      grid.nodes.forEach(function(node) {
+        if (grid.hasConnection(node.index, to.index)) {
+          node.layer -= delta;
+        }
+      });
+    }
+    grid.connections = connections(grid.nodes);
+    layout(grid);
   };
 
 
-  egm.Grid.prototype.Node = function Node() {
+  egm.Grid.prototype.radderDown = function radderDown(from, to) {
+    var grid = this;
+    if (typeof from == "number") {
+      from = grid.nodes[from];
+    }
+    if (typeof to == "number") {
+      to = grid.nodes[to];
+    }
+    if (grid.hasConnection(to.index, from.index)) {
+      throw new Error("the new link makes cyclic connection");
+    }
+    from.children.push(to.index);
+    grid.links.push(new Link(from, to));
+    if (to.layer <= from.layer) {
+      var delta = from.layer - to.layer + 1;
+      grid.nodes.forEach(function(node) {
+        if (grid.hasConnection(to.index, node.index)) {
+          node.layer += delta;
+        }
+      });
+    }
+    grid.connections = connections(grid.nodes);
+    layout(grid);
   };
 
 
-  egm.Grid.prototype.Link = (function() {
-    grid = this;
-    return function Link(fromIndex, toIndex, weight) {
-      this.source = grid.nodes[fromIndex];
-      this.target = grid.nodes[toIndex];
-      this.weight = weight === undefined ? 1 : weight;
-    };
-  })();
+  function Node(obj) {
+    this.text = obj.text;
+    this.layer = obj.layer || 0;
+    this.children = obj.children || [];
+    this.rect = new Rect(obj.x, obj.y, obj.width, obj.height);
+  }
 
 
-  egm.Grid.prototype.Layer = (function() {
-    grid = this;
-    return function Layer(nodes) {
-      this.nodes = nodes;
-      this.totalWidth = d3.sum(this.nodes, function(node) {return node.width});
-      this.maxWidth = d3.max(this.nodes, function(node) {return node.width});
-      this.totalHeight = d3.sum(this.nodes, function(node) {return node.height});
-      this.maxHeight = d3.max(this.nodes, function(node) {return node.height});
-    };
-  })();
+  function Link(fromNode, toNode, weight) {
+    this.source = fromNode;
+    this.target = toNode;
+    this.weight = weight === undefined ? 1 : weight;
+  }
 })();
 
 

@@ -4,6 +4,19 @@
 var scale = 1;
 
 
+function readGrid(uri) {
+  d3.json(uri, function(data) {
+    data.nodes.forEach(function (node) {
+      var bbox = d3.select("#measure").text(node.text).node().getBBox();
+      node.width = bbox.width + 40;
+      node.height = bbox.height + 40;
+    });
+    grid = new egm.Grid(data);
+    draw(grid);
+  });
+}
+
+
 function resetViewBox() {
   var winWidth = $(document).width();
   var winHeight = $(document).height();
@@ -93,7 +106,7 @@ function radderUp(selection) {
       var s = d3.select(document.elementFromPoint(pos[0], pos[1]).parentNode);
       var t = d3.select(".selected");
       if (s.classed("element") && !s.classed("selected")) {
-        if (hasPath(data.nodes, t.datum().index, s.datum().index)) {
+        if (grid.hasConnection(t.datum(), s.datum())) {
             s.classed("undroppable", true);
           } else {
             s.classed("droppable", true);
@@ -108,42 +121,20 @@ function radderUp(selection) {
       var pos = getPos();
       var source = d3.select(document.elementFromPoint(pos[0], pos[1]).parentNode);
       if (source.datum() && source.datum() != target.datum()) {
-        if (!hasPath(data.nodes, target.datum().index, source.datum().index)) {
-          if (target.datum().layer <= source.datum().layer) {
-            updateLayer(data.nodes, target.datum(), source.datum().layer + 1);
-          }
-          source.datum().children.push(target.datum().index);
-          data.links.push({
-            source: source.datum().index,
-            target: target.datum().index
-          });
-          draw(data);
-        }
+        grid.radderUp(target.datum(), source.datum());
+        draw(grid);
       } else {
         var text = prompt("追加する要素の名前を入力してください");
         if (text) {
-          var sourceDatum = {
-            index: data.nodes.length,
-            text: text,
+          var bbox = d3.select("#measure").text(text).node().getBBox();
+          grid.appendNode({
+            text: text, 
             layer: target.datum().layer - 1,
-            children: []
-          }
-          data.nodes.push(sourceDatum);
-          if (sourceDatum.layer < 0) {
-            var delta = - sourceDatum.layer;
-            for (var i = 0; i < delta; ++i) {
-              data.layers.unshift({});
-            }
-            data.nodes.forEach(function(node) {
-              node.layer += delta;
-            });
-          }
-          sourceDatum.children.push(target.datum().index);
-          data.links.push({
-            source: sourceDatum.index,
-            target: target.datum().index
+            width: bbox.width + 40,
+            height: bbox.height + 40
           });
-          draw(data);
+          grid.radderUp(target.datum(), grid.nodes[grid.nodes.length - 1]);
+          draw(grid);
         }
       }
       unselectElement();
@@ -188,7 +179,7 @@ function radderDown(selection) {
       var s = d3.select(document.elementFromPoint(pos[0], pos[1]).parentNode);
       var t = d3.select(".selected");
       if (s.classed("element") && !s.classed("selected")) {
-        if (hasPath(data.nodes, s.datum().index, t.datum().index)) {
+        if (grid.hasConnection(s.datum(), t.datum())) {
             s.classed("undroppable", true);
           } else {
             s.classed("droppable", true);
@@ -203,36 +194,20 @@ function radderDown(selection) {
       var pos = getPos();
       var target = d3.select(document.elementFromPoint(pos[0], pos[1]).parentNode);
       if (target.datum() && source.datum() != target.datum()) {
-        if (!hasPath(data.nodes, target.datum().index, source.datum().index)) {
-          if (target.datum().layer <= source.datum().layer) {
-            updateLayer(data.nodes, target.datum(), source.datum().layer + 1);
-          }
-          source.datum().children.push(target.datum().index);
-          data.links.push({
-            source: source.datum().index,
-            target: target.datum().index
-          });
-          draw(data);
-        }
+        grid.radderDown(source.datum(), target.datum());
+        draw(grid);
       } else {
         var text = prompt("追加する要素の名前を入力してください");
         if (text) {
-          var targetDatum = {
-            index: data.nodes.length,
-            text: text,
+          var bbox = d3.select("#measure").text(text).node().getBBox();
+          grid.appendNode({
+            text: text, 
             layer: source.datum().layer + 1,
-            children: []
-          }
-          while (targetDatum.layer >= data.layers.length) {
-            data.layers.push({});
-          }
-          source.datum().children.push(targetDatum.index);
-          data.nodes.push(targetDatum);
-          data.links.push({
-            source: source.datum().index,
-            target: targetDatum.index
+            width: bbox.width + 40,
+            height: bbox.height + 40
           });
-          draw(data);
+          grid.radderDown(source.datum(), grid.nodes[grid.nodes.length - 1]);
+          draw(grid);
         }
       }
       unselectElement();
@@ -302,179 +277,60 @@ function appendElement(selection) {
 }
 
 
-function initData(data) {
-  data.links = [];
-  data.nodes.forEach(function(d, i) {
-    d.index = i;
-    d.children.forEach(function(c) {
-      data.links.push({
-        source: d.index,
-        target: c
-      });
-    });
-  });
-}
-
-
-function layout(layers, links) {
-  var hMargin = 50;
-  var vMargin = 150;
-
-  var totalHeight = d3.sum(layers, function(layer) {
-    return d3.max(layer, function(d) {
-      return d.height;
-    });
-  }) + vMargin * (layers.length - 1);
-
-  var vOffset = - totalHeight / 2;
-  layers.forEach(function(layer) {
-    var totalWidth = d3.sum(layer, function(d) {
-      return d.width;
-    }) + hMargin * (layer.length - 1);
-    var hOffset = - totalWidth / 2;
-    layer.forEach(function(d) {
-      d.x = hOffset;
-      d.y = vOffset;
-      hOffset += d.width + hMargin;
-    });
-    vOffset += d3.max(layer, function(d) {return d.height}) + vMargin;
-  });
-
-  var nodes = d3.selectAll(".element").data();
-  var connections = nodes.map(function() {
-    return nodes.map(function() {return false});
-  });
-  links.forEach(function(link) {
-    connections[link.source][link.target] = true;
-    connections[link.target][link.source] = true;
-  });
-  var dt = 0.1;
-  var k = 0.1;
-  var l = vMargin;
-  var g = 1000000;
-  var myu = 0.3;
-  var v = nodes.map(function() {return 0});
-  var count = 1000;
-  for (var iter = 0; iter < count; ++iter) {
-    nodes.forEach(function (d1, i) {
-      var F = 0;
-      var x1 = rectCenterX(d1);
-      var y1 = rectCenterY(d1);
-      nodes.forEach(function (d2, j) {
-        if (i != j) {
-          var x2 = rectCenterX(d2);
-          var y2 = rectCenterY(d2);
-          var d = distance(x1, y1, x2, y2);
-          var theta = Math.atan2(y2 - y1, x2 - x1);
-          if (d1.layer == d2.layer) {
-            var minD = 100;
-            var d2 = d < minD ? minD : d * d;
-            F -= g / d2 * Math.cos(theta);
-          }
-          if (connections[i][j]) {
-            F += k * (d - l) * Math.cos(theta);
-          }
-        }
-      });
-      F -= myu * v[i];
-      v[i] += F * dt;
-      d1.x += v[i] * dt;
-      var cx = d3.extent(
-          nodes.filter(function(d2) {return d1.layer == d2.layer && d1.index != d2.index}),
-          function(d2) {
-            var x1 = rectCenterX(d1);
-            var x2 = rectCenterX(d2);
-            if (Math.abs(x2 - x1) < (d1.width + d2.width) / 2) {
-              if (x2 > x1) {
-                return (x2 - x1) - (d1.width + d2.width) / 2;
-              } else {
-                return (d1.width + d2.width) / 2 - (x1 - x2);
-              }
-            } else {
-              return 0;
-            }
-          });
-      if (cx[0] || cx[1]) {
-        d1.x += (Math.abs(cx[0]) > Math.abs(cx[1]) ? cx[0] : cx[1]);
-      }
-    });
-  }
-}
-
-
-function distance(x1, y1, x2, y2) {
-  var dx = x2 - x1;
-  var dy = y2 - y1;
-  return Math.sqrt(dx * dx + dy * dy);
-}
-
-
 function draw(data) {
-  var layers = data.layers.map(function(layer, i) {
-    return data.nodes.filter(function(d) {return d.layer == i});
-  });
-
   d3.select("#contents #elements")
-      .selectAll(".element")
-      .data(data.nodes)
-      .enter()
-      .append("g")
-      .call(appendElement)
-      .each(function(d) {
-        var bbox = this.getBBox();
-        d.width = bbox.width;
-        d.height = bbox.height;
-      })
-      ;
+    .selectAll(".element")
+    .data(data.nodes)
+    .enter()
+    .append("g")
+    .call(appendElement)
+    ;
 
   d3.select("#contents #links")
-      .selectAll(".link")
-      .data(data.links)
-      .enter()
-      .append("line")
-      .classed("link", true)
-      ;
-
-  layout(layers, data.links);
+    .selectAll(".link")
+    .data(data.links)
+    .enter()
+    .append("line")
+    .classed("link", true)
+    .attr("x1", function(link) {
+      return link.source.prect ? link.source.prect.center().x : 0;
+    })
+    .attr("y1", function(link) {
+      return link.source.prect
+        ? link.source.prect.bottom()
+        : link.source.rect.height / 2;
+    })
+    .attr("x2", function(link) {
+      return link.target.prect ? link.target.prect.center().x : 0;
+    })
+    .attr("y2", function(link) {
+      return link.target.prect
+        ? link.target.prect.top()
+        : - link.target.rect.height / 2;
+    })
+    ;
 
   var transition = d3.select("#contents").transition();
   transition.selectAll(".element")
-      .attr("transform", function(d) {return (new Translate(d.x, d.y)).toString()})
-      ;
+    .attr("transform", function(node) {
+      return (new Translate(node.rect.x, node.rect.y)).toString();
+    })
+  ;
 
   transition.selectAll(".link")
-      .attr("x1", function(d) {return rectCenterX(data.nodes[d.source])})
-      .attr("y1", function(d) {return rectBottom(data.nodes[d.source])})
-      .attr("x2", function(d) {return rectCenterX(data.nodes[d.target])})
-      .attr("y2", function(d) {return rectTop(data.nodes[d.target])})
-      ;
-}
-
-
-function updateLayer(nodes, startNode, depth) {
-  startNode.layer = Math.max(depth, startNode.layer);
-  while (startNode.layer >= data.layers.length) {
-    data.layers.push({});
-  }
-  startNode.children.forEach(function(c) {
-    updateLayer(nodes, nodes[c], depth + 1);
-  });
-}
-
-
-function hasPath(data, from, to) {
-  var checkedFlags = data.map(function() {return false});
-  var front = [from];
-  while (front.length > 0) {
-    var i = front.pop();
-    if (i == to) {
-      return true;
-    }
-    if (!checkedFlags[i]) {
-      data[i].children.filter(function(d) {return !checkedFlags[d]}).forEach(function(d) {front.push(d)});
-    }
-  }
-  return false;
+    .attr("x1", function(link) {
+      return link.source.rect.center().x;
+    })
+  .attr("y1", function(link) {
+    return link.source.rect.bottom();
+  })
+  .attr("x2", function(link) {
+    return link.target.rect.center().x;
+  })
+  .attr("y2", function(link) {
+    return link.target.rect.top();
+  })
+  ;
 }
 
 
@@ -484,10 +340,10 @@ function selectElement(node) {
   d3.selectAll(".connected").classed("connected", false);
   d3.select(node).classed("selected", true);
   d3.select("#radderUpButton")
-    .attr("transform", (new Translate(rectCenterX(d), rectTop(d))).toString())
+    .attr("transform", (new Translate(d.rect.center().x, d.rect.top())).toString())
     ;
   d3.select("#radderDownButton")
-    .attr("transform", (new Translate(rectCenterX(d), rectBottom(d))).toString())
+    .attr("transform", (new Translate(d.rect.center().x, d.rect.bottom())).toString())
     ;
   d3.selectAll(".radderButton.invisible")
     .classed("invisible", false)
@@ -495,7 +351,7 @@ function selectElement(node) {
 
   d3.selectAll(".element")
     .filter(function(d2) {
-      return hasPath(data.nodes, d.index, d2.index) || hasPath(data.nodes, d2.index, d.index);
+      return grid.hasConnection(d, d2) || grid.hasConnection(d2, d);
     })
     .classed("connected", true)
     ;
