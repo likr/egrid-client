@@ -156,6 +156,14 @@ var egm = egm || {};
   })();
 
 
+  function execute(grid, commands) {
+  }
+
+
+  function revert(grid, commands) {
+  }
+
+
   egm.Grid = function Grid(data) {
     var grid = this;
 
@@ -178,6 +186,9 @@ var egm = egm || {};
     grid.connections = connections(grid.nodes);
 
     layout(grid);
+
+    grid.undoStack = [];
+    grid.redoStack = [];
   };
 
 
@@ -198,6 +209,7 @@ var egm = egm || {};
 
   egm.Grid.prototype.radderUp = function radderDown(from, to) {
     var grid = this;
+    var transaction = new CommandTransaction(grid);
     if (typeof from == "number") {
       from = grid.nodes[from];
     }
@@ -207,17 +219,22 @@ var egm = egm || {};
     if (grid.hasConnection(from.index, to.index)) {
       throw new Error("the new link makes cyclic connection");
     }
-    to.children.push(from.index);
-    grid.links.push(new Link(to, from));
+    transaction.updateNode(
+        to.index,
+        {children: (function() {var a = to.children.slice(); a.push(from.index); return a})()}
+    );
+    transaction.appendLink(new Link(to, from));
     if (to.layer >= from.layer) {
       var delta = from.layer - to.layer + 1;
       grid.nodes.forEach(function(node) {
         if (grid.hasConnection(node.index, to.index)) {
-          node.layer -= delta;
+          transaction.updateNode(node.index, {layer: node.layer - delta});
         }
       });
     }
     grid.connections = connections(grid.nodes);
+    transaction.execute();
+    this.undoStack.push(transaction);
     layout(grid);
   };
 
@@ -248,6 +265,33 @@ var egm = egm || {};
   };
 
 
+  egm.Grid.prototype.undo = function undo() {
+    var grid = this;
+    var commands = grid.undoStack.pop();
+    commands.revert();
+    grid.redoStack.push(commands);
+    layout(grid);
+  };
+
+
+  egm.Grid.prototype.canUndo = function canUndo() {
+    return grid.undoStack.length > 0;
+  };
+
+
+  egm.Grid.prototype.redo = function redo() {
+    var commands = grid.redoStack.pop();
+    commands.execute();
+    grid.undoStack.push(commands);
+    layout(grid);
+  };
+
+
+  egm.Grid.prototype.canRedo = function canRedo() {
+    return grid.redoStack.length > 0;
+  };
+
+
   function Node(obj) {
     this.text = obj.text;
     this.layer = obj.layer || 0;
@@ -261,6 +305,130 @@ var egm = egm || {};
     this.target = toNode;
     this.weight = weight === undefined ? 1 : weight;
   }
+
+
+  function AppendNodeCommand(grid, node) {
+    this.grid = grid;
+    this.node = node;
+    this.executed = false;
+  }
+
+
+  AppendNodeCommand.prototype.execute = function execute() {
+    if (this.executed) {
+      throw new Error("this command already executed.");
+    }
+    this.grid.nodes.push(node);
+    this.executed = true;
+  };
+
+
+  AppendNodeCommand.prototype.revert = function revert() {
+    if (!this.executed) {
+      throw new Error("this command have not been executed yet.");
+    }
+    this.grid.nodes.pop();
+    this.executed = false;
+  };
+
+
+  function RemoveNodeCommand(grid, index) {
+    this.grid = grid;
+    this.index = index;
+    this.executed = false;
+  }
+
+
+  RemoveNodeCommand.prototype.execute = function execute() {
+    this.removedNode = this.grid.nodes[this.index];
+    this.grid.nodes[this.index] = undefined;
+  };
+
+
+  RemoveNodeCommand.prototype.revert = function revert() {
+    this.grid.nodes[this.index] = this.removedNode;
+    this.removedNode = undefined;
+  };
+
+
+  function UpdateNodeCommand(grid, index, attributes) {
+    this.grid = grid;
+    this.index = index;
+    this.attributes = attributes;
+    this.executed = false;
+  }
+
+
+  UpdateNodeCommand.prototype.execute = function execute() {
+    var node = this.grid.nodes[this.index];
+    this.previousAttributes = {};
+    for (var key in this.attributes) {
+      this.previousAttributes[key] = node[key];
+      node[key] = this.attributes[key];
+    }
+  };
+
+
+  UpdateNodeCommand.prototype.revert = function revert() {
+    var node = this.grid.nodes[this.index];
+    for (var key in this.previousAttributes) {
+      node[key] = this.previousAttributes[key];
+    }
+  };
+
+
+  function AppendLinkCommand(grid, link) {
+    this.grid = grid;
+    this.link = link;
+  }
+
+
+  AppendLinkCommand.prototype.execute = function execute() {
+    this.grid.links.push(this.link);
+  };
+
+
+  AppendLinkCommand.prototype.revert = function revert() {
+    this.grid.links.pop();
+  };
+
+
+  function CommandTransaction(grid) {
+    this.grid = grid;
+    this.commands = [];
+  }
+
+
+  CommandTransaction.prototype.appendNode = function appendNode(node) {
+    this.commands.push(new AppendNodeCommand(this.grid, node));
+  };
+
+
+  CommandTransaction.prototype.removeNode = function removeNode(index) {
+    this.commands.push(new RemoveNodeCommand(this.grid, index));
+  };
+
+
+  CommandTransaction.prototype.updateNode = function updateNode(index, attributes) {
+    this.commands.push(new UpdateNodeCommand(this.grid, index, attributes));
+  };
+
+
+  CommandTransaction.prototype.appendLink = function appendLink(link) {
+    this.commands.push(new AppendLinkCommand(this.grid, link));
+  };
+
+
+  CommandTransaction.prototype.execute = function execute() {
+    this.commands.forEach(function(command) {
+      command.execute();
+    });
+  };
+
+
+  CommandTransaction.prototype.revert = function revert() {
+    this.commands.reverse().forEach(function(command) {
+      command.revert();
+    });
+  };
 })();
-
-

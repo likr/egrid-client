@@ -278,6 +278,17 @@ function appendElement(selection) {
 
 
 function draw(data) {
+  d3.selectAll("#contents #elements .element")
+    .data(data.nodes)
+    .exit()
+    .remove()
+    ;
+  d3.selectAll("#contents #links .link")
+    .data(data.links)
+    .exit()
+    .remove()
+    ;
+
   d3.select("#contents #elements")
     .selectAll(".element")
     .data(data.nodes)
@@ -331,6 +342,9 @@ function draw(data) {
     return link.target.rect.top();
   })
   ;
+
+  d3.select("#undoButton").node().disabled = !grid.canUndo();
+  d3.select("#redoButton").node().disabled = !grid.canRedo();
 }
 
 

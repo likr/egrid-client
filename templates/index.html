@@ -47,6 +47,16 @@
           readGrid("data/kaikyo2.json");
         });
 
+        $("#undoButton").click(function() {
+          grid.undo();
+          draw(grid);
+        });
+
+        $("#redoButton").click(function() {
+          grid.redo();
+          draw(grid);
+        });
+
         d3.select("#contents")
           .call(dragContents())
           .on("click", function() {
@@ -96,6 +106,10 @@
       <g id="radderUpButton" class="radderButton invisible"><rect/><text>ラダーアップ</text></g>
       <g id="radderDownButton" class="radderButton invisible"><rect/><text>ラダーダウン</text></g>
     </svg>
+    <div id="controller3" class="controller">
+      <button id="undoButton" disabled>元に戻す</button>
+      <button id="redoButton" disabled>やり直し</button>
+    </div>
     <div id="controller1" class="controller">
       <button id="resetButton">リセット</button>
       <button id="data1Button">オフィス</button>
