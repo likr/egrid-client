@@ -56,14 +56,25 @@ text#measure {
 }
 
 
-.element rect, .link, .dragLine {
+.element rect, .link {
   stroke: purple;
+  stroke-width: 5;
+}
+
+
+.dragLine {
+  stroke: blue;
   stroke-width: 5;
 }
 
 
 .element.connected rect {
   fill: orange;
+  stroke: blue;
+}
+
+.link.connected {
+  stroke: blue;
 }
 
 

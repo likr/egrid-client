@@ -74,149 +74,110 @@ function dragContents() {
 }
 
 
-function radderUp(selection) {
-  var target;
+function raddering(selection, isRadderUp) {
+  var from;
   selection.call(d3.behavior.drag()
-    .on("dragstart", function() {
-      target = d3.select(".selected");
-      target.classed("dragSource", true);
-      var pos = d3.mouse(d3.select("#contents").node());
-      d3.select("#contents")
-        .append("line")
-        .classed("dragLine", true)
-        .attr("x1", pos[0])
-        .attr("y1", pos[1])
-        .attr("x2", pos[0])
-        .attr("y2", pos[1])
-        ;
-      d3.event.sourceEvent.stopPropagation();
-    })
-    .on("drag", function() {
-      var x1 = Number(d3.select(".dragLine").attr("x1"));
-      var y1 = Number(d3.select(".dragLine").attr("y1"));
-      var x2 = d3.event.x;
-      var y2 = d3.event.y;
-      var theta = Math.atan2(y2 - y1, x2 - x1);
-      var r = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1)) - 10;
-      d3.select(".dragLine")
-        .attr("x2", x1 + r * Math.cos(theta))
-        .attr("y2", y1 + r * Math.sin(theta))
-        ;
-      var pos = getPos();
-      var s = d3.select(document.elementFromPoint(pos[0], pos[1]).parentNode);
-      var t = d3.select(".selected");
-      if (s.classed("element") && !s.classed("selected")) {
-        if (grid.hasConnection(t.datum(), s.datum())) {
-            s.classed("undroppable", true);
+      .on("dragstart", function() {
+        from = d3.select(".selected");
+        from.classed("dragSource", true);
+        var pos = d3.mouse(d3.select("#contents").node());
+        d3.select("#contents")
+          .append("line")
+          .classed("dragLine", true)
+          .attr("x1", pos[0])
+          .attr("y1", pos[1])
+          .attr("x2", pos[0])
+          .attr("y2", pos[1])
+          ;
+        d3.event.sourceEvent.stopPropagation();
+      })
+      .on("drag", function() {
+        var x1 = Number(d3.select(".dragLine").attr("x1"));
+        var y1 = Number(d3.select(".dragLine").attr("y1"));
+        var x2 = d3.event.x;
+        var y2 = d3.event.y;
+        var theta = Math.atan2(y2 - y1, x2 - x1);
+        var r = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1)) - 10;
+        d3.select(".dragLine")
+          .attr("x2", x1 + r * Math.cos(theta))
+          .attr("y2", y1 + r * Math.sin(theta))
+          ;
+        var pos = getPos();
+        var to = d3.select(document.elementFromPoint(pos[0], pos[1]).parentNode);
+        if (to.classed("element") && !to.classed("selected")) {
+          if ((isRadderUp && grid.hasConnection(from.datum(), to.datum()))
+            || (!isRadderUp && grid.hasConnection(to.datum(), from.datum()))) {
+            to.classed("undroppable", true);
           } else {
-            s.classed("droppable", true);
+            to.classed("droppable", true);
           }
-      } else {
-        d3.selectAll(".droppable, .undroppable")
-          .classed("droppable", false)
-          .classed("undroppable", false);
-      }
-    })
-    .on("dragend", function() {
-      var pos = getPos();
-      var source = d3.select(document.elementFromPoint(pos[0], pos[1]).parentNode);
-      if (source.datum() && source.datum() != target.datum()) {
-        grid.radderUp(target.datum(), source.datum());
-        draw(grid);
-      } else {
-        var text = prompt("追加する要素の名前を入力してください");
-        if (text) {
-          var bbox = d3.select("#measure").text(text).node().getBBox();
-          grid.appendNode({
-            text: text, 
-            layer: target.datum().layer - 1,
-            width: bbox.width + 40,
-            height: bbox.height + 40
-          });
-          grid.radderUp(target.datum(), grid.nodes[grid.nodes.length - 1]);
-          draw(grid);
+        } else {
+          d3.selectAll(".droppable, .undroppable")
+            .classed("droppable", false)
+            .classed("undroppable", false)
+            ;
         }
-      }
-      unselectElement();
-      target.classed("dragSource", false);
-      source.classed("droppable", false);
-      source.classed("undroppable", false);
-      d3.selectAll(".dragLine").remove();
-    }))
-    ;
+      })
+      .on("dragend", function() {
+        var pos = getPos();
+        var to = d3.select(document.elementFromPoint(pos[0], pos[1]).parentNode);
+        if (to.datum() && from.datum() != to.datum()) {
+          grid.transactionWith(function() {
+            grid.layoutWith(function() {
+              if (isRadderUp) {
+                grid.radderUp(from.datum(), to.datum());
+              } else {
+                grid.radderDown(from.datum(), to.datum());
+              }
+            });
+          });
+          draw(grid);
+        } else {
+          var text = prompt("追加する要素の名前を入力してください");
+          if (text) {
+            var bbox = d3.select("#measure").text(text).node().getBBox();
+            console.log(bbox);
+            grid.transactionWith(function() {
+              grid.layoutWith(function() {
+                if (isRadderUp) {
+                  grid.appendNode({
+                    text: text, 
+                    layer: from.datum().layer - 1,
+                    width: bbox.width + 40,
+                    height: bbox.height + 40
+                  });
+                  grid.radderUp(from.datum(), grid.nodes[grid.nodes.length - 1]);
+                } else {
+                  grid.appendNode({
+                    text: text, 
+                    layer: from.datum().layer + 1,
+                    width: bbox.width + 40,
+                    height: bbox.height + 40
+                  });
+                  grid.radderDown(from.datum(), grid.nodes[grid.nodes.length - 1]);
+                }
+              });
+            });
+            draw(grid);
+          }
+        }
+        unselectElement();
+        to.classed("droppable", false);
+        to.classed("undroppable", false);
+        from.classed("dragSource", false);
+        d3.selectAll(".dragLine").remove();
+      }))
+      ;
+}
+
+
+function radderUp(selection) {
+  raddering(selection, true);
 }
 
 
 function radderDown(selection) {
-  var source;
-  selection.call(d3.behavior.drag()
-    .on("dragstart", function() {
-      source = d3.select(".selected");
-      source.classed("dragSource", true);
-      var pos = d3.mouse(d3.select("#contents").node());
-      d3.select("#contents")
-        .append("line")
-        .classed("dragLine", true)
-        .attr("x1", pos[0])
-        .attr("y1", pos[1])
-        .attr("x2", pos[0])
-        .attr("y2", pos[1])
-        ;
-      d3.event.sourceEvent.stopPropagation();
-    })
-    .on("drag", function() {
-      var x1 = Number(d3.select(".dragLine").attr("x1"));
-      var y1 = Number(d3.select(".dragLine").attr("y1"));
-      var x2 = d3.event.x;
-      var y2 = d3.event.y;
-      var theta = Math.atan2(y2 - y1, x2 - x1);
-      var r = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1)) - 10;
-      d3.select(".dragLine")
-        .attr("x2", x1 + r * Math.cos(theta))
-        .attr("y2", y1 + r * Math.sin(theta))
-        ;
-      var pos = getPos();
-      var s = d3.select(document.elementFromPoint(pos[0], pos[1]).parentNode);
-      var t = d3.select(".selected");
-      if (s.classed("element") && !s.classed("selected")) {
-        if (grid.hasConnection(s.datum(), t.datum())) {
-            s.classed("undroppable", true);
-          } else {
-            s.classed("droppable", true);
-          }
-      } else {
-        d3.selectAll(".droppable, .undroppable")
-          .classed("droppable", false)
-          .classed("undroppable", false);
-      }
-    })
-    .on("dragend", function() {
-      var pos = getPos();
-      var target = d3.select(document.elementFromPoint(pos[0], pos[1]).parentNode);
-      if (target.datum() && source.datum() != target.datum()) {
-        grid.radderDown(source.datum(), target.datum());
-        draw(grid);
-      } else {
-        var text = prompt("追加する要素の名前を入力してください");
-        if (text) {
-          var bbox = d3.select("#measure").text(text).node().getBBox();
-          grid.appendNode({
-            text: text, 
-            layer: source.datum().layer + 1,
-            width: bbox.width + 40,
-            height: bbox.height + 40
-          });
-          grid.radderDown(source.datum(), grid.nodes[grid.nodes.length - 1]);
-          draw(grid);
-        }
-      }
-      unselectElement();
-      target.classed("droppable", false);
-      target.classed("undroppable", false);
-      source.classed("dragSource", false);
-      d3.selectAll(".dragLine").remove();
-    }))
-    ;
+  raddering(selection, false);
 }
 
 
@@ -366,6 +327,13 @@ function selectElement(node) {
   d3.selectAll(".element")
     .filter(function(d2) {
       return grid.hasConnection(d, d2) || grid.hasConnection(d2, d);
+    })
+    .classed("connected", true)
+    ;
+  d3.selectAll(".link")
+    .filter(function(link) {
+      return (grid.hasConnection(d, link.source) && grid.hasConnection(d, link.target))
+        || (grid.hasConnection(link.source, d) && grid.hasConnection(link.target, d));
     })
     .classed("connected", true)
     ;

@@ -141,6 +141,7 @@ var egm = egm || {};
     }
 
     return function layout(grid) {
+      grid.connections = connections(grid.nodes);
       grid.nodes.forEach(function(node) {
         node.prect =
           new Rect(node.rect.x, node.rect.y, node.rect.width, node.rect.height);
@@ -183,8 +184,6 @@ var egm = egm || {};
       });
     });
 
-    grid.connections = connections(grid.nodes);
-
     layout(grid);
 
     grid.undoStack = [];
@@ -199,17 +198,8 @@ var egm = egm || {};
   };
 
 
-  egm.Grid.prototype.appendNode = function appendNode(obj) {
-    var node = new Node(obj);
-    node.index = this.nodes.length;
-    this.nodes.push(node);
-    grid.connections = connections(grid.nodes);
-  };
-
-
-  egm.Grid.prototype.radderUp = function radderDown(from, to) {
+  egm.Grid.prototype.radderUp = function radderUp(from, to) {
     var grid = this;
-    var transaction = new CommandTransaction(grid);
     if (typeof from == "number") {
       from = grid.nodes[from];
     }
@@ -219,23 +209,19 @@ var egm = egm || {};
     if (grid.hasConnection(from.index, to.index)) {
       throw new Error("the new link makes cyclic connection");
     }
-    transaction.updateNode(
+    grid.updateNode(
         to.index,
         {children: (function() {var a = to.children.slice(); a.push(from.index); return a})()}
     );
-    transaction.appendLink(new Link(to, from));
+    grid.appendLink(new Link(to, from));
     if (to.layer >= from.layer) {
-      var delta = from.layer - to.layer + 1;
+      var delta = to.layer - from.layer + 1;
       grid.nodes.forEach(function(node) {
         if (grid.hasConnection(node.index, to.index)) {
-          transaction.updateNode(node.index, {layer: node.layer - delta});
+          grid.updateNode(node.index, {layer: node.layer - delta});
         }
       });
     }
-    grid.connections = connections(grid.nodes);
-    transaction.execute();
-    this.undoStack.push(transaction);
-    layout(grid);
   };
 
 
@@ -250,18 +236,19 @@ var egm = egm || {};
     if (grid.hasConnection(to.index, from.index)) {
       throw new Error("the new link makes cyclic connection");
     }
-    from.children.push(to.index);
-    grid.links.push(new Link(from, to));
+    grid.updateNode(
+        from.index,
+        {children: (function() {var a = from.children.slice(); a.push(to.index); return a})()}
+    );
+    grid.appendLink(new Link(from, to));
     if (to.layer <= from.layer) {
       var delta = from.layer - to.layer + 1;
       grid.nodes.forEach(function(node) {
         if (grid.hasConnection(to.index, node.index)) {
-          node.layer += delta;
+          grid.updateNode(node.index, {layer: node.layer + delta});
         }
       });
     }
-    grid.connections = connections(grid.nodes);
-    layout(grid);
   };
 
 
@@ -292,6 +279,91 @@ var egm = egm || {};
   };
 
 
+  egm.Grid.prototype.transactionWith = function transactionWith(f) {
+    this.transaction = new CommandTransaction(this);
+    f.call(this);
+    this.undoStack.push(this.transaction);
+    this.redoStack = [];
+    this.transaction = undefined;
+  };
+
+
+  egm.Grid.prototype.layoutWith = function layoutWith(f) {
+    f.call();
+    layout(grid);
+  };
+
+
+  egm.Grid.prototype.execute = function execute(command) {
+    if (this.transaction) {
+      this.transaction.commands.push(command);
+    }
+    command.execute();
+  };
+
+
+  egm.Grid.prototype.appendNode = function appendNode(node) {
+    var grid = this;
+    var node = new Node(node);
+    node.index = grid.nodes.length;
+    var command = {
+      execute: function() {
+        grid.nodes.push(node);
+        grid.connections.push(grid.connections.map(function() {return false}));
+        grid.connections.forEach(function(row) {
+          row.push(false);
+        });
+      },
+      revert: function() {
+        grid.nodes.pop();
+        grid.connections.pop();
+        grid.connections.forEach(function(row) {
+          row.pop();
+        });
+      }
+    };
+    this.execute(command);
+  };
+
+
+  egm.Grid.prototype.appendLink = function appendLink(link) {
+    var grid = this;
+    var command = {
+      execute: function() {
+        grid.links.push(link);
+        grid.connections = connections(grid.nodes);
+      },
+      revert: function() {
+        grid.links.pop();
+        grid.connections = connections(grid.nodes);
+      }
+    };
+    this.execute(command);
+  };
+
+
+  egm.Grid.prototype.updateNode = function updateNode(index, attributes) {
+    var grid = this;
+    var previousAttributes = {};
+    var command = {
+      execute: function() {
+        var node = grid.nodes[index];
+        for (var key in attributes) {
+          previousAttributes[key] = node[key];
+          node[key] = attributes[key];
+        }
+      },
+      revert: function() {
+        var node = grid.nodes[index];
+        for (var key in previousAttributes) {
+          node[key] = previousAttributes[key];
+        }
+      }
+    };
+    this.execute(command);
+  };
+
+
   function Node(obj) {
     this.text = obj.text;
     this.layer = obj.layer || 0;
@@ -307,116 +379,10 @@ var egm = egm || {};
   }
 
 
-  function AppendNodeCommand(grid, node) {
-    this.grid = grid;
-    this.node = node;
-    this.executed = false;
-  }
-
-
-  AppendNodeCommand.prototype.execute = function execute() {
-    if (this.executed) {
-      throw new Error("this command already executed.");
-    }
-    this.grid.nodes.push(node);
-    this.executed = true;
-  };
-
-
-  AppendNodeCommand.prototype.revert = function revert() {
-    if (!this.executed) {
-      throw new Error("this command have not been executed yet.");
-    }
-    this.grid.nodes.pop();
-    this.executed = false;
-  };
-
-
-  function RemoveNodeCommand(grid, index) {
-    this.grid = grid;
-    this.index = index;
-    this.executed = false;
-  }
-
-
-  RemoveNodeCommand.prototype.execute = function execute() {
-    this.removedNode = this.grid.nodes[this.index];
-    this.grid.nodes[this.index] = undefined;
-  };
-
-
-  RemoveNodeCommand.prototype.revert = function revert() {
-    this.grid.nodes[this.index] = this.removedNode;
-    this.removedNode = undefined;
-  };
-
-
-  function UpdateNodeCommand(grid, index, attributes) {
-    this.grid = grid;
-    this.index = index;
-    this.attributes = attributes;
-    this.executed = false;
-  }
-
-
-  UpdateNodeCommand.prototype.execute = function execute() {
-    var node = this.grid.nodes[this.index];
-    this.previousAttributes = {};
-    for (var key in this.attributes) {
-      this.previousAttributes[key] = node[key];
-      node[key] = this.attributes[key];
-    }
-  };
-
-
-  UpdateNodeCommand.prototype.revert = function revert() {
-    var node = this.grid.nodes[this.index];
-    for (var key in this.previousAttributes) {
-      node[key] = this.previousAttributes[key];
-    }
-  };
-
-
-  function AppendLinkCommand(grid, link) {
-    this.grid = grid;
-    this.link = link;
-  }
-
-
-  AppendLinkCommand.prototype.execute = function execute() {
-    this.grid.links.push(this.link);
-  };
-
-
-  AppendLinkCommand.prototype.revert = function revert() {
-    this.grid.links.pop();
-  };
-
-
   function CommandTransaction(grid) {
     this.grid = grid;
     this.commands = [];
   }
-
-
-  CommandTransaction.prototype.appendNode = function appendNode(node) {
-    this.commands.push(new AppendNodeCommand(this.grid, node));
-  };
-
-
-  CommandTransaction.prototype.removeNode = function removeNode(index) {
-    this.commands.push(new RemoveNodeCommand(this.grid, index));
-  };
-
-
-  CommandTransaction.prototype.updateNode = function updateNode(index, attributes) {
-    this.commands.push(new UpdateNodeCommand(this.grid, index, attributes));
-  };
-
-
-  CommandTransaction.prototype.appendLink = function appendLink(link) {
-    this.commands.push(new AppendLinkCommand(this.grid, link));
-  };
 
 
   CommandTransaction.prototype.execute = function execute() {
