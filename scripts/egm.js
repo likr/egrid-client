@@ -136,7 +136,6 @@ function raddering(selection, isRadderUp) {
           var text = prompt("追加する要素の名前を入力してください");
           if (text) {
             var bbox = d3.select("#measure").text(text).node().getBBox();
-            console.log(bbox);
             grid.transactionWith(function() {
               grid.layoutWith(function() {
                 if (isRadderUp) {
@@ -144,7 +143,9 @@ function raddering(selection, isRadderUp) {
                     text: text, 
                     layer: from.datum().layer - 1,
                     width: bbox.width + 40,
-                    height: bbox.height + 40
+                    height: bbox.height + 40,
+                    x: d3.mouse(d3.select("#contents").node())[0],
+                    y: d3.mouse(d3.select("#contents").node())[1]
                   });
                   grid.radderUp(from.datum(), grid.nodes[grid.nodes.length - 1]);
                 } else {
@@ -152,7 +153,9 @@ function raddering(selection, isRadderUp) {
                     text: text, 
                     layer: from.datum().layer + 1,
                     width: bbox.width + 40,
-                    height: bbox.height + 40
+                    height: bbox.height + 40,
+                    x: d3.mouse(d3.select("#contents").node())[0],
+                    y: d3.mouse(d3.select("#contents").node())[1]
                   });
                   grid.radderDown(from.datum(), grid.nodes[grid.nodes.length - 1]);
                 }
@@ -255,6 +258,11 @@ function draw(data) {
     .data(data.nodes)
     .enter()
     .append("g")
+    .attr("transform", function(node) {
+      var x = node.prect ? node.prect.x : 0;
+      var y = node.prect ? node.prect.y : 0;
+      return (new Translate(x, y)).toString();
+    })
     .call(appendElement)
     ;
 

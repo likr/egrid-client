@@ -40,9 +40,13 @@ var egm = egm || {};
       });
       var layers = [];
       for (var k = layerRange[0]; k <= layerRange[1]; ++k) {
-        layers.push({
+        var layer = {
           nodes: grid.nodes.filter(function(node) {return node.layer == k})
+        };
+        layer.nodes.sort(function(node1, node2) {
+          return (node1.rect.x || 0) - (node2.rect.x || 0);
         });
+        layers.push(layer);
       }
       var totalHeight = d3.sum(layers, function(layer) {
         return d3.max(layer.nodes, function(node) {
@@ -100,12 +104,12 @@ var egm = egm || {};
         this.y = y || 0;
       }
 
-      var dt = 0.1;
+      var dt = 1;
       var k = 0.1;
       var l = 150;
-      var g = 1000000;
-      var myu = 0.3;
-      var stop = 1000;
+      var g = 100000;
+      var myu = 0.5;
+      var stop = 500;
       var v = grid.nodes.map(function() {return new Vector(0, 0)});
 
       for (var loop = 0; loop < stop; ++loop) {
@@ -142,9 +146,10 @@ var egm = egm || {};
 
     return function layout(grid) {
       grid.connections = connections(grid.nodes);
-      grid.nodes.forEach(function(node) {
-        node.prect =
-          new Rect(node.rect.x, node.rect.y, node.rect.width, node.rect.height);
+      grid.nodes.forEach(function(node, i) {
+        grid.updateNode(
+          i,
+          {prect: new Rect(node.rect.x, node.rect.y, node.rect.width, node.rect.height)});
       });
       if (grid.columnMajorLayout) {
         columnMajorLayout(grid);
@@ -155,14 +160,6 @@ var egm = egm || {};
       }
     };
   })();
-
-
-  function execute(grid, commands) {
-  }
-
-
-  function revert(grid, commands) {
-  }
 
 
   egm.Grid = function Grid(data) {
@@ -396,5 +393,6 @@ var egm = egm || {};
     this.commands.reverse().forEach(function(command) {
       command.revert();
     });
+    this.commands.reverse();
   };
 })();
