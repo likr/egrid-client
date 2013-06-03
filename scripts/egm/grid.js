@@ -34,7 +34,7 @@ var egm = egm || {};
   var layout = (function(grid) {
     function rowMajorLayout(grid) {
       var hMargin = 50;
-      var vMargin = 150;
+      var vMargin = 250;
       var layerRange = d3.extent(grid.nodes, function(node) {
         return node.layer;
       });

@@ -46,6 +46,10 @@
           d3.selectAll(".element, .link").remove();
           readGrid("data/kaikyo2.json");
         });
+        $("#data3Button").click(function() {
+          d3.selectAll(".element, .link").remove();
+          readGrid("data/large.json");
+        });
 
         $("#undoButton").click(function() {
           grid.undo();
@@ -113,6 +117,7 @@
     <div id="controller1" class="controller">
       <button id="resetButton">リセット</button>
       <button id="data1Button">オフィス</button>
+      <button id="data3Button">オフィス大</button>
       <button id="data2Button">海況</button>
     </div>
     <div id="controller2" class="controller">
