@@ -11,7 +11,7 @@ function readGrid(uri) {
       node.width = bbox.width + 40;
       node.height = bbox.height + 40;
     });
-    grid = new egm.Grid(data);
+    grid = new egm.Grid(data, true);
     draw(grid);
   });
 }
@@ -273,20 +273,40 @@ function draw(data) {
     .append("line")
     .classed("link", true)
     .attr("x1", function(link) {
-      return link.source.prect ? link.source.prect.center().x : 0;
+      if (grid.columnMajorLayout) {
+        return link.source.prect
+          ? link.source.prect.right()
+          : link.source.rect.width / 2;
+      } else {
+        return link.source.prect ? link.source.prect.center().x : 0;
+      }
     })
     .attr("y1", function(link) {
-      return link.source.prect
-        ? link.source.prect.bottom()
-        : link.source.rect.height / 2;
+      if (grid.columnMajorLayout) {
+        return link.source.prect ? link.source.prect.center().y : 0;
+      } else {
+        return link.source.prect
+          ? link.source.prect.bottom()
+          : link.source.rect.height / 2;
+      }
     })
     .attr("x2", function(link) {
-      return link.target.prect ? link.target.prect.center().x : 0;
+      if (grid.columnMajorLayout) {
+        return link.target.prect
+          ? link.target.prect.left()
+          : - link.target.rect.width / 2;
+      } else {
+        return link.target.prect ? link.target.prect.center().x : 0;
+      }
     })
     .attr("y2", function(link) {
-      return link.target.prect
-        ? link.target.prect.top()
-        : - link.target.rect.height / 2;
+      if (grid.columnMajorLayout) {
+        return link.target.prect ? link.target.prect.center().y : 0;
+      } else {
+        return link.target.prect
+          ? link.target.prect.top()
+          : - link.target.rect.height / 2;
+      }
     })
     ;
 
@@ -299,18 +319,34 @@ function draw(data) {
 
   transition.selectAll(".link")
     .attr("x1", function(link) {
-      return link.source.rect.center().x;
+      if (grid.columnMajorLayout) {
+        return link.source.rect.right();
+      } else {
+        return link.source.rect.center().x;
+      }
     })
-  .attr("y1", function(link) {
-    return link.source.rect.bottom();
-  })
-  .attr("x2", function(link) {
-    return link.target.rect.center().x;
-  })
-  .attr("y2", function(link) {
-    return link.target.rect.top();
-  })
-  ;
+    .attr("y1", function(link) {
+      if (grid.columnMajorLayout) {
+        return link.source.rect.center().y;
+      } else {
+        return link.source.rect.bottom();
+      }
+    })
+    .attr("x2", function(link) {
+      if (grid.columnMajorLayout) {
+        return link.target.rect.left();
+      } else {
+        return link.target.rect.center().x;
+      }
+    })
+    .attr("y2", function(link) {
+      if (grid.columnMajorLayout) {
+        return link.target.rect.center().y;
+      } else {
+        return link.target.rect.top();
+      }
+    })
+    ;
 
   d3.select("#undoButton").node().disabled = !grid.canUndo();
   d3.select("#redoButton").node().disabled = !grid.canRedo();
@@ -354,4 +390,11 @@ function unselectElement() {
     .classed("invisible", true)
     ;
   d3.selectAll(".connected").classed("connected", false);
+}
+
+
+function rotateLayout() {
+  grid.columnMajorLayout = !grid.columnMajorLayout;
+  grid.layout();
+  draw(grid);
 }

@@ -32,9 +32,14 @@ var egm = egm || {};
 
 
   var layout = (function(grid) {
-    function rowMajorLayout(grid) {
-      var hMargin = 50;
-      var vMargin = 250;
+    function baseLayout(grid, rowMajor) {
+      if (rowMajor) {
+        var hMargin = 50;
+        var vMargin = 250;
+      } else {
+        var hMargin = 250;
+        var vMargin = 50
+      }
       var layerRange = d3.extent(grid.nodes, function(node) {
         return node.layer;
       });
@@ -48,57 +53,108 @@ var egm = egm || {};
         });
         layers.push(layer);
       }
-      var totalHeight = d3.sum(layers, function(layer) {
-        return d3.max(layer.nodes, function(node) {
-          return node.rect.height;
-        });
-      }) + vMargin * (layers.length - 1);
+      if (rowMajor) {
+        var totalSize = d3.sum(layers, function(layer) {
+          return d3.max(layer.nodes, function(node) {
+            return node.rect.height;
+          });
+        }) + vMargin * (layers.length - 1);
+      } else {
+        var totalSize = d3.sum(layers, function(layer) {
+          return d3.max(layer.nodes, function(node) {
+            return node.rect.width;
+          });
+        }) + hMargin * (layers.length - 1);
+      }
 
-      var vOffset = - totalHeight / 2;
+      var layerOffset = - totalSize / 2;
       layers.forEach(function(layer) {
-        var totalWidth = d3.sum(layer.nodes, function(node) {
-          return node.rect.width;
-        }) + hMargin * (layer.nodes.length - 1);
-        var hOffset = - totalWidth / 2;
+        if (rowMajor) {
+          var layerSize = d3.sum(layer.nodes, function(node) {
+            return node.rect.width;
+          }) + hMargin * (layer.nodes.length - 1);
+        } else {
+          var layerSize = d3.sum(layer.nodes, function(node) {
+            return node.rect.height;
+          }) + vMargin * (layer.nodes.length - 1);
+        }
+        var offset = - layerSize / 2;
         layer.nodes.forEach(function(node) {
-          node.rect.x = hOffset;
-          node.rect.y = vOffset;
-          hOffset += node.rect.width + hMargin;
+          if (rowMajor) {
+            node.rect.x = offset;
+            node.rect.y = layerOffset;
+            offset += node.rect.width + hMargin;
+          } else {
+            node.rect.x = layerOffset;
+            node.rect.y = offset;
+            offset += node.rect.height + vMargin;
+          }
         });
-        vOffset += d3.max(layer.nodes, function(node) {
-          return node.rect.height;
-        }) + vMargin;
+        if (rowMajor) {
+          layerOffset += d3.max(layer.nodes, function(node) {
+            return node.rect.height;
+          }) + vMargin;
+        } else {
+          layerOffset += d3.max(layer.nodes, function(node) {
+            return node.rect.width;
+          }) + hMargin;
+        }
       });
     }
 
 
-    function adjustLayout(nodes, target) {
-      var cx = d3.extent(
-          nodes.filter(function(node) {
-            return target.layer == node.layer && target.index != node.index;
-          }),
-          function(node) {
-            var x1 = target.rect.center().x;
-            var x2 = node.rect.center().x;
-            var realDistance = Math.abs(x2 - x1);
-            var expectedDistance = (target.rect.width + node.rect.width) / 2;
-            if (realDistance < expectedDistance) {
-              if (x2 > x1) {
-                return realDistance - expectedDistance;
+    function adjustLayout(nodes, target, rowMajor) {
+      if (rowMajor) {
+        var cx = d3.extent(
+            nodes.filter(function(node) {
+              return target.layer == node.layer && target.index != node.index;
+            }),
+            function(node) {
+              var x1 = target.rect.center().x;
+              var x2 = node.rect.center().x;
+              var realDistance = Math.abs(x2 - x1);
+              var expectedDistance = (target.rect.width + node.rect.width) / 2;
+              if (realDistance < expectedDistance) {
+                if (x2 > x1) {
+                  return realDistance - expectedDistance;
+                } else {
+                  return expectedDistance - realDistance;
+                }
               } else {
-                return expectedDistance - realDistance;
+                return 0;
               }
-            } else {
-              return 0;
-            }
-          });
-      if (cx[0] || cx[1]) {
-        target.rect.x += (Math.abs(cx[0]) > Math.abs(cx[1]) ? cx[0] : cx[1]);
+            });
+        if (cx[0] || cx[1]) {
+          target.rect.x += (Math.abs(cx[0]) > Math.abs(cx[1]) ? cx[0] : cx[1]);
+        }
+      } else {
+        var cy = d3.extent(
+            nodes.filter(function(node) {
+              return target.layer == node.layer && target.index != node.index;
+            }),
+            function(node) {
+              var y1 = target.rect.center().y;
+              var y2 = node.rect.center().y;
+              var realDistance = Math.abs(y2 - y1);
+              var expectedDistance = (target.rect.height + node.rect.height) / 2;
+              if (realDistance < expectedDistance) {
+                if (y2 > y1) {
+                  return realDistance - expectedDistance;
+                } else {
+                  return expectedDistance - realDistance;
+                }
+              } else {
+                return 0;
+              }
+            });
+        if (cy[0] || cy[1]) {
+          target.rect.y += (Math.abs(cy[0]) > Math.abs(cy[1]) ? cy[0] : cy[1]);
+        }
       }
     }
 
 
-    function forceLayout(grid) {
+    function forceLayout(grid, rowMajor) {
       function Vector(x, y) {
         this.x = x || 0;
         this.y = y || 0;
@@ -124,22 +180,25 @@ var egm = egm || {};
               if (d1.layer == d2.layer) {
                 var d2 = Math.max(d * d, 100);
                 F.x -= g / d2 * Math.cos(theta);
-                //F.y -= g / d2 * Math.sin(theta);
+                F.y -= g / d2 * Math.sin(theta);
               }
               if (grid.hasConnection(d1, d2)) {
                 F.x += k * (d - l) * Math.cos(theta);
-                //F.y += k * (d - l) * Math.sin(theta);
+                F.y += k * (d - l) * Math.sin(theta);
               }
             }
           });
           F.x -= myu * v[i].x;
-          //F.y -= myu * v[i].y;
+          F.y -= myu * v[i].y;
           v[i].x += F.x * dt;
-          //v[i].y += F.y * dt;
-          d1.rect.x += v[i].x * dt;
-          //d1.rect.y += v[i].y * dt;
+          v[i].y += F.y * dt;
+          if (rowMajor) {
+            d1.rect.x += v[i].x * dt;
+          } else {
+            d1.rect.y += v[i].y * dt;
+          }
 
-          adjustLayout(grid.nodes, d1);
+          adjustLayout(grid.nodes, d1, rowMajor);
         });
       }
     }
@@ -152,19 +211,20 @@ var egm = egm || {};
           {prect: new Rect(node.rect.x, node.rect.y, node.rect.width, node.rect.height)});
       });
       if (grid.columnMajorLayout) {
-        columnMajorLayout(grid);
-        forceLayout(grid);
+        baseLayout(grid, false);
+        forceLayout(grid, false);
       } else {
-        rowMajorLayout(grid);
-        forceLayout(grid);
+        baseLayout(grid, true);
+        forceLayout(grid, true);
       }
     };
   })();
 
 
-  egm.Grid = function Grid(data) {
+  egm.Grid = function Grid(data, columnMajorLayout) {
     var grid = this;
 
+    grid.columnMajorLayout = !!columnMajorLayout
     grid.baseLayer = data.baseLayer;
 
     grid.nodes = data.nodes.map(function(node) {
@@ -185,6 +245,11 @@ var egm = egm || {};
 
     grid.undoStack = [];
     grid.redoStack = [];
+  };
+
+
+  egm.Grid.prototype.layout = function() {
+    layout(this);
   };
 
 
