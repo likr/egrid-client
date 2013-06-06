@@ -205,18 +205,19 @@ var egm = egm || {};
 
     return function layout(grid) {
       grid.connections = connections(grid.nodes);
-      grid.nodes.forEach(function(node, i) {
-        grid.updateNode(
-          i,
-          {prect: new Rect(node.rect.x, node.rect.y, node.rect.width, node.rect.height)});
-      });
-      if (grid.columnMajorLayout) {
-        baseLayout(grid, false);
-        forceLayout(grid, false);
-      } else {
-        baseLayout(grid, true);
-        forceLayout(grid, true);
-      }
+      grid.circleLayout();
+      //grid.nodes.forEach(function(node, i) {
+      //  grid.updateNode(
+      //    i,
+      //    {prect: new Rect(node.rect.x, node.rect.y, node.rect.width, node.rect.height)});
+      //});
+      //if (grid.columnMajorLayout) {
+      //  baseLayout(grid, false);
+      //  forceLayout(grid, false);
+      //} else {
+      //  baseLayout(grid, true);
+      //  forceLayout(grid, true);
+      //}
     };
   })();
 
@@ -250,6 +251,90 @@ var egm = egm || {};
 
   egm.Grid.prototype.layout = function() {
     layout(this);
+  };
+
+
+  egm.Grid.prototype.circleLayout = function() {
+    grid = this;
+
+    var layers = [];
+    var layerRange = d3.extent(grid.nodes, function(node) {
+      return node.layer;
+    });
+    for (var k = layerRange[0]; k <= layerRange[1]; ++k) {
+      var layer = {
+        nodes: grid.nodes.filter(function(node) {return node.layer == k})
+      };
+      layer.nodes.sort(function(node1, node2) {
+        return (node1.rect.x || 0) - (node2.rect.x || 0);
+      });
+      layers.push(layer);
+    }
+
+    d3.selectAll(".guideCircle").remove();
+    var layerOffset = 0;
+    layers.forEach(function(layer) {
+      var sumHeight = d3.sum(layer.nodes, function(node) {return node.rect.height});
+      var radius = Math.max(layerOffset, sumHeight / 2 / Math.PI);
+      d3.select("#contents").append("circle").attr("r", radius).style("fill", "none").style("stroke", "red").classed("guideCircle", true);
+      var deltaTheta = 2 * Math.PI / layer.nodes.length;
+      var theta = 0;
+      layer.nodes.forEach(function(node) {
+        node.rect.theta = theta;
+        node.rect.x = Math.cos(theta) * radius;
+        node.rect.y = Math.sin(theta) * radius;
+        theta -= deltaTheta;
+      });
+      layerOffset = radius + d3.max(layer.nodes, function(node) {return node.rect.width}) + 100;
+    });
+
+
+    function Vector(x, y) {
+      this.x = x || 0;
+      this.y = y || 0;
+    }
+
+    var dt = 1;
+    var k = 1;
+    var l = 50;
+    var g = 1000;
+    var myu = 0.5;
+    var stop = 500;
+    var v = grid.nodes.map(function() {return new Vector(0, 0)});
+
+    for (var loop = 0; loop < stop; ++loop) {
+      grid.nodes.forEach(function(d1, i) {
+        var F = new Vector();
+        var p1 = d1.rect.center();
+        grid.nodes.forEach(function(d2, j) {
+          if (i != j) {
+            var p2 = d2.rect.center();
+            var d = p1.distanceTo(p2);
+            var theta = p1.angleTo(p2);
+            //if (d1.layer == d2.layer) {
+            //  var d2 = Math.max(d * d, 100);
+            //  F.x -= g / d2 * Math.cos(theta);
+            //  F.y -= g / d2 * Math.sin(theta);
+            //}
+            if (grid.hasConnection(d1, d2)) {
+              F.x += k * (d - l) * Math.cos(theta);
+              F.y += k * (d - l) * Math.sin(theta);
+            }
+          }
+        });
+        F.x -= myu * v[i].x;
+        F.y -= myu * v[i].y;
+        v[i].x += F.x * dt;
+        v[i].y += F.y * dt;
+
+        var r = Math.sqrt(d1.rect.x * d1.rect.x + d1.rect.y * d1.rect.y);
+        d1.rect.theta += (F.x * Math.sin(d1.rect.theta) + F.y * Math.cos(d1.rect.theta)) * dt / 2 / Math.PI / r;
+        d1.rect.x = r * Math.cos(d1.rect.theta);
+        d1.rect.y = r * Math.sin(d1.rect.theta);
+
+        //adjustLayout(grid.nodes, d1, rowMajor);
+      });
+    }
   };
 
 

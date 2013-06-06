@@ -275,7 +275,7 @@ function draw(data) {
     .attr("x1", function(link) {
       if (grid.columnMajorLayout) {
         return link.source.prect
-          ? link.source.prect.right()
+          ? link.source.prect.right().x
           : link.source.rect.width / 2;
       } else {
         return link.source.prect ? link.source.prect.center().x : 0;
@@ -293,7 +293,7 @@ function draw(data) {
     .attr("x2", function(link) {
       if (grid.columnMajorLayout) {
         return link.target.prect
-          ? link.target.prect.left()
+          ? link.target.prect.left().x
           : - link.target.rect.width / 2;
       } else {
         return link.target.prect ? link.target.prect.center().x : 0;
@@ -313,35 +313,36 @@ function draw(data) {
   var transition = d3.select("#contents").transition();
   transition.selectAll(".element")
     .attr("transform", function(node) {
-      return (new Translate(node.rect.x, node.rect.y)).toString();
+      return (new Translate(node.rect.x, node.rect.y)).toString()
+        + " " + (new Rotate(node.rect.theta / Math.PI * 180)).toString();
     })
-  ;
+    ;
 
   transition.selectAll(".link")
     .attr("x1", function(link) {
       if (grid.columnMajorLayout) {
-        return link.source.rect.right();
+        return link.source.rect.right().x;
       } else {
-        return link.source.rect.center().x;
+        return link.source.rect.bottom().x;
       }
     })
     .attr("y1", function(link) {
       if (grid.columnMajorLayout) {
-        return link.source.rect.center().y;
+        return link.source.rect.right().y;
       } else {
         return link.source.rect.bottom();
       }
     })
     .attr("x2", function(link) {
       if (grid.columnMajorLayout) {
-        return link.target.rect.left();
+        return link.target.rect.left().x;
       } else {
-        return link.target.rect.center().x;
+        return link.target.rect.top().x;
       }
     })
     .attr("y2", function(link) {
       if (grid.columnMajorLayout) {
-        return link.target.rect.center().y;
+        return link.target.rect.left().y;
       } else {
         return link.target.rect.top();
       }
