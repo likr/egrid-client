@@ -15,15 +15,6 @@
       var grid;
 
       $(function() {
-        resetViewBox();
-
-        $(window).resize(resizeViewBox);
-
-        $("#resetPosButton").click(resetViewBox);
-        $("#zoomInButton").click(zoomIn);
-        $("#zoomOutButton").click(zoomOut);
-        $("#resetZoomButton").click(resetZoom);
-
         $("#addItemButton").click(function() {
           var name = prompt("追加する要素の名前を入力してください");
           if (name) {
@@ -65,11 +56,18 @@
           rotateLayout();
         });
 
-        d3.select("#contents")
-          .call(dragContents())
+        d3.select("svg")
           .on("click", function() {
             unselectElement();
           })
+          .call(d3.behavior.zoom()
+            .scale(1)
+            .on("zoom", function () {
+              var t = d3.event.translate;
+              var s = d3.event.scale;
+              d3.select("#contents").attr("transform", "translate(" + t + ") scale(" + s + ")");
+            })
+          )
           ;
 
 
@@ -105,14 +103,16 @@
     </script>
   </head>
   <body>
-    <svg id="contents" width="100%" height="100%">
-      <text id="measure"></text>
-      <g id="elements">
+    <svg width="100%" height="100%">
+      <g id="contents" transform="translate(5, 5)">
+        <text id="measure"></text>
+        <g id="elements">
+        </g>
+        <g id="links">
+        </g>
+        <g id="radderUpButton" class="radderButton invisible"><rect/><text>ラダーアップ</text></g>
+        <g id="radderDownButton" class="radderButton invisible"><rect/><text>ラダーダウン</text></g>
       </g>
-      <g id="links">
-      </g>
-      <g id="radderUpButton" class="radderButton invisible"><rect/><text>ラダーアップ</text></g>
-      <g id="radderDownButton" class="radderButton invisible"><rect/><text>ラダーダウン</text></g>
     </svg>
     <div id="controller3" class="controller">
       <button id="undoButton" disabled>元に戻す</button>
@@ -129,10 +129,6 @@
     </div>
     <div id="controller2" class="controller">
       <button id="addItemButton">アイテムの追加</button>
-      <button id="resetPosButton">中心に戻る</button>
-      <button id="zoomInButton">拡大</button>
-      <button id="resetZoomButton">元の大きさ</button>
-      <button id="zoomOutButton">縮小</button>
     </div>
   </body>
 </html>
