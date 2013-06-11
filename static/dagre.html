@@ -45,21 +45,10 @@ path.edge {
     <script>
 var nodePadding = 10;
 
-//function group(chars) {
-//  var groups = {};
-//  chars.forEach(function(c) {
-//    if (groups[c.group])
-//      groups[c.group].children.push(c);
-//    else
-//      groups[c.group] = { children: [c] };
-//  });
-//  return { children: d3.values(groups) };
-//}
-
 function spline(points) {
   return d3.svg.line()
-    .x(function(d) { return d.x; })
-    .y(function(d) { return d.y; })
+    .x(function(d) { return d.y; })
+    .y(function(d) { return d.x; })
     .interpolate("linear")
     (points);
 }
@@ -137,15 +126,15 @@ d3.json("/data/large.json", function(json) {
   labels.each(function(d) {
     var bbox = this.getBBox();
     d.bbox = bbox;
-    d.width = bbox.width + 2 * nodePadding;
-    d.height = bbox.height + 2 * nodePadding;
+    d.height = bbox.width + 2 * nodePadding;
+    d.width = bbox.height + 2 * nodePadding;
   });
 
   rects
     .attr("x", function(d) { return -(d.bbox.width / 2 + nodePadding); })
     .attr("y", function(d) { return -(d.bbox.height / 2 + nodePadding); })
-    .attr("width", function(d) { return d.width; })
-    .attr("height", function(d) { return d.height; });
+    .attr("width", function(d) { return d.height; })
+    .attr("height", function(d) { return d.width; });
 
   labels
     .attr("x", function(d) { return -d.bbox.width / 2; })
@@ -159,7 +148,7 @@ d3.json("/data/large.json", function(json) {
     .debugLevel(2)
     .run();
 
-  nodes.attr("transform", function(d) { return "translate(" + d.dagre.x + "," + d.dagre.y +")"; });
+  nodes.attr("transform", function(d) { return "translate(" + d.dagre.y + "," + d.dagre.x +")"; });
 
   edges.attr("d", function(e) {
     var points = e.dagre.points;

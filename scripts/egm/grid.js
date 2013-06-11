@@ -205,19 +205,19 @@ var egm = egm || {};
 
     return function layout(grid) {
       grid.connections = connections(grid.nodes);
-      grid.circleLayout();
-      //grid.nodes.forEach(function(node, i) {
-      //  grid.updateNode(
-      //    i,
-      //    {prect: new Rect(node.rect.x, node.rect.y, node.rect.width, node.rect.height)});
-      //});
-      //if (grid.columnMajorLayout) {
-      //  baseLayout(grid, false);
-      //  forceLayout(grid, false);
-      //} else {
-      //  baseLayout(grid, true);
-      //  forceLayout(grid, true);
-      //}
+      //grid.circleLayout();
+      grid.nodes.forEach(function(node, i) {
+        grid.updateNode(
+          i,
+          {prect: new Rect(node.rect.x, node.rect.y, node.rect.width, node.rect.height)});
+      });
+      if (grid.columnMajorLayout) {
+        baseLayout(grid, false);
+        forceLayout(grid, false);
+      } else {
+        baseLayout(grid, true);
+        forceLayout(grid, true);
+      }
     };
   })();
 

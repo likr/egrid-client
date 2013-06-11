@@ -225,7 +225,7 @@ function draw(data) {
         return link.source.prect ? link.source.prect.center().y : 0;
       } else {
         return link.source.prect
-          ? link.source.prect.bottom()
+          ? link.source.prect.bottom().y
           : link.source.rect.height / 2;
       }
     })
@@ -243,7 +243,7 @@ function draw(data) {
         return link.target.prect ? link.target.prect.center().y : 0;
       } else {
         return link.target.prect
-          ? link.target.prect.top()
+          ? link.target.prect.top().y
           : - link.target.rect.height / 2;
       }
     })
@@ -269,7 +269,7 @@ function draw(data) {
       if (grid.columnMajorLayout) {
         return link.source.rect.right().y;
       } else {
-        return link.source.rect.bottom();
+        return link.source.rect.bottom().y;
       }
     })
     .attr("x2", function(link) {
@@ -283,7 +283,7 @@ function draw(data) {
       if (grid.columnMajorLayout) {
         return link.target.rect.left().y;
       } else {
-        return link.target.rect.top();
+        return link.target.rect.top().y;
       }
     })
     ;

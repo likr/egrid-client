@@ -33,7 +33,7 @@ Rect.prototype.top = function top() {
 
 Rect.prototype.bottom = function bottom() {
   return new Point(
-      this.width / 2 * Math.cos(this.theta) - this.height * Math.sin(this.thtea) + this.x,
+      this.width / 2 * Math.cos(this.theta) - this.height * Math.sin(this.theta) + this.x,
       this.width / 2 * Math.sin(this.theta) + this.height * Math.cos(this.theta) + this.y);
 };
 
