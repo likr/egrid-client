@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>ホーム</h1>
+    <p>
+      <a href="{{ create_project_url() }}" class="btn btn-primary btn-large">
+        新規プロジェクト
+      </a>
+    </p>
+    <table class="table">
+      <tr>
+        <th>#</th>
+        <th>名前</th>
+        <th>操作</th>
+      </tr>
+      {% for project in projects %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ project.name }}</td>
+        <td><a href="{{ show_project_url(project.key()) }}" class="btn">詳細</a></td>
+      </tr>
+      {% endfor %}
+    </table>
+{% endblock %}

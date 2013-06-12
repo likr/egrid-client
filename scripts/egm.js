@@ -14,20 +14,108 @@ function readGrid(uri) {
 }
 
 
-function dragContents() {
-  return d3.behavior.drag()
-    .on("drag", function() {
-      var winWidth = $(document).width();
-      var winHeight = $(document).height();
-      var viewBox = viewBoxFromString(d3.select("#contents").attr("viewBox"));
-      var ratio = winWidth < winHeight
-        ? viewBox.width / winWidth
-        : viewBox.height / winHeight;
-      viewBox.minX -= d3.event.dx * ratio;
-      viewBox.minY -= d3.event.dy * ratio;
-      d3.select("#contents").attr("viewBox", viewBox.toString());
+function initEgm(selection) {
+  selection.append("text")
+    .attr("id", "measure")
+    ;
+
+  var contents = selection.append("g")
+    .attr("id", "contents")
+    ;
+  contents.append("g")
+    .attr("id", "links")
+    ;
+  contents.append("g")
+    .attr("id", "elements")
+    ;
+
+  var radderUpButton = contents.append("g")
+    .attr("id", "radderUpButton")
+    .classed("radderButton", true)
+    .classed("invisible", true)
+    .call(radderUp)
+    ;
+  radderUpButton.append("rect");
+  radderUpButton.append("text").text("ラダーアップ");
+
+  var radderDownButton = contents.append("g")
+    .attr("id", "radderDownButton")
+    .classed("radderButton", true)
+    .classed("invisible", true)
+    .call(radderDown)
+    ;
+  radderDownButton.append("rect");
+  radderDownButton.append("text").text("ラダーダウン");
+
+  d3.selectAll(".radderButton")
+    .each(function() {
+      var rx = 10;
+      var bbox = this.lastChild.getBBox();
+      var width = bbox.width + 2 * rx;
+      var height = bbox.height + 2 * rx;
+      d3.select(this.firstChild)
+        .attr("x", - width / 2)
+        .attr("y", - height / 2)
+        .attr("rx", rx)
+        .attr("width", width)
+        .attr("height", height)
+        ;
+      d3.select(this.lastChild)
+        .attr("x", rx - width / 2)
+        .attr("y", height / 2 - rx)
+        ;
     })
   ;
+
+  var zoomBehavior = d3.behavior.zoom()
+    .scale(1)
+    .on("zoom", function () {
+      var translate = new Translate(d3.event.translate[0], d3.event.translate[1]);
+      var scale = new Scale(d3.event.scale);
+      contents.attr("transform", translate + scale);
+    })
+    ;
+  selection
+    .on("click", unselectElement)
+    .on("touchstart", unselectElement)
+    .call(zoomBehavior)
+    ;
+}
+
+
+function initAddItemButton(selection) {
+  selection.on("click", function() {
+    var name = prompt("追加する要素の名前を入力してください");
+    if (name) {
+      grid.transactionWith(function() {
+        var bbox = d3.select("#measure").text(name).node().getBBox();
+        grid.appendNode({
+          text: name,
+          width: bbox.width + 40,
+          height: bbox.height + 40
+        });
+      });
+      draw(grid);
+    }
+  });
+}
+
+
+function initSaveButton(selection) {
+  selection.on("click", function() {
+    var form = d3.select("form");
+    var field = form.select("input");
+    var data = {
+      nodes: grid.nodes.map(function(node) {
+        return {
+          text: node.text,
+          children: node.children
+        }
+      })
+    };
+    field.attr("value", JSON.stringify(data));
+    form.node().submit();
+  });
 }
 
 
@@ -157,30 +245,47 @@ function appendElement(selection) {
       selectElement(this);
       d3.event.stopPropagation();
     })
+    .on("touchstart", function() {
+      selectElement(this);
+      d3.event.stopPropagation();
+    })
     ;
 
   var rect = selection.append("rect")
   selection.append("text")
     .text(function(d) {return d.text})
-    .attr("x", rx)
+    .attr("x", function(d) {
+      return rx - d.rect.width / 2;
+    })
     .attr("y", function(d) {
-      return this.getBBox().height + rx
+      return rx;
     })
     ;
-  rect.attr("x", 0)
-    .attr("y", 0)
+  rect
+    .attr("x", function(d) {
+      return - d.rect.width / 2;
+    })
+    .attr("y", function(d) {
+      return - d.rect.height / 2;
+    })
     .attr("rx", rx)
     .attr("width", function(d) {
-      return this.parentNode.lastChild.getBBox().width + rx * 2
+      return d.rect.width;
     })
     .attr("height", function(d) {
-      return this.parentNode.lastChild.getBBox().height + rx * 2
+      return d.rect.height;
     })
     ;
 }
 
 
 function draw(data) {
+  var spline = d3.svg.line()
+    .x(function(d) {return d.x})
+    .y(function(d) {return d.y})
+    .interpolate("basis")
+    ;
+
   d3.selectAll("#contents #elements .element")
     .data(data.nodes)
     .exit()
@@ -198,9 +303,7 @@ function draw(data) {
     .enter()
     .append("g")
     .attr("transform", function(node) {
-      var x = node.prect ? node.prect.x : 0;
-      var y = node.prect ? node.prect.y : 0;
-      return (new Translate(x, y)).toString();
+      return new Translate(node.rect.center().x || 0, node.rect.center().y || 0);
     })
     .call(appendElement)
     ;
@@ -209,87 +312,76 @@ function draw(data) {
     .selectAll(".link")
     .data(data.links)
     .enter()
-    .append("line")
+    .append("path")
     .classed("link", true)
-    .attr("x1", function(link) {
-      if (grid.columnMajorLayout) {
-        return link.source.prect
-          ? link.source.prect.right().x
-          : link.source.rect.width / 2;
-      } else {
-        return link.source.prect ? link.source.prect.center().x : 0;
+    ;
+
+  data.nodes.forEach(function(node) {
+    node.width = node.rect.height;
+    node.height = node.rect.width;
+  });
+
+  dagre.layout()
+    .nodes(data.nodes)
+    .edges(data.links)
+    .rankSep(200)
+    .edgeSep(20)
+    .run()
+    ;
+
+  d3.selectAll("#contents #links .link")
+    .attr("d", function(link) {
+      if (!link.points) {
+        link.points = [link.source.rect.right(), link.target.rect.left()];
       }
-    })
-    .attr("y1", function(link) {
-      if (grid.columnMajorLayout) {
-        return link.source.prect ? link.source.prect.center().y : 0;
+      if (link.dagre.points.length + 2 == link.points.length) {
+        return this.getAttribute("d");
       } else {
-        return link.source.prect
-          ? link.source.prect.bottom().y
-          : link.source.rect.height / 2;
-      }
-    })
-    .attr("x2", function(link) {
-      if (grid.columnMajorLayout) {
-        return link.target.prect
-          ? link.target.prect.left().x
-          : - link.target.rect.width / 2;
-      } else {
-        return link.target.prect ? link.target.prect.center().x : 0;
-      }
-    })
-    .attr("y2", function(link) {
-      if (grid.columnMajorLayout) {
-        return link.target.prect ? link.target.prect.center().y : 0;
-      } else {
-        return link.target.prect
-          ? link.target.prect.top().y
-          : - link.target.rect.height / 2;
+        if (link.dagre.points.length + 2 > link.points.length) {
+          while (link.dagre.points.length + 2 != link.points.length) {
+            link.points.unshift(link.points[0]);
+          }
+        } else {
+          link.points.splice(1, link.points.length - link.dagre.points.length - 2);
+        }
+        return spline(link.points);
       }
     })
     ;
+  data.nodes.forEach(function(node) {
+    node.rect = new Rect(node.dagre.y, node.dagre.x, node.rect.width, node.rect.height);
+    var tmp = node.dagre.x;
+    node.dagre.y = node.dagre.y;
+    node.dagre.y = tmp;
+  });
+  data.links.forEach(function(link) {
+    link.dagre.points.forEach(function(point) {
+      var tmp = point.x;
+      point.x = point.y;
+      point.y = tmp;
+    });
+    link.points = link.dagre.points.map(function(p) {return p});
+    link.points.unshift(link.source.rect.right());
+    link.points.push(link.target.rect.left());
+  });
+
 
   var transition = d3.select("#contents").transition();
   transition.selectAll(".element")
     .attr("transform", function(node) {
-      return (new Translate(node.rect.x, node.rect.y)).toString()
-        + " " + (new Rotate(node.rect.theta / Math.PI * 180)).toString();
+      return (new Translate(node.rect.center().x, node.rect.center().y))
+        + (new Rotate(node.rect.theta / Math.PI * 180));
     })
     ;
 
   transition.selectAll(".link")
-    .attr("x1", function(link) {
-      if (grid.columnMajorLayout) {
-        return link.source.rect.right().x;
-      } else {
-        return link.source.rect.bottom().x;
-      }
-    })
-    .attr("y1", function(link) {
-      if (grid.columnMajorLayout) {
-        return link.source.rect.right().y;
-      } else {
-        return link.source.rect.bottom().y;
-      }
-    })
-    .attr("x2", function(link) {
-      if (grid.columnMajorLayout) {
-        return link.target.rect.left().x;
-      } else {
-        return link.target.rect.top().x;
-      }
-    })
-    .attr("y2", function(link) {
-      if (grid.columnMajorLayout) {
-        return link.target.rect.left().y;
-      } else {
-        return link.target.rect.top().y;
-      }
+    .attr("d", function(link) {
+      return spline(link.points);
     })
     ;
 
-  d3.select("#undoButton").node().disabled = !grid.canUndo();
-  d3.select("#redoButton").node().disabled = !grid.canRedo();
+  //d3.select("#undoButton").node().disabled = !grid.canUndo();
+  //d3.select("#redoButton").node().disabled = !grid.canRedo();
 }
 
 
@@ -299,10 +391,10 @@ function selectElement(node) {
   d3.selectAll(".connected").classed("connected", false);
   d3.select(node).classed("selected", true);
   d3.select("#radderUpButton")
-    .attr("transform", (new Translate(d.rect.center().x, d.rect.top())).toString())
+    .attr("transform", new Translate(d.rect.left().x - 100, d.rect.left().y))
     ;
   d3.select("#radderDownButton")
-    .attr("transform", (new Translate(d.rect.center().x, d.rect.bottom())).toString())
+    .attr("transform", (new Translate(d.rect.right().x + 100, d.rect.right().y)))
     ;
   d3.selectAll(".radderButton.invisible")
     .classed("invisible", false)

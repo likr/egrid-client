@@ -12,34 +12,32 @@ function Rect(x, y, width, height, theta) {
 
 Rect.prototype.left = function left() {
   return new Point(
-      - this.height / 2 * Math.sin(this.theta) + this.x,
-      this.height / 2 * Math.cos(this.theta) + this.y);
+      - this.width / 2 * Math.cos(this.theta) + this.x,
+      this.width / 2 * Math.sin(this.theta) + this.y);
 };
 
 
 Rect.prototype.right = function right() {
-  return new Point(
-      this.width * Math.cos(this.theta) - this.height / 2 * Math.sin(this.theta) + this.x,
-      this.width * Math.sin(this.theta) + this.height / 2 * Math.cos(this.theta) + this.y);
-};
-
-
-Rect.prototype.top = function top() {
   return new Point(
       this.width / 2 * Math.cos(this.theta) + this.x,
       this.width / 2 * Math.sin(this.theta) + this.y);
 };
 
 
+Rect.prototype.top = function top() {
+  return new Point(
+      this.height / 2 * Math.sin(this.theta) + this.x,
+      this.height / 2 * Math.cos(this.theta) + this.y);
+};
+
+
 Rect.prototype.bottom = function bottom() {
   return new Point(
-      this.width / 2 * Math.cos(this.theta) - this.height * Math.sin(this.theta) + this.x,
-      this.width / 2 * Math.sin(this.theta) + this.height * Math.cos(this.theta) + this.y);
+      this.height / 2 * Math.sin(this.theta) + this.x,
+      - this.height / 2 * Math.cos(this.theta) + this.y);
 };
 
 
 Rect.prototype.center = function center() {
-  return new Point(
-      this.width / 2 * Math.cos(this.theta) - this.height / 2 * Math.sin(this.theta) + this.x,
-      this.width / 2 * Math.sin(this.theta) + this.height / 2 * Math.cos(this.theta) + this.y);
+  return new Point(this.x, this.y);
 };

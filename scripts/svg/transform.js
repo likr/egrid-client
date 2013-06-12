@@ -17,7 +17,11 @@ function Scale(sx, sy) {
   this.sx = sx;
   this.sy = sy;
   this.toString = function() {
-    return "scale(" + this.sx + "," + this.sy + ")";
+    if (this.sy) {
+      return "scale(" + this.sx + "," + this.sy + ")";
+    } else {
+      return "scale(" + this.sx + ")";
+    }
   };
 }
 

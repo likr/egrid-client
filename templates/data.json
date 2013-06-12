@@ -1,0 +1,10 @@
+{
+  "nodes": [
+  {% for node in nodes %}
+    {
+      "text": "{{ node.text }}",
+      "children": [{{ node.childrent|join(',') }}]
+    }{% if not loop.last %},{% endif %}
+  {% endfor %}
+  ]
+}

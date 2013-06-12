@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="/scripts/jquery-2.0.0.js"></script>
+    <script src="/scripts/d3.js"></script>
+    <script src="/scripts/dagre.js"></script>
+    <script src="/scripts/svg/viewBox.js"></script>
+    <script src="/scripts/svg/transform.js"></script>
+    <script src="/scripts/svg/point.js"></script>
+    <script src="/scripts/svg/rect.js"></script>
+    <script src="/scripts/egm/grid.js"></script>
+    <script src="/scripts/egm.js"></script>
+    <link rel="stylesheet" href="/stylesheets/egm.css"/>
+    <script>
+      var grid;
+
+      $(function() {
+        $("#addItemButton").click(function() {
+          var name = prompt("追加する要素の名前を入力してください");
+          if (name) {
+            grid.appendNode({text: name});
+            draw(grid);
+          }
+        });
+
+        $("#resetButton").click(function() {
+          d3.selectAll(".element, .link").remove();
+          readGrid("/data/empty.json");
+        });
+
+        $("#data1Button").click(function() {
+          d3.selectAll(".element, .link").remove();
+          readGrid("/data/test2.json");
+        });
+
+        $("#data2Button").click(function() {
+          d3.selectAll(".element, .link").remove();
+          readGrid("/data/kaikyo2.json");
+        });
+        $("#data3Button").click(function() {
+          d3.selectAll(".element, .link").remove();
+          readGrid("/data/large.json");
+        });
+
+        $("#undoButton").click(function() {
+          grid.undo();
+          draw(grid);
+        });
+
+        $("#redoButton").click(function() {
+          grid.redo();
+          draw(grid);
+        });
+
+        $("#rotateButton").click(function() {
+          rotateLayout();
+        });
+
+        d3.select("#display")
+          .call(initEgm)
+          ;
+      });
+    </script>
+  </head>
+  <body>
+    <svg id="display" width="100%" height="100%">
+      <rect width="100%" height="100%" fill="none"/>
+    </svg>
+    <div id="controller3" class="controller">
+      <button id="undoButton" disabled>元に戻す</button>
+      <button id="redoButton" disabled>やり直し</button>
+    </div>
+    <div id="controller4" class="controller">
+      <button id="rotateButton">レイアウト変更</button>
+    </div>
+    <div id="controller1" class="controller">
+      <button id="resetButton">リセット</button>
+      <button id="data1Button">オフィス</button>
+      <button id="data3Button">オフィス大</button>
+      <button id="data2Button">海況</button>
+    </div>
+    <div id="controller2" class="controller">
+      <button id="addItemButton">アイテムの追加</button>
+    </div>
+  </body>
+</html>

@@ -68,6 +68,10 @@ text#measure {
   stroke-width: 5;
 }
 
+.link {
+  fill: none;
+}
+
 
 .dragLine {
   stroke: blue;

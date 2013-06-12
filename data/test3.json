@@ -1,0 +1,34 @@
+{
+  "nodes": [
+    {
+      "text": "A",
+      "children": [2, 3],
+      "layer": 0
+    },
+    {
+      "text": "B",
+      "children": [4, 5],
+      "layer": 0
+    },
+    {
+      "text": "C",
+      "children": [],
+      "layer": 1
+    },
+    {
+      "text": "D",
+      "children": [],
+      "layer": 1
+    },
+    {
+      "text": "E",
+      "children": [],
+      "layer": 1
+    },
+    {
+      "text": "F",
+      "children": [],
+      "layer": 1
+    }
+  ]
+}
