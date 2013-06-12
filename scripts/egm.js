@@ -119,6 +119,22 @@ function initSaveButton(selection) {
 }
 
 
+function initUndoButton(selection) {
+  selection.on("click", function() {
+    grid.undo();
+    draw(grid);
+  });
+}
+
+
+function initRedoButton(selection) {
+  selection.on("click", function() {
+    grid.redo();
+    draw(grid);
+  });
+}
+
+
 function raddering(selection, isRadderUp) {
   var from;
   selection.call(d3.behavior.drag()
@@ -380,8 +396,12 @@ function draw(data) {
     })
     ;
 
-  //d3.select("#undoButton").node().disabled = !grid.canUndo();
-  //d3.select("#redoButton").node().disabled = !grid.canRedo();
+  if (d3.select("#undoButton").node()) {
+    d3.select("#undoButton").node().disabled = !grid.canUndo();
+  }
+  if (d3.select("#redoButton").node()) {
+    d3.select("#redoButton").node().disabled = !grid.canRedo();
+  }
 }
 
 

@@ -9,6 +9,10 @@
         <button id="saveButton">保存</button>
         <button id="addItemButton">アイテムの追加</button>
       </div>
+      <div id="controller3" class="controller">
+        <button id="undoButton" disabled>元に戻す</button>
+        <button id="redoButton" disabled>やり直し</button>
+      </div>
     </div>
     <form action="{{ update_participant_url(participant.key()) }}" method="POST">
       <input type="hidden" name="json"/>
@@ -21,8 +25,9 @@
         ;
       d3.select("#addItemButton").call(initAddItemButton);
       d3.select("#saveButton").call(initSaveButton);
+      d3.select("#undoButton").call(initUndoButton);
+      d3.select("#redoButton").call(initRedoButton);
       d3.json("{{ json_participant_url(participant.key()) }}", function (data) {
-        console.log(data);
         data.nodes.forEach(function (node) {
           var bbox = d3.select("#measure").text(node.text).node().getBBox();
           node.width = bbox.width + 40;
