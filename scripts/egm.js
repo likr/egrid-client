@@ -19,6 +19,12 @@ function initEgm(selection) {
     .attr("id", "measure")
     ;
 
+  selection.append("rect")
+    .attr("fill", "none")
+    .attr("width", "100%")
+    .attr("height", "100%")
+    ;
+
   var contents = selection.append("g")
     .attr("id", "contents")
     ;
