@@ -99,7 +99,7 @@ text#measure {
 }
 
 
-.radderButton {
+.element, .radderButton {
   cursor: pointer;
 }
 
