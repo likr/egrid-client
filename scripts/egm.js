@@ -53,6 +53,15 @@ function initEgm(selection) {
   radderDownButton.append("rect");
   radderDownButton.append("text").text("ラダーダウン");
 
+  var removeElementButton = contents.append("g")
+    .attr("id", "removeElementButton")
+    .classed("radderButton", true)
+    .classed("invisible", true)
+    .call(initRemoveElementButton)
+    ;
+  removeElementButton.append("rect");
+  removeElementButton.append("text").text("削除");
+
   d3.selectAll(".radderButton")
     .each(function() {
       var rx = 10;
@@ -114,7 +123,9 @@ function initSaveButton(selection) {
       nodes: grid.nodes.map(function(node) {
         return {
           text: node.text,
-          children: node.children
+          children: node.children.map(function(c) {
+            return c.index;
+          })
         }
       })
     };
@@ -136,6 +147,17 @@ function initUndoButton(selection) {
 function initRedoButton(selection) {
   selection.on("click", function() {
     grid.redo();
+    draw(grid);
+    unselectElement();
+  });
+}
+
+
+function initRemoveElementButton(selection) {
+  selection.on("click", function() {
+    grid.transactionWith(function() {
+      grid.removeNode(d3.select(".selected").datum().index);
+    });
     draw(grid);
     unselectElement();
   });
@@ -309,6 +331,9 @@ function appendElement(selection) {
 
 
 function draw(data) {
+  var keyFunction = function(obj) {
+    return obj.key;
+  };
   var spline = d3.svg.line()
     .x(function(d) {return d.x})
     .y(function(d) {return d.y})
@@ -316,12 +341,12 @@ function draw(data) {
     ;
 
   d3.selectAll("#contents #elements .element")
-    .data(data.nodes)
+    .data(data.nodes, keyFunction)
     .exit()
     .remove()
     ;
   d3.selectAll("#contents #links .link")
-    .data(data.links)
+    .data(data.links, keyFunction)
     .exit()
     .remove()
     ;
@@ -331,7 +356,7 @@ function draw(data) {
     ;
   d3.select("#contents #elements")
     .selectAll(".element")
-    .data(data.nodes)
+    .data(data.nodes, keyFunction)
     .enter()
     .append("g")
     .classed("new", true)
@@ -343,7 +368,7 @@ function draw(data) {
 
   d3.select("#contents #links")
     .selectAll(".link")
-    .data(data.links)
+    .data(data.links, keyFunction)
     .enter()
     .append("path")
     .classed("link", true)
@@ -431,8 +456,12 @@ function selectElement(node) {
     .attr("transform", new Translate(d.rect.left().x - 100, d.rect.left().y))
     ;
   d3.select("#radderDownButton")
-    .attr("transform", (new Translate(d.rect.right().x + 100, d.rect.right().y)))
+    .attr("transform", new Translate(d.rect.right().x + 100, d.rect.right().y))
     ;
+  d3.select("#removeElementButton")
+    .attr("transform", new Translate(d.rect.bottom().x, d.rect.bottom().y + 30))
+    ;
+
   d3.selectAll(".radderButton.invisible")
     .classed("invisible", false)
     ;

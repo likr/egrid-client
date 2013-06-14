@@ -12,9 +12,9 @@ var egm = egm || {};
       }
       if (!checkedFlags[i]) {
         nodes[i].children.filter(function(d) {
-          return !checkedFlags[d];
+          return !checkedFlags[d.index];
         }).forEach(function(d) {
-          front.push(d);
+          front.push(d.index);
         });
       }
     }
@@ -41,12 +41,15 @@ var egm = egm || {};
     });
     grid.nodes.forEach(function(node, i) {
       node.index = i;
+      node.children = node.children.map(function(c) {
+        return grid.nodes[c];
+      });
     });
 
     grid.links = [];
     grid.nodes.forEach(function(d) {
       d.children.forEach(function(c) {
-        grid.links.push(new Link(d, grid.nodes[c]));
+        grid.links.push(new Link(d, c));
       });
     });
 
@@ -86,7 +89,7 @@ var egm = egm || {};
     }
     grid.updateNode(
         to.index,
-        {children: (function() {var a = to.children.slice(); a.push(from.index); return a})()}
+        {children: (function() {var a = to.children.slice(); a.push(from); return a})()}
     );
     grid.appendLink(new Link(to, from));
     if (to.layer >= from.layer) {
@@ -113,7 +116,7 @@ var egm = egm || {};
     }
     grid.updateNode(
         from.index,
-        {children: (function() {var a = from.children.slice(); a.push(to.index); return a})()}
+        {children: (function() {var a = from.children.slice(); a.push(to); return a})()}
     );
     grid.appendLink(new Link(from, to));
     if (to.layer <= from.layer) {
@@ -193,6 +196,47 @@ var egm = egm || {};
   };
 
 
+  egm.Grid.prototype.removeNode = function(index) {
+    var grid = this;
+    var removedNode = grid.nodes[index];
+    var previousLinks;
+    var parentNodes = [];
+    var command = {
+      execute: function() {
+        grid.nodes.splice(index, 1);
+        grid.nodes.forEach(function(node, i) {
+          node.index = i;
+          node.children = node.children.filter(function(c) {
+            if (c == removedNode) {
+              parentNodes.push(node);
+              return false;
+            } else {
+              return true;
+            }
+          });
+        });
+        previousLinks = grid.links;
+        grid.links = grid.links.filter(function(link) {
+          return link.source != removedNode && link.target != removedNode;
+        });
+        grid.connections = connections(grid.nodes);
+      },
+      revert: function() {
+        grid.nodes.splice(index, 0, removedNode);
+        grid.nodes.forEach(function(node, i) {
+          node.index = i;
+        });
+        parentNodes.forEach(function(node) {
+          node.children.push(removedNode);
+        });
+        grid.links = previousLinks;
+        grid.connections = connections(grid.nodes);
+      }
+    };
+    grid.execute(command);
+  };
+
+
   egm.Grid.prototype.appendLink = function appendLink(link) {
     var grid = this;
     var command = {
@@ -231,7 +275,9 @@ var egm = egm || {};
   };
 
 
+  var nodeId = 0;
   function Node(obj) {
+    this.key = ++nodeId;
     this.text = obj.text;
     this.layer = obj.layer || 0;
     this.children = obj.children || [];
@@ -239,7 +285,9 @@ var egm = egm || {};
   }
 
 
+  var linkId = 0;
   function Link(fromNode, toNode, weight) {
+    this.key = ++linkId;
     this.source = fromNode;
     this.target = toNode;
     this.weight = weight === undefined ? 1 : weight;
