@@ -14,6 +14,8 @@ function readGrid(uri) {
 }
 
 
+var contentsZoomBehavior;
+
 function initEgm(selection) {
   selection.append("text")
     .attr("id", "measure")
@@ -82,8 +84,7 @@ function initEgm(selection) {
     })
   ;
 
-  var zoomBehavior = d3.behavior.zoom()
-    .scale(1)
+  contentsZoomBehavior = d3.behavior.zoom()
     .on("zoom", function () {
       var translate = new Translate(d3.event.translate[0], d3.event.translate[1]);
       var scale = new Scale(d3.event.scale);
@@ -91,7 +92,7 @@ function initEgm(selection) {
     })
     ;
   selection
-    .call(zoomBehavior)
+    .call(contentsZoomBehavior)
     ;
 }
 
@@ -109,7 +110,15 @@ function initAddItemButton(selection) {
         });
       });
       draw(grid);
-      selectElement(d3.select(".element.new").node());
+      var addedElement = d3.select(".element.new");
+      selectElement(addedElement.node());
+      var translate = new Translate(
+        document.width / 2 - addedElement.datum().rect.x,
+        document.height / 2 - addedElement.datum().rect.y);
+      contentsZoomBehavior.translate([translate.x, translate.y]);
+      d3.select("#contents")
+        .transition()
+        .attr("transform", translate + new Scale(contentsZoomBehavior.scale()));
     }
   });
 }
