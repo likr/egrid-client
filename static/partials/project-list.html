@@ -1,0 +1,13 @@
+<div>
+  <form ng-submit="createProject()">
+    <label>Name</label>
+    <input type="text" name="name" ng-model="newProject.name"/>
+
+    <input type="submit"/>
+  </form>
+  <ul>
+    <li ng-repeat="project in projects">
+      <a href="/#/projects/{{project.key}}">{{project.name}}</a>
+    </li>
+  </ul>
+</div>
