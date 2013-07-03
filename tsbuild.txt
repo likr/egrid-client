@@ -1,0 +1,1 @@
+--out static/scripts/collaboegm.js ts/svg.ts ts/collaboegm.ts ts/egm.ts

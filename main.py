@@ -1,10 +1,8 @@
-import datetime
-import os
 import json
-import jinja2
 import webapp2
 from google.appengine.ext import db
 from google.appengine.api import users
+
 
 class Project(db.Model):
     name = db.StringProperty(required=True)
@@ -12,8 +10,8 @@ class Project(db.Model):
 
     def dump(self):
         return {
-            'key' : str(self.key()),
-            'name' : self.name,
+            'key': str(self.key()),
+            'name': self.name,
         }
 
 
@@ -24,9 +22,9 @@ class Participant(db.Model):
 
     def dump(self):
         return {
-            'key' : str(self.key()),
-            'name' : self.name,
-            'json' : self.json,
+            'key': str(self.key()),
+            'name': self.name,
+            'json': self.json,
         }
 
 
@@ -53,7 +51,7 @@ class ProjectHandler(webapp2.RequestHandler):
 class ParticipantsHandler(webapp2.RequestHandler):
     def get(self, project_id):
         project = Project.get(project_id)
-        participants = Participant.all().filter('project =', project);
+        participants = Participant.all().filter('project =', project)
         self.response.write(json.dumps([p.dump() for p in participants]))
 
     def put(self, project_id):
@@ -73,9 +71,16 @@ class ParticipantHandler(webapp2.RequestHandler):
         self.response.write(json.dumps(participant.dump()))
 
 
+class ParticipantJsonHandler(webapp2.RequestHandler):
+    def get(self, project_id, participant_id):
+        participant = Participant.get(participant_id)
+        self.response.write(participant.json)
+
+
 app = webapp2.WSGIApplication([
     ('/api/projects', ProjectsHandler),
     ('/api/projects/([\w\-]+)', ProjectHandler),
     ('/api/participants/([\w\-]+)', ParticipantsHandler),
     ('/api/participants/([\w\-]+)/([\w\-]+)', ParticipantHandler),
+    ('/api/participants/([\w\-]+)/([\w\-]+)/grid', ParticipantJsonHandler),
 ], debug=True)

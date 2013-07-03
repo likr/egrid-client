@@ -1,4 +1,6 @@
 /// <reference path="libs/angularjs/angular.d.ts"/>
+/// <reference path="libs/d3/d3.d.ts"/>
+/// <reference path="egm.ts"/>
 
 angular.module('collaboegm', [])
   .config(['$routeProvider', function ($routeProvider) {
@@ -10,6 +12,10 @@ angular.module('collaboegm', [])
       .when("/projects/:projectId", {
         templateUrl : "/partials/project-detail.html",
         controller : ProjectDetailController
+      })
+      .when("/participants/:projectId/:participantId/edit", {
+        templateUrl : "/partials/egm-edit.html",
+        controller : EgmEditController
       })
       .when("/participants/:projectId/:participantId", {
         templateUrl : "/partials/participant-detail.html",
@@ -67,5 +73,16 @@ function ParticipantDetailController($scope, $routeParams, $http) {
   var participantId = $routeParams.participantId;
   $http.get("/api/participants/" + projectId + "/" + participantId).success(data => {
     $scope.participant = data;
+  });
+}
+
+
+function EgmEditController($scope, $routeParams, $http) {
+  d3.select("#display").call(Egm.initEgm);
+
+  var projectId = $scope.projectId = $routeParams.projectId;
+  var participantId = $scope.participantId = $routeParams.participantId;
+  $http.get("/api/participants/" + projectId + "/" + participantId).success(data => {
+    console.log(data);
   });
 }
