@@ -60,7 +60,7 @@ class ParticipantsHandler(webapp2.RequestHandler):
         participant = Participant(
                 name=data['name'],
                 project=project,
-                json='{"nodes":[]}')
+                json='{"nodes":[],"links":[]}')
         participant.put()
         self.response.write(json.dumps(participant.dump()))
 

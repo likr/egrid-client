@@ -69,20 +69,110 @@ function ProjectDetailController($scope, $routeParams, $http) {
 
 
 function ParticipantDetailController($scope, $routeParams, $http) {
-  var projectId = $routeParams.projectId;
-  var participantId = $routeParams.participantId;
+  var projectId = $scope.projectId = $routeParams.projectId;
+  var participantId = $scope.participantId = $routeParams.participantId;
   $http.get("/api/participants/" + projectId + "/" + participantId).success(data => {
     $scope.participant = data;
   });
 }
 
 
+interface Data {
+  nodes : Egm.Node[];
+  links : Egm.Link[];
+}
+
+
 function EgmEditController($scope, $routeParams, $http) {
-  d3.select("#display").call(Egm.initEgm);
+  var egm = new Egm.EgmUi;
+  d3.select("#display")
+    .call(egm.display())
+    ;
+  d3.select("#appendNodeButton").call(egm.appendNodeButton());
+  d3.select("#undoButton")
+    .call(egm.undoButton()
+        .onEnable(() => {
+          d3.select("#undoButton").node().disabled = false;
+        })
+        .onDisable(() => {
+          d3.select("#undoButton").node().disabled = true;
+        }));
+  d3.select("#redoButton")
+    .call(egm.redoButton()
+        .onEnable(() => {
+          d3.select("#redoButton").node().disabled = false;
+        })
+        .onDisable(() => {
+          d3.select("#redoButton").node().disabled = true;
+        }));
+  d3.select("#saveButton")
+    .call(egm.saveButton()
+        .save(jsonString => {
+        }));
+
+  d3.select("#display .contents")
+    .append("circle")
+    .classed("invisible", true)
+    .attr("id", "radderUpButton")
+    .attr("r", 15)
+    .call(egm.radderUpButton()
+        .onEnable(selection => {
+          var node = selection.datum();
+          d3.select("#radderUpButton")
+            .classed("invisible", false)
+            .attr("transform", new Svg.Transform.Translate(
+                node.left().x,
+                node.left().y))
+            ;
+        })
+        .onDisable(() => {
+          d3.select("#radderUpButton").classed("invisible", true);
+        }));
+  d3.select("#display .contents")
+    .append("circle")
+    .classed("invisible", true)
+    .attr("id", "radderDownButton")
+    .attr("r", 15)
+    .call(egm.radderDownButton()
+        .onEnable(selection => {
+          var node = selection.datum();
+          d3.select("#radderDownButton")
+            .classed("invisible", false)
+            .attr("transform", new Svg.Transform.Translate(
+                node.right().x,
+                node.right().y))
+            ;
+        })
+        .onDisable(() => {
+          d3.select("#radderDownButton").classed("invisible", true);
+        }));
+  d3.select("#display .contents")
+    .append("circle")
+    .classed("invisible", true)
+    .attr("id", "removeNodeButton")
+    .attr("r", 15)
+    .call(egm.removeNodeButton()
+        .onEnable(selection => {
+          var node = selection.datum();
+          d3.select("#removeNodeButton")
+            .classed("invisible", false)
+            .attr("transform", new Svg.Transform.Translate(
+                node.bottom().x,
+                node.bottom().y))
+            ;
+        })
+        .onDisable(() => {
+          d3.select("#removeNodeButton").classed("invisible", true);
+        }));
 
   var projectId = $scope.projectId = $routeParams.projectId;
   var participantId = $scope.participantId = $routeParams.participantId;
-  $http.get("/api/participants/" + projectId + "/" + participantId).success(data => {
-    console.log(data);
+  var jsonUrl = "/api/participants/" + projectId + "/" + participantId + "/grid";
+  $http.get(jsonUrl).success((data : Data) => {
+    egm
+      .nodes(data.nodes)
+      .links(data.links)
+      .draw()
+      ;
   });
 }

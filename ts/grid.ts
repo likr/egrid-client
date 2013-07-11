@@ -1,43 +1,69 @@
+/// <reference path="libs/dagre/dagre.d.ts"/>
+/// <reference path="svg.ts"/>
+
 module Egm {
-  export interface Item {
-    text : string;
-  }
-
-  export class Vertex {
-    public text : string;
+  export class Node {
     public index : number;
-    public children : Vertex[];
+    public x : number;
+    public y : number;
+    public width : number;
+    public height : number;
+    public theta : number;
+    public text : string;
+    public dagre : any;
 
-    constructor(item : Item) {
-      this.text = item.text;
-      this.children = [];
+
+    constructor() {
+      this.x = 0;
+      this.y = 0;
+      this.theta = 0;
     }
 
-    hasChild(node : Vertex) {
-      return this.children.indexOf(node) >= 0;
+
+    left() : Svg.Point {
+      return Svg.Rect.left(this.x, this.y, this.width, this.height);
     }
 
-    appendChild(node : Vertex) {
-      this.children.push(node);
+
+    right() : Svg.Point {
+      return Svg.Rect.right(this.x, this.y, this.width, this.height);
     }
 
-    removeChild(node : Vertex) {
-      this.children = this.children.filter(child => child != node);
+
+    top() : Svg.Point {
+      return Svg.Rect.top(this.x, this.y, this.width, this.height);
+    }
+
+
+    bottom() : Svg.Point {
+      return Svg.Rect.bottom(this.x, this.y, this.width, this.height);
+    }
+
+
+    center() : Svg.Point {
+      return Svg.Rect.center(this.x, this.y, this.width, this.height);
     }
   }
 
-  export class Edge {
-    constructor(public source : Vertex, public target : Vertex) {
+
+  export class Link {
+    public points : Svg.Point[];
+    public previousPoints : Svg.Point[];
+    public dagre : any;
+    constructor(public source : Node, public target : Node) {
     }
   }
+
 
   interface Command {
     execute : () => void;
     revert : () => void;
   }
 
+
   class CommandTransaction {
     private commands : Command[] = [];
+
 
     execute() : void {
       this.commands.forEach((command) => {
@@ -45,194 +71,272 @@ module Egm {
       });
     }
 
+
     revert() : void {
-      this.commands.reverse().forEach((command) => {
+      this.commands.reverse().forEach(command => {
         command.revert();
       });
       this.commands.reverse();
     }
+
 
     push(command : Command) : void {
       this.commands.push(command);
     }
   }
 
+
   export class Grid {
-    private connections : bool[][];
-    private nodes : Vertex[];
-    private links : Edge[];
+    private nodes_ : Node[];
+    private links_ : Link[];
+    private linkMatrix : bool[][];
+    private pathMatrix : bool[][];
     private undoStack : CommandTransaction[];
     private redoStack : CommandTransaction[];
     private transaction : CommandTransaction;
 
-    constructor(data) {
+
+    constructor() {
+      this.nodes_ = [];
+      this.links_ = [];
+      this.undoStack = [];
+      this.redoStack = [];
     }
 
-    appendNode(item : Item) : void {
-      var node = new Vertex(item);
-      node.index = this.nodes.length;
+
+    appendNode(node : Node) : void {
       this.execute({
         execute : () => {
-          this.nodes.push(node);
-          this.connections.push(this.connections.map(() => false));
-          this.connections.forEach((row) => {
-            row.push(false);
-          });
-        },
-        revert : () => {
-          this.nodes.pop();
-          this.connections.pop();
-          this.connections.forEach((row) => {
-            row.pop();
-          });
-        }
-      });
-    }
-    
-    appendLink(link : Edge) : void {
-      this.execute({
-        execute : () => {
-          this.links.push(link);
+          node.index = this.nodes_.length;
+          this.nodes_.push(node);
           this.updateConnections();
         },
         revert : () => {
-          this.links.pop();
-          this.updateConnections();
-        }
-      });
-    }
-    
-    appendChild(node : Vertex, child : Vertex) : void {
-      this.execute({
-        execute : () => {
-          node.children.push(child);
-          this.updateConnections();
-        },
-        revert : () => {
-          node.children.pop();
+          node.index = undefined;
+          this.nodes_.pop();
           this.updateConnections();
         }
       });
     }
 
-    removeNode(removeNode : Vertex) : void {
-      var parentNodes = this.nodes.filter(node => node.hasChild(removeNode));
+
+    appendLink(sourceIndex : number, targetIndex : number) : void {
+      var sourceNode = this.nodes_[sourceIndex];
+      var targetNode = this.nodes_[targetIndex];
+      var link = new Link(sourceNode, targetNode);
+      this.execute({
+        execute : () => {
+          this.links_.push(link);
+          this.updateConnections();
+        },
+        revert : () => {
+          this.links_.pop();
+          this.updateConnections();
+        }
+      });
+    }
+
+
+    removeNode(removeNodeIndex : number) : void {
+      var removeNode = this.nodes_[removeNodeIndex];
+      var removedLinks;
       var previousLinks;
       this.execute({
         execute : () => {
-          this.nodes.splice(removeNode.index, 1);
-          parentNodes.forEach(node => {
-            node.removeChild(removeNode);
-          });
-          previousLinks = this.links;
-          this.links = this.links.filter(link => {
+          this.nodes_.splice(removeNodeIndex, 1);
+          previousLinks = this.links_;
+          this.links_ = this.links_.filter(link => {
             return link.source != removeNode && link.target != removeNode;
           });
           this.updateConnections();
         },
         revert : () => {
-          this.nodes.splice(removeNode.index, 0, removeNode);
-          this.updateIndex();
-          parentNodes.forEach(node => {
-            node.appendChild(removeNode);
-          });
-          this.links = previousLinks;
+          this.nodes_.splice(removeNodeIndex, 0, removeNode);
+          this.links_ = previousLinks;
           this.updateConnections();
         }
       });
     }
 
-    radderUp(from : Vertex, to : Vertex) : void {
+
+    radderUpAppend(fromIndex : number, newNode : Node) : void {
+      this.appendNode(newNode);
+      this.radderUp(fromIndex, newNode.index);
     }
-    
-    radderDown(from : Vertex, to : Vertex) : void {
+
+
+    radderUp(fromIndex : number, toIndex : number) : void {
+      this.appendLink(toIndex, fromIndex);
     }
-    
+
+
+    radderDownAppend(fromIndex : number, newNode : Node) : void {
+      this.appendNode(newNode);
+      this.radderDown(fromIndex, newNode.index);
+    }
+
+
+    radderDown(fromIndex : number, toIndex : number) : void {
+      this.appendLink(fromIndex, toIndex);
+    }
+
+
     canUndo() : boolean {
       return this.undoStack.length > 0;
     }
-    
+
+
     undo() : void {
       var commands = this.undoStack.pop();
       commands.revert();
       this.redoStack.push(commands);
     }
-    
+
+
     canRedo() : boolean {
       return this.redoStack.length > 0;
     }
-    
+
+
     redo() : void {
       var commands = this.redoStack.pop();
       commands.execute();
       this.undoStack.push(commands);
     }
-    
-    hasConnection(from : Vertex, to : Vertex) : boolean {
-      return this.connections[from.index][to.index];
+
+
+    toJSON() : string {
+      return "";
     }
-    
-    hasPath(from : Vertex, to : Vertex) : boolean {
-      var checkedFlags : boolean[] = this.nodes.map(_ => false);
-      var front : Vertex[] = [from];
-      while (front.length > 0) {
-        var node = front.pop();
-        if (node == to) {
-          return true;
-        }
-        if (!checkedFlags[node.index]) {
-          node.children.forEach(child => {
-            if (!checkedFlags[child.index]) {
-              front.push(child);
-            }
-          });
-        }
+
+
+    nodes() : Node[];
+    nodes(nodes : Node[]) : Grid;
+    nodes(arg? : Node[]) : any {
+      if (arg === undefined) {
+        return this.nodes_;
       }
-      return false
+      this.nodes_ = arg;
+      this.updateConnections();
+      return this;
     }
-    
+
+
+    links() : Link[];
+    links(links : Link[]) : Grid;
+    links(arg? : Link[]) : any {
+      if (arg === undefined) {
+        return this.links_;
+      }
+      this.links_ = arg;
+      this.updateConnections();
+      return this;
+    }
+
+
+    layout() : void {
+      dagre.layout()
+        .nodes(this.nodes_)
+        .edges(this.links_)
+        .rankSep(200)
+        .edgeSep(20)
+        .run()
+        ;
+
+      this.nodes_.forEach(node => {
+        node.x = node.dagre.y;
+        node.y = node.dagre.x;
+      });
+
+      this.links_.forEach(link => {
+        link.dagre.points.forEach(point => {
+          var tmp = point.x;
+          point.x = point.y;
+          point.y = tmp;
+        });
+        link.previousPoints = link.points;
+        link.points = link.dagre.points.map(p => p);
+        link.points.unshift(link.source.right());
+        link.points.push(link.target.left());
+      });
+    }
+
+
+    hasPath(fromIndex : number, toIndex : number) : boolean {
+      return this.pathMatrix[fromIndex][toIndex];
+    }
+
+
+    hasLink(fromIndex : number, toIndex : number) : boolean {
+      return this.linkMatrix[fromIndex][toIndex];
+    }
+
+
     private execute(command : Command) : void {
       if (this.transaction) {
         command.execute();
         this.transaction.push(command);
       } else {
         this.transactionWith(() => {
-          command.execute();
+          this.execute(command);
         });
       }
     }
-    
+
+
     private transactionWith(f : () => void) : void {
       this.beginTransaction();
       f();
       this.commitTransaction();
     }
-    
+
+
     private beginTransaction() : void {
       this.transaction = new CommandTransaction();
     }
-    
+
+
     private commitTransaction() : void {
       this.undoStack.push(this.transaction);
+      this.redoStack = [];
       this.transaction = undefined;
     }
-    
+
+
     private rollbackTransaction() : void {
       this.transaction.revert();
       this.transaction = undefined;
     }
-    
+
+
     private updateConnections() : void {
-      this.connections = this.nodes.map((_, i) => {
-        return this.nodes.map((_, j) => {
-          return this.hasPath(this.nodes[i], this.nodes[j]);
+      this.linkMatrix = this.nodes_.map(_ => {
+        return this.nodes_.map(_ => {
+          return false;
         });
       });
-    }
-
-    private updateIndex() : void {
-      this.nodes.forEach((node, i) => {
-        node.index = i;
+      this.links_.forEach(link => {
+        this.linkMatrix[link.source.index][link.target.index] = true;
+      });
+      this.pathMatrix = this.nodes_.map((_, fromIndex) => {
+        return this.nodes_.map((_, toIndex) => {
+          var checkedFlags : boolean[] = this.nodes_.map(_ => false);
+          var front : number[] = [fromIndex];
+          while (front.length > 0) {
+            var nodeIndex = front.pop();
+            if (nodeIndex == toIndex) {
+              return true;
+            }
+            if (!checkedFlags[nodeIndex]) {
+              this.nodes_.forEach((_, j) => {
+                if (this.linkMatrix[nodeIndex][j]) {
+                  front.push(j);
+                }
+              });
+            }
+          }
+          return false
+        });
       });
     }
   }

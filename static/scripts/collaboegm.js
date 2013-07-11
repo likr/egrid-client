@@ -15,6 +15,7 @@ var Svg;
 
         var Scale = (function () {
             function Scale(sx, sy) {
+                if (typeof sy === "undefined") { sy = undefined; }
                 this.sx = sx;
                 this.sy = sy;
             }
@@ -79,42 +80,74 @@ var Svg;
         Rect.prototype.center = function () {
             return new Point(this.x, this.y);
         };
+
+        Rect.left = function (x, y, width, height, theta) {
+            if (typeof theta === "undefined") { theta = 0; }
+            return new Point(-width / 2 * Math.cos(theta) + x, width / 2 * Math.sin(theta) + y);
+        };
+
+        Rect.right = function (x, y, width, height, theta) {
+            if (typeof theta === "undefined") { theta = 0; }
+            return new Point(width / 2 * Math.cos(theta) + x, width / 2 * Math.sin(theta) + y);
+        };
+
+        Rect.top = function (x, y, width, height, theta) {
+            if (typeof theta === "undefined") { theta = 0; }
+            return new Point(height / 2 * Math.sin(theta) + x, height / 2 * Math.cos(theta) + y);
+        };
+
+        Rect.bottom = function (x, y, width, height, theta) {
+            if (typeof theta === "undefined") { theta = 0; }
+            return new Point(height / 2 * Math.sin(theta) + x, height / 2 * Math.cos(theta) + y);
+        };
+
+        Rect.center = function (x, y, width, height, theta) {
+            if (typeof theta === "undefined") { theta = 0; }
+            return new Point(x, y);
+        };
         return Rect;
     })();
     Svg.Rect = Rect;
 })(Svg || (Svg = {}));
 var Egm;
 (function (Egm) {
-    var Vertex = (function () {
-        function Vertex(item) {
-            this.text = item.text;
-            this.children = [];
+    var Node = (function () {
+        function Node() {
+            this.x = 0;
+            this.y = 0;
+            this.theta = 0;
         }
-        Vertex.prototype.hasChild = function (node) {
-            return this.children.indexOf(node) >= 0;
+        Node.prototype.left = function () {
+            return Svg.Rect.left(this.x, this.y, this.width, this.height);
         };
 
-        Vertex.prototype.appendChild = function (node) {
-            this.children.push(node);
+        Node.prototype.right = function () {
+            return Svg.Rect.right(this.x, this.y, this.width, this.height);
         };
 
-        Vertex.prototype.removeChild = function (node) {
-            this.children = this.children.filter(function (child) {
-                return child != node;
-            });
+        Node.prototype.top = function () {
+            return Svg.Rect.top(this.x, this.y, this.width, this.height);
         };
-        return Vertex;
+
+        Node.prototype.bottom = function () {
+            return Svg.Rect.bottom(this.x, this.y, this.width, this.height);
+        };
+
+        Node.prototype.center = function () {
+            return Svg.Rect.center(this.x, this.y, this.width, this.height);
+        };
+        return Node;
     })();
-    Egm.Vertex = Vertex;
+    Egm.Node = Node;
 
-    var Edge = (function () {
-        function Edge(source, target) {
+    var Link = (function () {
+        function Link(source, target) {
             this.source = source;
             this.target = target;
         }
-        return Edge;
+        return Link;
     })();
-    Egm.Edge = Edge;
+    Egm.Link = Link;
 
     var CommandTransaction = (function () {
         function CommandTransaction() {
@@ -140,94 +173,83 @@ var Egm;
     })();
 
     var Grid = (function () {
-        function Grid(data) {
+        function Grid() {
+            this.nodes_ = [];
+            this.links_ = [];
+            this.undoStack = [];
+            this.redoStack = [];
         }
-        Grid.prototype.appendNode = function (item) {
-            var _this = this;
-            var node = new Vertex(item);
-            node.index = this.nodes.length;
-            this.execute({
-                execute: function () {
-                    _this.nodes.push(node);
-                    _this.connections.push(_this.connections.map(function () {
-                        return false;
-                    }));
-                    _this.connections.forEach(function (row) {
-                        row.push(false);
-                    });
-                },
-                revert: function () {
-                    _this.nodes.pop();
-                    _this.connections.pop();
-                    _this.connections.forEach(function (row) {
-                        row.pop();
-                    });
-                }
-            });
-        };
-
-        Grid.prototype.appendLink = function (link) {
+        Grid.prototype.appendNode = function (node) {
             var _this = this;
             this.execute({
                 execute: function () {
-                    _this.links.push(link);
+                    node.index = _this.nodes_.length;
+                    _this.nodes_.push(node);
                     _this.updateConnections();
                 },
                 revert: function () {
-                    _this.links.pop();
+                    node.index = undefined;
+                    _this.nodes_.pop();
                     _this.updateConnections();
                 }
             });
         };
 
-        Grid.prototype.appendChild = function (node, child) {
+        Grid.prototype.appendLink = function (sourceIndex, targetIndex) {
             var _this = this;
+            var sourceNode = this.nodes_[sourceIndex];
+            var targetNode = this.nodes_[targetIndex];
+            var link = new Link(sourceNode, targetNode);
             this.execute({
                 execute: function () {
-                    node.children.push(child);
+                    _this.links_.push(link);
                     _this.updateConnections();
                 },
                 revert: function () {
-                    node.children.pop();
+                    _this.links_.pop();
                     _this.updateConnections();
                 }
             });
         };
 
-        Grid.prototype.removeNode = function (removeNode) {
+        Grid.prototype.removeNode = function (removeNodeIndex) {
             var _this = this;
-            var parentNodes = this.nodes.filter(function (node) {
-                return node.hasChild(removeNode);
-            });
+            var removeNode = this.nodes_[removeNodeIndex];
+            var removedLinks;
             var previousLinks;
             this.execute({
                 execute: function () {
-                    _this.nodes.splice(removeNode.index, 1);
-                    parentNodes.forEach(function (node) {
-                        node.removeChild(removeNode);
-                    });
-                    previousLinks = _this.links;
-                    _this.links = _this.links.filter(function (link) {
+                    _this.nodes_.splice(removeNodeIndex, 1);
+                    previousLinks = _this.links_;
+                    _this.links_ = _this.links_.filter(function (link) {
                         return link.source != removeNode && link.target != removeNode;
                     });
                     _this.updateConnections();
                 },
                 revert: function () {
-                    _this.nodes.splice(removeNode.index, 0, removeNode);
-                    _this.updateIndex();
-                    parentNodes.forEach(function (node) {
-                        node.appendChild(removeNode);
-                    });
-                    _this.links = previousLinks;
+                    _this.nodes_.splice(removeNodeIndex, 0, removeNode);
+                    _this.links_ = previousLinks;
                     _this.updateConnections();
                 }
             });
         };
 
-        Grid.prototype.radderUp = function (from, to) {
+        Grid.prototype.radderUpAppend = function (fromIndex, newNode) {
+            this.appendNode(newNode);
+            this.radderUp(fromIndex, newNode.index);
         };
 
-        Grid.prototype.radderDown = function (from, to) {
+        Grid.prototype.radderUp = function (fromIndex, toIndex) {
+            this.appendLink(toIndex, fromIndex);
+        };
+
+        Grid.prototype.radderDownAppend = function (fromIndex, newNode) {
+            this.appendNode(newNode);
+            this.radderDown(fromIndex, newNode.index);
+        };
+
+        Grid.prototype.radderDown = function (fromIndex, toIndex) {
+            this.appendLink(fromIndex, toIndex);
         };
 
         Grid.prototype.canUndo = function () {
@@ -250,38 +272,67 @@ var Egm;
             this.undoStack.push(commands);
         };
 
-        Grid.prototype.hasConnection = function (from, to) {
-            return this.connections[from.index][to.index];
+        Grid.prototype.toJSON = function () {
+            return "";
         };
 
-        Grid.prototype.hasPath = function (from, to) {
-            var checkedFlags = this.nodes.map(function (_) {
-                return false;
-            });
-            var front = [from];
-            while (front.length > 0) {
-                var node = front.pop();
-                if (node == to) {
-                    return true;
-                }
-                if (!checkedFlags[node.index]) {
-                    node.children.forEach(function (child) {
-                        if (!checkedFlags[child.index]) {
-                            front.push(child);
-                        }
-                    });
-                }
+        Grid.prototype.nodes = function (arg) {
+            if (arg === undefined) {
+                return this.nodes_;
             }
-            return false;
+            this.nodes_ = arg;
+            this.updateConnections();
+            return this;
+        };
+
+        Grid.prototype.links = function (arg) {
+            if (arg === undefined) {
+                return this.links_;
+            }
+            this.links_ = arg;
+            this.updateConnections();
+            return this;
+        };
+
+        Grid.prototype.layout = function () {
+            dagre.layout().nodes(this.nodes_).edges(this.links_).rankSep(200).edgeSep(20).run();
+
+            this.nodes_.forEach(function (node) {
+                node.x = node.dagre.y;
+                node.y = node.dagre.x;
+            });
+
+            this.links_.forEach(function (link) {
+                link.dagre.points.forEach(function (point) {
+                    var tmp = point.x;
+                    point.x = point.y;
+                    point.y = tmp;
+                });
+                link.previousPoints = link.points;
+                link.points = link.dagre.points.map(function (p) {
+                    return p;
+                });
+                link.points.unshift(link.source.right());
+                link.points.push(link.target.left());
+            });
+        };
+
+        Grid.prototype.hasPath = function (fromIndex, toIndex) {
+            return this.pathMatrix[fromIndex][toIndex];
+        };
+
+        Grid.prototype.hasLink = function (fromIndex, toIndex) {
+            return this.linkMatrix[fromIndex][toIndex];
         };
 
         Grid.prototype.execute = function (command) {
+            var _this = this;
             if (this.transaction) {
                 command.execute();
                 this.transaction.push(command);
             } else {
                 this.transactionWith(function () {
-                    command.execute();
+                    _this.execute(command);
                 });
             }
         };
@@ -298,6 +349,7 @@ var Egm;
 
         Grid.prototype.commitTransaction = function () {
             this.undoStack.push(this.transaction);
+            this.redoStack = [];
             this.transaction = undefined;
         };
 
@@ -308,307 +360,552 @@ var Egm;
 
         Grid.prototype.updateConnections = function () {
             var _this = this;
-            this.connections = this.nodes.map(function (_, i) {
-                return _this.nodes.map(function (_, j) {
-                    return _this.hasPath(_this.nodes[i], _this.nodes[j]);
+            this.linkMatrix = this.nodes_.map(function (_) {
+                return _this.nodes_.map(function (_) {
+                    return false;
                 });
             });
-        };
-
-        Grid.prototype.updateIndex = function () {
-            this.nodes.forEach(function (node, i) {
-                node.index = i;
+            this.links_.forEach(function (link) {
+                _this.linkMatrix[link.source.index][link.target.index] = true;
+            });
+            this.pathMatrix = this.nodes_.map(function (_, fromIndex) {
+                return _this.nodes_.map(function (_, toIndex) {
+                    var checkedFlags = _this.nodes_.map(function (_) {
+                        return false;
+                    });
+                    var front = [fromIndex];
+                    while (front.length > 0) {
+                        var nodeIndex = front.pop();
+                        if (nodeIndex == toIndex) {
+                            return true;
+                        }
+                        if (!checkedFlags[nodeIndex]) {
+                            _this.nodes_.forEach(function (_, j) {
+                                if (_this.linkMatrix[nodeIndex][j]) {
+                                    front.push(j);
+                                }
+                            });
+                        }
+                    }
+                    return false;
+                });
             });
         };
         return Grid;
     })();
     Egm.Grid = Grid;
 })(Egm || (Egm = {}));
-var grid;
-
 var Egm;
 (function (Egm) {
-    function initEgm(selection) {
-        selection.append("text").attr("id", "measure");
+    (function (Raddering) {
+        Raddering[Raddering["RadderUp"] = 0] = "RadderUp";
 
-        selection.append("rect").attr("fill", "none").attr("width", "100%").attr("height", "100%");
+        Raddering[Raddering["RadderDown"] = 1] = "RadderDown";
+    })(Egm.Raddering || (Egm.Raddering = {}));
+    var Raddering = Egm.Raddering;
 
-        var contents = selection.append("g").attr("id", "contents");
-        contents.append("g").attr("id", "links");
-        contents.append("g").attr("id", "elements");
-
-        var radderUpButton = contents.append("g").attr("id", "radderUpButton").classed("radderButton", true).classed("invisible", true).call(radderUp);
-        radderUpButton.append("rect");
-        radderUpButton.append("text").text("ラダーアップ");
-
-        var radderDownButton = contents.append("g").attr("id", "radderDownButton").classed("radderButton", true).classed("invisible", true).call(radderDown);
-        radderDownButton.append("rect");
-        radderDownButton.append("text").text("ラダーダウン");
-
-        var removeElementButton = contents.append("g").attr("id", "removeElementButton").classed("radderButton", true).classed("invisible", true).call(initRemoveElementButton);
-        removeElementButton.append("rect");
-        removeElementButton.append("text").text("削除");
-
-        d3.selectAll(".radderButton").each(function () {
-            var rx = 10;
-            var bbox = this.lastChild.getBBox();
-            var width = bbox.width + 2 * rx;
-            var height = bbox.height + 2 * rx;
-            d3.select(this.firstChild).attr("x", -width / 2).attr("y", -height / 2).attr("rx", rx).attr("width", width).attr("height", height);
-            d3.select(this.lastChild).attr("x", rx - width / 2).attr("y", height / 2 - rx);
-        });
-
-        var contentsZoomBehavior = d3.behavior.zoom().on("zoom", function () {
-            var translate = new Svg.Transform.Translate(d3.event.translate[0], d3.event.translate[1]);
-            var scale = new Scale(d3.event.scale);
-            contents.attr("transform", translate + scale);
-        });
-        selection.call(contentsZoomBehavior);
-    }
-    Egm.initEgm = initEgm;
-
-    function initRemoveElementButton(selection) {
-        selection.on("click", function () {
-            grid.transactionWith(function () {
-                grid.removeNode(d3.select(".selected").datum());
+    var EgmUi = (function () {
+        function EgmUi() {
+            this.grid_ = new Egm.Grid();
+        }
+        EgmUi.prototype.nodes = function (arg) {
+            var _this = this;
+            if (arg === undefined) {
+                return this.grid_.nodes();
+            }
+            this.grid_.nodes(arg);
+            this.grid_.nodes().forEach(function (node) {
+                var rect = _this.calcRect(node.text);
+                node.width = rect.width;
+                node.height = rect.height;
             });
-            draw(grid);
-            unselectElement();
-        });
-    }
-
-    function raddering(selection, isRadderUp) {
-        var from;
-        selection.call(d3.behavior.drag().on("dragstart", function () {
-            from = d3.select(".selected");
-            from.classed("dragSource", true);
-            var pos = d3.mouse(d3.select("#contents").node());
-            d3.select("#contents").append("line").classed("dragLine", true).attr("x1", pos[0]).attr("y1", pos[1]).attr("x2", pos[0]).attr("y2", pos[1]);
-            d3.event.sourceEvent.stopPropagation();
-        }).on("drag", function () {
-            var x1 = Number(d3.select(".dragLine").attr("x1"));
-            var y1 = Number(d3.select(".dragLine").attr("y1"));
-            var x2 = d3.event.x;
-            var y2 = d3.event.y;
-            var theta = Math.atan2(y2 - y1, x2 - x1);
-            var r = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1)) - 10;
-            d3.select(".dragLine").attr("x2", x1 + r * Math.cos(theta)).attr("y2", y1 + r * Math.sin(theta));
-            var pos = getPos();
-            var to = d3.select(document.elementFromPoint(pos[0], pos[1]).parentNode);
-            if (to.classed("element") && !to.classed("selected")) {
-                if ((isRadderUp && grid.hasConnection(from.datum(), to.datum())) || (!isRadderUp && grid.hasConnection(to.datum(), from.datum()))) {
-                    to.classed("undroppable", true);
-                } else {
-                    to.classed("droppable", true);
-                }
-            } else {
-                d3.selectAll(".droppable, .undroppable").classed("droppable", false).classed("undroppable", false);
-            }
-        }).on("dragend", function () {
-            var pos = getPos();
-            var to = d3.select(document.elementFromPoint(pos[0], pos[1]).parentNode);
-            if (to.datum() && from.datum() != to.datum()) {
-                if (isRadderUp) {
-                    if (!grid.hasConnection(from.datum(), to.datum()) && !grid.hasLink(to.datum(), from.datum())) {
-                        grid.radderUp(from.datum(), to.datum());
-                        draw(grid);
-                        selectElement(from.node());
-                    }
-                } else {
-                    if (!grid.hasConnection(to.datum(), from.datum()) && !grid.hasLink(from.datum(), to.datum())) {
-                        grid.radderDown(from.datum(), to.datum());
-                        draw(grid);
-                        selectElement(from.node());
-                    }
-                }
-            } else {
-                var text = prompt("追加する要素の名前を入力してください");
-                if (text) {
-                    var bbox = d3.select("#measure").text(text).node().getBBox();
-                    grid.transactionWith(function () {
-                        if (isRadderUp) {
-                            grid.appendNode({
-                                text: text,
-                                layer: from.datum().layer - 1,
-                                width: bbox.width + 40,
-                                height: bbox.height + 40,
-                                x: d3.mouse(d3.select("#contents").node())[0],
-                                y: d3.mouse(d3.select("#contents").node())[1]
-                            });
-                            grid.radderUp(from.datum(), grid.nodes[grid.nodes.length - 1]);
-                        } else {
-                            grid.appendNode({
-                                text: text,
-                                layer: from.datum().layer + 1,
-                                width: bbox.width + 40,
-                                height: bbox.height + 40,
-                                x: d3.mouse(d3.select("#contents").node())[0],
-                                y: d3.mouse(d3.select("#contents").node())[1]
-                            });
-                            grid.radderDown(from.datum(), grid.nodes[grid.nodes.length - 1]);
-                        }
-                    });
-                    draw(grid);
-                    selectElement(from.node());
-                }
-            }
-            to.classed("droppable", false);
-            to.classed("undroppable", false);
-            from.classed("dragSource", false);
-            d3.selectAll(".dragLine").remove();
-        }));
-    }
-
-    function radderUp(selection) {
-        raddering(selection, true);
-    }
-
-    function radderDown(selection) {
-        raddering(selection, false);
-    }
-
-    function getPos() {
-        return d3.event.sourceEvent instanceof MouseEvent ? d3.mouse(document.body) : d3.touches(document.body, d3.event.sourceEvent.changedTouches)[0];
-    }
-
-    function appendElement(selection) {
-        var rx = 20;
-
-        var onElementClick = function () {
-            if (d3.select(this).classed("selected")) {
-                unselectElement();
-                d3.event.stopPropagation();
-            } else {
-                selectElement(this);
-                d3.event.stopPropagation();
-            }
+            return this;
         };
-        selection.classed("element", true).on("click", onElementClick).on("touchstart", onElementClick);
 
-        var rect = selection.append("rect");
-        selection.append("text").text(function (d) {
-            return d.text;
-        }).attr("x", function (d) {
-            return rx - d.rect.width / 2;
-        }).attr("y", function (d) {
-            return rx;
-        });
-        rect.attr("x", function (d) {
-            return -d.rect.width / 2;
-        }).attr("y", function (d) {
-            return -d.rect.height / 2;
-        }).attr("rx", rx).attr("width", function (d) {
-            return d.rect.width;
-        }).attr("height", function (d) {
-            return d.rect.height;
-        });
-    }
-
-    function draw(data) {
-        var keyFunction = function (obj) {
-            return obj.key;
-        };
-        var spline = d3.svg.line().x(function (d) {
-            return d.x;
-        }).y(function (d) {
-            return d.y;
-        }).interpolate("basis");
-
-        d3.selectAll("#contents #elements .element").data(data.nodes, keyFunction).exit().remove();
-        d3.selectAll("#contents #links .link").data(data.links, keyFunction).exit().remove();
-
-        d3.selectAll("#contents #elements .element.new").classed("new", false);
-        d3.select("#contents #elements").selectAll(".element").data(data.nodes, keyFunction).enter().append("g").classed("new", true).attr("transform", function (node) {
-            return new Svg.Transform.Translate(node.rect.center().x || 0, node.rect.center().y || 0);
-        }).call(appendElement);
-
-        d3.select("#contents #links").selectAll(".link").data(data.links, keyFunction).enter().append("path").classed("link", true);
-
-        data.nodes.forEach(function (node) {
-            node.width = node.rect.height;
-            node.height = node.rect.width;
-        });
-
-        dagre.layout().nodes(data.nodes).edges(data.links).rankSep(200).edgeSep(20).run();
-
-        d3.selectAll("#contents #links .link").attr("d", function (link) {
-            if (!link.points) {
-                link.points = [link.source.rect.right(), link.target.rect.left()];
+        EgmUi.prototype.links = function (arg) {
+            if (arg === undefined) {
+                return this.grid_.links();
             }
-            if (link.dagre.points.length + 2 == link.points.length) {
-                return this.getAttribute("d");
-            } else {
-                if (link.dagre.points.length + 2 > link.points.length) {
-                    while (link.dagre.points.length + 2 != link.points.length) {
-                        link.points.unshift(link.points[0]);
+            this.grid_.links(arg);
+            return this;
+        };
+
+        EgmUi.prototype.draw = function () {
+            var spline = d3.svg.line().x(function (d) {
+                return d.x;
+            }).y(function (d) {
+                return d.y;
+            }).interpolate("basis");
+
+            var nodes = this.grid_.nodes();
+            var links = this.grid_.links();
+
+            var nodesSelection = this.contentsSelection.select(".nodes").selectAll(".element").data(nodes);
+            nodesSelection.exit().remove();
+            nodesSelection.enter().append("g").classed("new", true).call(this.appendElement());
+
+            var linksSelection = this.contentsSelection.select(".links").selectAll(".link").data(links);
+            linksSelection.exit().remove();
+            linksSelection.enter().append("path").classed("link", true).each(function (link) {
+                link.points = [link.source.right(), link.target.left()];
+            });
+            ;
+
+            this.grid_.layout();
+
+            this.rootSelection.selectAll(".contents .links .link").filter(function (link) {
+                return link.previousPoints.length != link.points.length;
+            }).attr("d", function (link) {
+                if (link.points.length > link.previousPoints.length) {
+                    while (link.points.length != link.previousPoints.length) {
+                        link.previousPoints.unshift(link.previousPoints[0]);
                     }
                 } else {
-                    link.points.splice(1, link.points.length - link.dagre.points.length - 2);
+                    link.previousPoints.splice(1, link.previousPoints.length - link.points.length);
                 }
+                return spline(link.previousPoints);
+            });
+
+            var transition = this.rootSelection.transition();
+            transition.selectAll(".element").attr("transform", function (node) {
+                return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString() + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString();
+            });
+            transition.selectAll(".link").attr("d", function (link) {
                 return spline(link.points);
+            });
+
+            this.resetUndoButton();
+            this.resetRedoButton();
+            return this;
+        };
+
+        EgmUi.prototype.resetUndoButton = function () {
+            if (this.grid_.canUndo()) {
+                this.enableUndoButton();
+            } else {
+                this.disableUndoButton();
             }
-        });
-        data.nodes.forEach(function (node) {
-            node.rect = new Svg.Rect(node.dagre.y, node.dagre.x, node.rect.width, node.rect.height);
-            var tmp = node.dagre.x;
-            node.dagre.y = node.dagre.y;
-            node.dagre.y = tmp;
-        });
-        data.links.forEach(function (link) {
-            link.dagre.points.forEach(function (point) {
-                var tmp = point.x;
-                point.x = point.y;
-                point.y = tmp;
-            });
-            link.points = link.dagre.points.map(function (p) {
-                return p;
-            });
-            link.points.unshift(link.source.rect.right());
-            link.points.push(link.target.rect.left());
-        });
+        };
 
-        var transition = d3.select("#contents").transition();
-        transition.selectAll(".element").attr("transform", function (node) {
-            var hoge = Svg.Transform.Translate;
-            return (new Svg.Transform.Translate(node.rect.center().x, node.rect.center().y)).toString() + (new Svg.Transform.Rotate(node.rect.theta / Math.PI * 180)).toString();
-        });
+        EgmUi.prototype.resetRedoButton = function () {
+            if (this.grid_.canRedo()) {
+                this.enableRedoButton();
+            } else {
+                this.disableRedoButton();
+            }
+        };
 
-        transition.selectAll(".link").attr("d", function (link) {
-            return spline(link.points);
-        });
+        EgmUi.prototype.display = function () {
+            var _this = this;
+            return function (selection) {
+                _this.rootSelection = selection;
 
-        if (d3.select("#undoButton").node()) {
-            d3.select("#undoButton").node().disabled = !grid.canUndo();
-        }
-        if (d3.select("#redoButton").node()) {
-            d3.select("#redoButton").node().disabled = !grid.canRedo();
-        }
-    }
+                selection.append("text").classed("measure", true);
 
-    function selectElement(node) {
-        var d = d3.select(node).datum();
-        d3.selectAll(".selected").classed("selected", false);
-        d3.selectAll(".connected").classed("connected", false);
-        d3.select(node).classed("selected", true);
-        d3.select("#radderUpButton").attr("transform", new Svg.Transform.Translate(d.rect.left().x - 100, d.rect.left().y));
-        d3.select("#radderDownButton").attr("transform", new Svg.Transform.Translate(d.rect.right().x + 100, d.rect.right().y));
-        d3.select("#removeElementButton").attr("transform", new Svg.Transform.Translate(d.rect.bottom().x, d.rect.bottom().y + 30));
+                selection.append("rect").attr("fill", "none").attr("width", "100%").attr("height", "100%");
 
-        d3.selectAll(".radderButton.invisible").classed("invisible", false);
+                _this.contentsSelection = selection.append("g").classed("contents", true);
+                _this.contentsSelection.append("g").classed("links", true);
+                _this.contentsSelection.append("g").classed("nodes", true);
 
-        d3.selectAll(".element").filter(function (d2) {
-            return grid.hasConnection(d, d2) || grid.hasConnection(d2, d);
-        }).classed("connected", true);
-        d3.selectAll(".link").filter(function (link) {
-            return (grid.hasConnection(d, link.source) && grid.hasConnection(d, link.target)) || (grid.hasConnection(link.source, d) && grid.hasConnection(link.target, d));
-        }).classed("connected", true);
-    }
+                _this.contentsZoomBehavior = d3.behavior.zoom().on("zoom", function () {
+                    var translate = new Svg.Transform.Translate(d3.event.translate[0], d3.event.translate[1]);
+                    var scale = new Svg.Transform.Scale(d3.event.scale);
+                    _this.contentsSelection.attr("transform", translate.toString() + scale.toString());
+                });
+                selection.call(_this.contentsZoomBehavior);
+            };
+        };
 
-    function unselectElement() {
-        d3.selectAll(".selected").classed("selected", false);
-        d3.selectAll(".radderButton").classed("invisible", true);
-        d3.selectAll(".connected").classed("connected", false);
-    }
+        EgmUi.prototype.createNode = function (text) {
+            var node = new Egm.Node();
+            node.text = text;
+            var rect = this.calcRect(node.text);
+            node.width = rect.width;
+            node.height = rect.height;
+            return node;
+        };
+
+        EgmUi.prototype.focusNode = function (node) {
+            var translate = new Svg.Transform.Translate($(document).width() / 2 - node.x, $(document).height() / 2 - node.y);
+            var scale = new Svg.Transform.Scale(this.contentsZoomBehavior.scale());
+            this.contentsZoomBehavior.translate([translate.x, translate.y]);
+            this.contentsSelection.transition().attr("transform", translate.toString() + scale.toString());
+        };
+
+        EgmUi.prototype.appendNodeButton = function () {
+            var egm = this;
+            var f = function (selection) {
+                selection.on("click", function () {
+                    var name = prompt("追加する要素の名前を入力してください");
+                    if (name) {
+                        var node = egm.createNode(name);
+                        egm.grid_.appendNode(node);
+                        egm.draw();
+                        var addedElement = egm.contentsSelection.select(".element.new");
+                        egm.rootSelection.selectAll(".element.new").classed("new", false);
+                        egm.selectElement(addedElement);
+                        egm.focusNode(addedElement.datum());
+                    }
+                });
+                return this;
+            };
+            return f;
+        };
+
+        EgmUi.prototype.removeNodeButton = function () {
+            var egm = this;
+            var f = function (selection) {
+                selection.on("click", function () {
+                    var node = egm.rootSelection.select(".selected").datum();
+                    egm.unselectElement();
+                    egm.grid_.removeNode(node.index);
+                    egm.draw();
+                });
+                return this;
+            };
+            f.onEnable = function (f) {
+                egm.onEnableRemoveNodeButton = f;
+                return this;
+            };
+            f.onDisable = function (f) {
+                egm.onDisableRemoveNodeButton = f;
+                return this;
+            };
+            return f;
+        };
+
+        EgmUi.prototype.mergeNodeButton = function () {
+            var egm = this;
+            var f = function (selection) {
+                return this;
+            };
+            return f;
+        };
+
+        EgmUi.prototype.radderUpButton = function () {
+            var _this = this;
+            var grid = this;
+            var f = function (selection) {
+                _this.raddering(selection, Raddering.RadderUp);
+            };
+            f.onEnable = function (f) {
+                grid.onEnableRadderUpButton = f;
+                return this;
+            };
+            f.onDisable = function (f) {
+                grid.onDisableRadderUpButton = f;
+                return this;
+            };
+            return f;
+        };
+
+        EgmUi.prototype.radderDownButton = function () {
+            var grid = this;
+            var f = function (selection) {
+                grid.raddering(selection, Raddering.RadderDown);
+                return this;
+            };
+            f.onEnable = function (f) {
+                grid.onEnableRadderDownButton = f;
+                return this;
+            };
+            f.onDisable = function (f) {
+                grid.onDisableRadderDownButton = f;
+                return this;
+            };
+            return f;
+        };
+
+        EgmUi.prototype.save = function () {
+            if (this.onClickSaveButton) {
+                this.onClickSaveButton(JSON.stringify(this.grid_));
+            }
+        };
+
+        EgmUi.prototype.saveButton = function () {
+            var egm = this;
+            var f = function (selection) {
+                selection.on("click", function () {
+                    egm.save();
+                });
+                return this;
+            };
+            f.save = function (f) {
+                egm.onClickSaveButton = f;
+                return this;
+            };
+            return f;
+        };
+
+        EgmUi.prototype.undo = function () {
+            this.grid_.undo();
+            this.draw();
+        };
+
+        EgmUi.prototype.undoButton = function () {
+            var egm = this;
+            var f = function (selection) {
+                selection.on("click", function () {
+                    egm.undo();
+                });
+                this.resetUndoButton;
+                return this;
+            };
+            f.onEnable = function (f) {
+                egm.onEnableUndoButton = f;
+                return this;
+            };
+            f.onDisable = function (f) {
+                egm.onDisableUndoButton = f;
+                return this;
+            };
+            return f;
+        };
+
+        EgmUi.prototype.redo = function () {
+            this.grid_.redo();
+            this.draw();
+        };
+
+        EgmUi.prototype.redoButton = function () {
+            var egm = this;
+            var f = function (selection) {
+                selection.on("click", function () {
+                    egm.redo();
+                });
+                this.resetRedoButton;
+                return this;
+            };
+            f.onEnable = function (f) {
+                egm.onEnableRedoButton = f;
+                return this;
+            };
+            f.onDisable = function (f) {
+                egm.onDisableRedoButton = f;
+                return this;
+            };
+            return f;
+        };
+
+        EgmUi.prototype.getTextBBox = function (text) {
+            return this.rootSelection.select(".measure").text(text).node().getBBox();
+        };
+
+        EgmUi.prototype.calcRect = function (text) {
+            var bbox = this.getTextBBox(text);
+            return new Svg.Rect(bbox.x, bbox.y, bbox.width + EgmUi.rx * 2, bbox.height + EgmUi.rx * 2);
+        };
+
+        EgmUi.prototype.appendElement = function () {
+            var _this = this;
+            return function (selection) {
+                var self = _this;
+                var onElementClick = function () {
+                    var selection = d3.select(this);
+                    if (selection.classed("selected")) {
+                        self.unselectElement();
+                        d3.event.stopPropagation();
+                    } else {
+                        self.selectElement(selection);
+                        d3.event.stopPropagation();
+                    }
+                };
+                selection.classed("element", true).on("click", onElementClick).on("touchstart", onElementClick);
+
+                var rect = selection.append("rect");
+                selection.append("text").text(function (d) {
+                    return d.text;
+                }).attr("x", function (d) {
+                    return EgmUi.rx - d.width / 2;
+                }).attr("y", function (d) {
+                    return EgmUi.rx;
+                });
+                rect.attr("x", function (d) {
+                    return -d.width / 2;
+                }).attr("y", function (d) {
+                    return -d.height / 2;
+                }).attr("rx", EgmUi.rx).attr("width", function (d) {
+                    return d.width;
+                }).attr("height", function (d) {
+                    return d.height;
+                });
+            };
+        };
+
+        EgmUi.prototype.selectElement = function (selection) {
+            var _this = this;
+            var d = selection.datum();
+            this.rootSelection.selectAll(".selected").classed("selected", false);
+            this.rootSelection.selectAll(".connected").classed("connected", false);
+            selection.classed("selected", true);
+
+            this.enableRemoveNodeButton(selection);
+            this.enableRadderUpButton(selection);
+            this.enableRadderDownButton(selection);
+
+            d3.selectAll(".element").filter(function (d2) {
+                return _this.grid_.hasPath(d.index, d2.index) || _this.grid_.hasPath(d2.index, d.index);
+            }).classed("connected", true);
+            d3.selectAll(".link").filter(function (link) {
+                return (_this.grid_.hasPath(d.index, link.source.index) && _this.grid_.hasPath(d.index, link.target.index)) || (_this.grid_.hasPath(link.source.index, d.index) && _this.grid_.hasPath(link.target.index, d.index));
+            }).classed("connected", true);
+        };
+
+        EgmUi.prototype.unselectElement = function () {
+            this.rootSelection.selectAll(".selected").classed("selected", false);
+            this.rootSelection.selectAll(".connected").classed("connected", false);
+            this.disableRemoveNodeButton();
+            this.disableRadderUpButton();
+            this.disableRadderDownButton();
+        };
+
+        EgmUi.prototype.enableRadderUpButton = function (selection) {
+            if (this.onEnableRadderUpButton) {
+                this.onEnableRadderUpButton(selection);
+            }
+        };
+
+        EgmUi.prototype.disableRadderUpButton = function () {
+            if (this.onDisableRadderUpButton) {
+                this.onDisableRadderUpButton();
+            }
+        };
+
+        EgmUi.prototype.enableRadderDownButton = function (selection) {
+            if (this.onEnableRadderDownButton) {
+                this.onEnableRadderDownButton(selection);
+            }
+        };
+
+        EgmUi.prototype.disableRadderDownButton = function () {
+            if (this.onDisableRadderDownButton) {
+                this.onDisableRadderDownButton();
+            }
+        };
+
+        EgmUi.prototype.enableRemoveNodeButton = function (selection) {
+            if (this.onEnableRemoveNodeButton) {
+                this.onEnableRemoveNodeButton(selection);
+            }
+        };
+
+        EgmUi.prototype.disableRemoveNodeButton = function () {
+            if (this.onDisableRemoveNodeButton) {
+                this.onDisableRemoveNodeButton();
+            }
+        };
+
+        EgmUi.prototype.enableUndoButton = function () {
+            if (this.onEnableUndoButton) {
+                this.onEnableUndoButton();
+            }
+        };
+
+        EgmUi.prototype.disableUndoButton = function () {
+            if (this.onDisableUndoButton) {
+                this.onDisableUndoButton();
+            }
+        };
+
+        EgmUi.prototype.enableRedoButton = function () {
+            if (this.onEnableRedoButton) {
+                this.onEnableRedoButton();
+            }
+        };
+
+        EgmUi.prototype.disableRedoButton = function () {
+            if (this.onDisableRedoButton) {
+                this.onDisableRedoButton();
+            }
+        };
+
+        EgmUi.prototype.raddering = function (selection, type) {
+            var _this = this;
+            var from;
+            selection.call(d3.behavior.drag().on("dragstart", function () {
+                from = d3.select(".selected");
+                from.classed("dragSource", true);
+                var pos = d3.mouse(_this.rootSelection.select(".contents").node());
+                _this.rootSelection.select(".contents").append("line").classed("dragLine", true).attr("x1", pos[0]).attr("y1", pos[1]).attr("x2", pos[0]).attr("y2", pos[1]);
+                d3.event.sourceEvent.stopPropagation();
+            }).on("drag", function () {
+                var dragLineSelection = _this.rootSelection.select(".dragLine");
+                var x1 = Number(dragLineSelection.attr("x1"));
+                var y1 = Number(dragLineSelection.attr("y1"));
+                var x2 = d3.event.x;
+                var y2 = d3.event.y;
+                var theta = Math.atan2(y2 - y1, x2 - x1);
+                var r = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1)) - 10;
+                dragLineSelection.attr("x2", x1 + r * Math.cos(theta)).attr("y2", y1 + r * Math.sin(theta));
+                var pos = _this.getPos();
+                var to = d3.select(document.elementFromPoint(pos.x, pos.y).parentNode);
+                var fromNode = from.datum();
+                var toNode = to.datum();
+                if (to.classed("element") && !to.classed("selected")) {
+                    if ((type == Raddering.RadderUp && _this.grid_.hasPath(fromNode.index, toNode.index)) || (type == Raddering.RadderDown && _this.grid_.hasPath(toNode.index, fromNode.index))) {
+                        to.classed("undroppable", true);
+                    } else {
+                        to.classed("droppable", true);
+                    }
+                } else {
+                    _this.rootSelection.selectAll(".droppable, .undroppable").classed("droppable", false).classed("undroppable", false);
+                }
+            }).on("dragend", function () {
+                var pos = _this.getPos();
+                var to = d3.select(document.elementFromPoint(pos.x, pos.y).parentNode);
+                var fromNode = from.datum();
+                var toNode = to.datum();
+                if (toNode && fromNode != toNode) {
+                    switch (type) {
+                        case Raddering.RadderUp:
+                            if (!_this.grid_.hasPath(fromNode.index, toNode.index) && !_this.grid_.hasLink(toNode.index, fromNode.index)) {
+                                _this.grid_.radderUp(fromNode.index, toNode.index);
+                                _this.draw();
+                                _this.selectElement(from);
+                            }
+                            break;
+                        case Raddering.RadderDown:
+                            if (!_this.grid_.hasPath(toNode.index, fromNode.index) && !_this.grid_.hasLink(fromNode.index, toNode.index)) {
+                                _this.grid_.radderDown(fromNode.index, toNode.index);
+                                _this.draw();
+                                _this.selectElement(from);
+                            }
+                            break;
+                    }
+                    _this.focusNode(toNode);
+                } else {
+                    var text = prompt("追加する要素の名前を入力してください");
+                    if (text) {
+                        var node = _this.createNode(text);
+                        switch (type) {
+                            case Raddering.RadderUp:
+                                _this.grid_.radderUpAppend(fromNode.index, node);
+                                break;
+                            case Raddering.RadderDown:
+                                _this.grid_.radderDownAppend(fromNode.index, node);
+                                break;
+                        }
+                        _this.draw();
+                        _this.selectElement(from);
+                        _this.focusNode(node);
+                    }
+                }
+                to.classed("droppable", false);
+                to.classed("undroppable", false);
+                from.classed("dragSource", false);
+                _this.rootSelection.selectAll(".dragLine").remove();
+            }));
+        };
+
+        EgmUi.prototype.getPos = function () {
+            var xy = d3.event.sourceEvent instanceof MouseEvent ? d3.mouse(document.body) : d3.touches(document.body, d3.event.sourceEvent.changedTouches)[0];
+            return new Svg.Point(xy[0], xy[1]);
+        };
+        EgmUi.rx = 20;
+        return EgmUi;
+    })();
+    Egm.EgmUi = EgmUi;
 })(Egm || (Egm = {}));
 angular.module('collaboegm', []).config([
     '$routeProvider',
@@ -671,19 +968,53 @@ function ProjectDetailController($scope, $routeParams, $http) {
 }
 
 function ParticipantDetailController($scope, $routeParams, $http) {
-    var projectId = $routeParams.projectId;
-    var participantId = $routeParams.participantId;
+    var projectId = $scope.projectId = $routeParams.projectId;
+    var participantId = $scope.participantId = $routeParams.participantId;
     $http.get("/api/participants/" + projectId + "/" + participantId).success(function (data) {
         $scope.participant = data;
     });
 }
 
 function EgmEditController($scope, $routeParams, $http) {
-    d3.select("#display").call(Egm.initEgm);
+    var egm = new Egm.EgmUi();
+    d3.select("#display").call(egm.display());
+    d3.select("#appendNodeButton").call(egm.appendNodeButton());
+    d3.select("#undoButton").call(egm.undoButton().onEnable(function () {
+        d3.select("#undoButton").node().disabled = false;
+    }).onDisable(function () {
+        d3.select("#undoButton").node().disabled = true;
+    }));
+    d3.select("#redoButton").call(egm.redoButton().onEnable(function () {
+        d3.select("#redoButton").node().disabled = false;
+    }).onDisable(function () {
+        d3.select("#redoButton").node().disabled = true;
+    }));
+    d3.select("#saveButton").call(egm.saveButton().save(function (jsonString) {
+    }));
+
+    d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "radderUpButton").attr("r", 15).call(egm.radderUpButton().onEnable(function (selection) {
+        var node = selection.datum();
+        d3.select("#radderUpButton").classed("invisible", false).attr("transform", new Svg.Transform.Translate(node.left().x, node.left().y));
+    }).onDisable(function () {
+        d3.select("#radderUpButton").classed("invisible", true);
+    }));
+    d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "radderDownButton").attr("r", 15).call(egm.radderDownButton().onEnable(function (selection) {
+        var node = selection.datum();
+        d3.select("#radderDownButton").classed("invisible", false).attr("transform", new Svg.Transform.Translate(node.right().x, node.right().y));
+    }).onDisable(function () {
+        d3.select("#radderDownButton").classed("invisible", true);
+    }));
+    d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "removeNodeButton").attr("r", 15).call(egm.removeNodeButton().onEnable(function (selection) {
+        var node = selection.datum();
+        d3.select("#removeNodeButton").classed("invisible", false).attr("transform", new Svg.Transform.Translate(node.bottom().x, node.bottom().y));
+    }).onDisable(function () {
+        d3.select("#removeNodeButton").classed("invisible", true);
+    }));
 
     var projectId = $scope.projectId = $routeParams.projectId;
     var participantId = $scope.participantId = $routeParams.participantId;
-    $http.get("/api/participants/" + projectId + "/" + participantId).success(function (data) {
-        console.log(data);
+    var jsonUrl = "/api/participants/" + projectId + "/" + participantId + "/grid";
+    $http.get(jsonUrl).success(function (data) {
+        egm.nodes(data.nodes).links(data.links).draw();
     });
 }

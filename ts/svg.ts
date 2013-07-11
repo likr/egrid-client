@@ -10,7 +10,7 @@ module Svg {
     }
 
     export class Scale {
-      constructor(public sx : number, public sy : number) {
+      constructor(public sx : number, public sy : number = undefined) {
       }
 
       toString() : string {
@@ -45,36 +45,69 @@ module Svg {
     }
 
 
-    left() {
+    left() : Point {
       return new Point(
           - this.width / 2 * Math.cos(this.theta) + this.x,
           this.width / 2 * Math.sin(this.theta) + this.y);
     }
 
 
-    right() {
+    right() : Point {
       return new Point(
           this.width / 2 * Math.cos(this.theta) + this.x,
           this.width / 2 * Math.sin(this.theta) + this.y);
     }
 
 
-    top() {
+    top() : Point {
       return new Point(
           this.height / 2 * Math.sin(this.theta) + this.x,
           this.height / 2 * Math.cos(this.theta) + this.y);
     }
 
 
-    bottom() {
+    bottom() : Point {
       return new Point(
           this.height / 2 * Math.sin(this.theta) + this.x,
           this.height / 2 * Math.cos(this.theta) + this.y);
     }
 
 
-    center() {
+    center() : Point {
       return new Point(this.x, this.y);
+    }
+
+
+    static left(x : number, y : number, width : number, height : number, theta : number = 0) : Point {
+      return new Point(
+          - width / 2 * Math.cos(theta) + x,
+          width / 2 * Math.sin(theta) + y);
+    }
+
+
+    static right(x : number, y : number, width : number, height : number, theta : number = 0) : Point {
+      return new Point(
+          width / 2 * Math.cos(theta) + x,
+          width / 2 * Math.sin(theta) + y);
+    }
+
+
+    static top(x : number, y : number, width : number, height : number, theta : number = 0) : Point {
+      return new Point(
+          height / 2 * Math.sin(theta) + x,
+          height / 2 * Math.cos(theta) + y);
+    }
+
+
+    static bottom(x : number, y : number, width : number, height : number, theta : number = 0) : Point {
+      return new Point(
+          height / 2 * Math.sin(theta) + x,
+          height / 2 * Math.cos(theta) + y);
+    }
+
+
+    static center(x : number, y : number, width : number, height : number, theta : number = 0) : Point {
+      return new Point(x, y);
     }
   }
 }
