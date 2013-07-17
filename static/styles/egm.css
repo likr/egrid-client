@@ -23,7 +23,7 @@ body {
 }
 
 
-circle#radderUpButton, circle#radderDownButton, circle#removeNodeButton {
+circle#radderUpButton, circle#radderDownButton, circle#removeNodeButton, circle#mergeNodeButton {
   fill: grey;
 }
 

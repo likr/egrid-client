@@ -62,7 +62,7 @@ module Svg {
     top() : Point {
       return new Point(
           this.height / 2 * Math.sin(this.theta) + this.x,
-          this.height / 2 * Math.cos(this.theta) + this.y);
+          - this.height / 2 * Math.cos(this.theta) + this.y);
     }
 
 
@@ -95,7 +95,7 @@ module Svg {
     static top(x : number, y : number, width : number, height : number, theta : number = 0) : Point {
       return new Point(
           height / 2 * Math.sin(theta) + x,
-          height / 2 * Math.cos(theta) + y);
+          - height / 2 * Math.cos(theta) + y);
     }
 
 

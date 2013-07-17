@@ -11,12 +11,15 @@ module Egm {
     public theta : number;
     public text : string;
     public dagre : any;
+    public key : number;
+    private static nextKey = 0;
 
 
     constructor() {
       this.x = 0;
       this.y = 0;
       this.theta = 0;
+      this.key = Node.nextKey++;
     }
 
 
@@ -43,6 +46,11 @@ module Egm {
     center() : Svg.Point {
       return Svg.Rect.center(this.x, this.y, this.width, this.height);
     }
+
+
+    toString() : string {
+      return this.key.toString();
+    }
   }
 
 
@@ -50,7 +58,17 @@ module Egm {
     public points : Svg.Point[];
     public previousPoints : Svg.Point[];
     public dagre : any;
+    public key : number;
+    private static nextKey = 0;
+
+
     constructor(public source : Node, public target : Node) {
+      this.key = Link.nextKey++;
+    }
+
+
+    toString() : string {
+      return this.key.toString();
     }
   }
 
@@ -148,20 +166,74 @@ module Egm {
           this.links_ = this.links_.filter(link => {
             return link.source != removeNode && link.target != removeNode;
           });
+          this.updateNodeIndex();
           this.updateConnections();
         },
         revert : () => {
           this.nodes_.splice(removeNodeIndex, 0, removeNode);
           this.links_ = previousLinks;
+          this.updateNodeIndex();
           this.updateConnections();
         }
       });
     }
 
 
+    updateNodeText(nodeIndex : number, newText : string) {
+      var node = this.nodes_[nodeIndex];
+      var oldText = node.text;
+      this.execute({
+        execute : () => {
+          node.text = newText;
+        },
+        revert : () => {
+          node.text = oldText;
+        }
+      });
+    }
+
+
+    mergeNode(fromIndex : number, toIndex : number) : void {
+      var fromNode = this.nodes_[fromIndex];
+      var toNode = this.nodes_[toIndex];
+      var newLinks = this.links_
+        .filter(link => {
+          return (link.source == fromNode && !this.hasPath(toNode.index, link.target.index))
+          || (link.target == fromNode && !this.hasPath(link.source.index, toNode.index));
+        })
+        .map(link => {
+          if (link.source == fromNode) {
+            return new Link(toNode, link.target);
+          } else {
+            return new Link(link.source, toNode);
+          }
+        });
+      this.transactionWith(() => {
+        this.updateNodeText(toIndex, toNode.text + ", " + fromNode.text);
+        this.removeNode(fromIndex);
+        this.execute({
+          execute : () => {
+            newLinks.forEach(link => {
+              this.links_.push(link);
+            });
+            this.updateConnections();
+          },
+          revert : () => {
+            for(var i = 0; i < newLinks.length; ++i) {
+              this.links_.pop();
+            }
+            this.updateConnections();
+          }
+        });
+      });
+    }
+
+
     radderUpAppend(fromIndex : number, newNode : Node) : void {
-      this.appendNode(newNode);
-      this.radderUp(fromIndex, newNode.index);
+      this.transactionWith(() => {
+        this.appendNode(newNode);
+        this.radderUp(fromIndex, newNode.index);
+      });
     }
 
 
@@ -171,8 +243,10 @@ module Egm {
 
 
     radderDownAppend(fromIndex : number, newNode : Node) : void {
-      this.appendNode(newNode);
-      this.radderDown(fromIndex, newNode.index);
+      this.transactionWith(() => {
+        this.appendNode(newNode);
+        this.radderDown(fromIndex, newNode.index);
+      });
     }
 
 
@@ -337,6 +411,13 @@ module Egm {
           }
           return false
         });
+      });
+    }
+
+
+    private updateNodeIndex() : void {
+      this.nodes_.forEach((node : Node, i : number) => {
+        node.index = i;
       });
     }
   }

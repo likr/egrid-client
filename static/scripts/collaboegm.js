@@ -70,7 +70,7 @@ var Svg;
         };
 
         Rect.prototype.top = function () {
-            return new Point(this.height / 2 * Math.sin(this.theta) + this.x, this.height / 2 * Math.cos(this.theta) + this.y);
+            return new Point(this.height / 2 * Math.sin(this.theta) + this.x, -this.height / 2 * Math.cos(this.theta) + this.y);
         };
 
         Rect.prototype.bottom = function () {
@@ -93,7 +93,7 @@ var Svg;
 
         Rect.top = function (x, y, width, height, theta) {
             if (typeof theta === "undefined") { theta = 0; }
-            return new Point(height / 2 * Math.sin(theta) + x, height / 2 * Math.cos(theta) + y);
+            return new Point(height / 2 * Math.sin(theta) + x, -height / 2 * Math.cos(theta) + y);
         };
 
         Rect.bottom = function (x, y, width, height, theta) {
@@ -116,6 +116,7 @@ var Egm;
             this.x = 0;
             this.y = 0;
             this.theta = 0;
+            this.key = Node.nextKey++;
         }
         Node.prototype.left = function () {
             return Svg.Rect.left(this.x, this.y, this.width, this.height);
@@ -136,6 +137,11 @@ var Egm;
         Node.prototype.center = function () {
             return Svg.Rect.center(this.x, this.y, this.width, this.height);
         };
+
+        Node.prototype.toString = function () {
+            return this.key.toString();
+        };
+        Node.nextKey = 0;
         return Node;
     })();
     Egm.Node = Node;
@@ -144,7 +150,12 @@ var Egm;
         function Link(source, target) {
             this.source = source;
             this.target = target;
+            this.key = Link.nextKey++;
         }
+        Link.prototype.toString = function () {
+            return this.key.toString();
+        };
+        Link.nextKey = 0;
         return Link;
     })();
     Egm.Link = Link;
@@ -224,19 +235,70 @@ var Egm;
                     _this.links_ = _this.links_.filter(function (link) {
                         return link.source != removeNode && link.target != removeNode;
                     });
+                    _this.updateNodeIndex();
                     _this.updateConnections();
                 },
                 revert: function () {
                     _this.nodes_.splice(removeNodeIndex, 0, removeNode);
                     _this.links_ = previousLinks;
+                    _this.updateNodeIndex();
                     _this.updateConnections();
                 }
             });
         };
 
+        Grid.prototype.updateNodeText = function (nodeIndex, newText) {
+            var node = this.nodes_[nodeIndex];
+            var oldText = node.text;
+            this.execute({
+                execute: function () {
+                    node.text = newText;
+                },
+                revert: function () {
+                    node.text = oldText;
+                }
+            });
+        };
+
+        Grid.prototype.mergeNode = function (fromIndex, toIndex) {
+            var _this = this;
+            var fromNode = this.nodes_[fromIndex];
+            var toNode = this.nodes_[toIndex];
+            var newLinks = this.links_.filter(function (link) {
+                return (link.source == fromNode && !_this.hasPath(toNode.index, link.target.index)) || (link.target == fromNode && !_this.hasPath(link.source.index, toNode.index));
+            }).map(function (link) {
+                if (link.source == fromNode) {
+                    return new Link(toNode, link.target);
+                } else {
+                    return new Link(link.source, toNode);
+                }
+            });
+            this.transactionWith(function () {
+                _this.updateNodeText(toIndex, toNode.text + ", " + fromNode.text);
+                _this.removeNode(fromIndex);
+                _this.execute({
+                    execute: function () {
+                        newLinks.forEach(function (link) {
+                            _this.links_.push(link);
+                        });
+                        _this.updateConnections();
+                    },
+                    revert: function () {
+                        for (var i = 0; i < newLinks.length; ++i) {
+                            _this.links_.pop();
+                        }
+                        _this.updateConnections();
+                    }
+                });
+            });
+        };
+
         Grid.prototype.radderUpAppend = function (fromIndex, newNode) {
-            this.appendNode(newNode);
-            this.radderUp(fromIndex, newNode.index);
+            var _this = this;
+            this.transactionWith(function () {
+                _this.appendNode(newNode);
+                _this.radderUp(fromIndex, newNode.index);
+            });
         };
 
         Grid.prototype.radderUp = function (fromIndex, toIndex) {
@@ -244,8 +306,11 @@ var Egm;
         };
 
         Grid.prototype.radderDownAppend = function (fromIndex, newNode) {
-            this.appendNode(newNode);
-            this.radderDown(fromIndex, newNode.index);
+            var _this = this;
+            this.transactionWith(function () {
+                _this.appendNode(newNode);
+                _this.radderDown(fromIndex, newNode.index);
+            });
         };
 
         Grid.prototype.radderDown = function (fromIndex, toIndex) {
@@ -391,6 +456,12 @@ var Egm;
                 });
             });
         };
+
+        Grid.prototype.updateNodeIndex = function () {
+            this.nodes_.forEach(function (node, i) {
+                node.index = i;
+            });
+        };
         return Grid;
     })();
     Egm.Grid = Grid;
@@ -409,16 +480,11 @@ var Egm;
             this.grid_ = new Egm.Grid();
         }
         EgmUi.prototype.nodes = function (arg) {
-            var _this = this;
             if (arg === undefined) {
                 return this.grid_.nodes();
             }
             this.grid_.nodes(arg);
-            this.grid_.nodes().forEach(function (node) {
-                var rect = _this.calcRect(node.text);
-                node.width = rect.width;
-                node.height = rect.height;
-            });
+
             return this;
         };
 
@@ -431,6 +497,7 @@ var Egm;
         };
 
         EgmUi.prototype.draw = function () {
+            var _this = this;
             var spline = d3.svg.line().x(function (d) {
                 return d.x;
             }).y(function (d) {
@@ -440,11 +507,33 @@ var Egm;
             var nodes = this.grid_.nodes();
             var links = this.grid_.links();
 
-            var nodesSelection = this.contentsSelection.select(".nodes").selectAll(".element").data(nodes);
+            var nodesSelection = this.contentsSelection.select(".nodes").selectAll(".element").data(nodes, Object);
             nodesSelection.exit().remove();
             nodesSelection.enter().append("g").classed("new", true).call(this.appendElement());
 
-            var linksSelection = this.contentsSelection.select(".links").selectAll(".link").data(links);
+            nodesSelection.each(function (node) {
+                var rect = _this.calcRect(node.text);
+                node.width = rect.width;
+                node.height = rect.height;
+            });
+            nodesSelection.selectAll("text").text(function (d) {
+                return d.text;
+            }).attr("x", function (d) {
+                return EgmUi.rx - d.width / 2;
+            }).attr("y", function (d) {
+                return EgmUi.rx;
+            });
+            nodesSelection.selectAll("rect").attr("x", function (d) {
+                return -d.width / 2;
+            }).attr("y", function (d) {
+                return -d.height / 2;
+            }).attr("width", function (d) {
+                return d.width;
+            }).attr("height", function (d) {
+                return d.height;
+            });
+
+            var linksSelection = this.contentsSelection.select(".links").selectAll(".link").data(links, Object);
             linksSelection.exit().remove();
             linksSelection.enter().append("path").classed("link", true).each(function (link) {
                 link.points = [link.source.right(), link.target.left()];
@@ -520,9 +609,7 @@ var Egm;
         EgmUi.prototype.createNode = function (text) {
             var node = new Egm.Node();
             node.text = text;
-            var rect = this.calcRect(node.text);
-            node.width = rect.width;
-            node.height = rect.height;
+
             return node;
         };
 
@@ -578,6 +665,23 @@ var Egm;
         EgmUi.prototype.mergeNodeButton = function () {
             var egm = this;
             var f = function (selection) {
+                selection.call(egm.dragNode().isDroppable(function (fromNode, toNode) {
+                    return !egm.grid_.hasPath(toNode.index, fromNode.index);
+                }).dragToNode(function (fromNode, toNode) {
+                    egm.grid_.mergeNode(fromNode.index, toNode.index);
+
+                    egm.draw();
+                    egm.unselectElement();
+                    egm.focusNode(toNode);
+                }));
+                return this;
+            };
+            f.onEnable = function (f) {
+                egm.onEnableMergeNodeButton = f;
+                return this;
+            };
+            f.onDisable = function (f) {
+                egm.onDisableMergeNodeButton = f;
                 return this;
             };
             return f;
@@ -713,49 +817,45 @@ var Egm;
                 };
                 selection.classed("element", true).on("click", onElementClick).on("touchstart", onElementClick);
 
-                var rect = selection.append("rect");
-                selection.append("text").text(function (d) {
-                    return d.text;
-                }).attr("x", function (d) {
-                    return EgmUi.rx - d.width / 2;
-                }).attr("y", function (d) {
-                    return EgmUi.rx;
-                });
-                rect.attr("x", function (d) {
-                    return -d.width / 2;
-                }).attr("y", function (d) {
-                    return -d.height / 2;
-                }).attr("rx", EgmUi.rx).attr("width", function (d) {
-                    return d.width;
-                }).attr("height", function (d) {
-                    return d.height;
-                });
+                selection.append("rect").attr("rx", EgmUi.rx);
+                selection.append("text");
             };
         };
 
         EgmUi.prototype.selectElement = function (selection) {
-            var _this = this;
-            var d = selection.datum();
             this.rootSelection.selectAll(".selected").classed("selected", false);
-            this.rootSelection.selectAll(".connected").classed("connected", false);
             selection.classed("selected", true);
+            this.enableNodeButtons();
+            this.drawNodeConnection();
+        };
 
+        EgmUi.prototype.drawNodeConnection = function () {
+            var _this = this;
+            var d = this.rootSelection.select(".selected").datum();
+            this.rootSelection.selectAll(".connected").classed("connected", false);
+            if (d) {
+                d3.selectAll(".element").filter(function (d2) {
+                    return _this.grid_.hasPath(d.index, d2.index) || _this.grid_.hasPath(d2.index, d.index);
+                }).classed("connected", true);
+                d3.selectAll(".link").filter(function (link) {
+                    return (_this.grid_.hasPath(d.index, link.source.index) && _this.grid_.hasPath(d.index, link.target.index)) || (_this.grid_.hasPath(link.source.index, d.index) && _this.grid_.hasPath(link.target.index, d.index));
+                }).classed("connected", true);
+            }
+        };
+
+        EgmUi.prototype.enableNodeButtons = function () {
+            var selection = d3.select(".selected");
             this.enableRemoveNodeButton(selection);
+            this.enableMergeNodeButton(selection);
             this.enableRadderUpButton(selection);
             this.enableRadderDownButton(selection);
-
-            d3.selectAll(".element").filter(function (d2) {
-                return _this.grid_.hasPath(d.index, d2.index) || _this.grid_.hasPath(d2.index, d.index);
-            }).classed("connected", true);
-            d3.selectAll(".link").filter(function (link) {
-                return (_this.grid_.hasPath(d.index, link.source.index) && _this.grid_.hasPath(d.index, link.target.index)) || (_this.grid_.hasPath(link.source.index, d.index) && _this.grid_.hasPath(link.target.index, d.index));
-            }).classed("connected", true);
         };
 
         EgmUi.prototype.unselectElement = function () {
             this.rootSelection.selectAll(".selected").classed("selected", false);
             this.rootSelection.selectAll(".connected").classed("connected", false);
             this.disableRemoveNodeButton();
+            this.disableMergeNodeButton();
             this.disableRadderUpButton();
             this.disableRadderDownButton();
         };
@@ -796,6 +896,18 @@ var Egm;
             }
         };
 
+        EgmUi.prototype.enableMergeNodeButton = function (selection) {
+            if (this.onEnableMergeNodeButton) {
+                this.onEnableMergeNodeButton(selection);
+            }
+        };
+
+        EgmUi.prototype.disableMergeNodeButton = function () {
+            if (this.onDisableMergeNodeButton) {
+                this.onDisableMergeNodeButton();
+            }
+        };
+
         EgmUi.prototype.enableUndoButton = function () {
             if (this.onEnableUndoButton) {
                 this.onEnableUndoButton();
@@ -820,81 +932,122 @@ var Egm;
             }
         };
 
+        EgmUi.prototype.dragNode = function () {
+            var egm = this;
+            var isDroppable_;
+            var dragToNode_;
+            var dragToOther_;
+            var f = function (selection) {
+                var from;
+                selection.call(d3.behavior.drag().on("dragstart", function () {
+                    from = d3.select(".selected");
+                    from.classed("dragSource", true);
+                    var pos = d3.mouse(egm.rootSelection.select(".contents").node());
+                    egm.rootSelection.select(".contents").append("line").classed("dragLine", true).attr("x1", pos[0]).attr("y1", pos[1]).attr("x2", pos[0]).attr("y2", pos[1]);
+                    d3.event.sourceEvent.stopPropagation();
+                }).on("drag", function () {
+                    var dragLineSelection = egm.rootSelection.select(".dragLine");
+                    var x1 = Number(dragLineSelection.attr("x1"));
+                    var y1 = Number(dragLineSelection.attr("y1"));
+                    var x2 = d3.event.x;
+                    var y2 = d3.event.y;
+                    var theta = Math.atan2(y2 - y1, x2 - x1);
+                    var r = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1)) - 10;
+                    dragLineSelection.attr("x2", x1 + r * Math.cos(theta)).attr("y2", y1 + r * Math.sin(theta));
+                    var pos = egm.getPos();
+                    var to = d3.select(document.elementFromPoint(pos.x, pos.y).parentNode);
+                    var fromNode = from.datum();
+                    var toNode = to.datum();
+                    if (to.classed("element") && !to.classed("selected")) {
+                        if (isDroppable_ && isDroppable_(fromNode, toNode)) {
+                            to.classed("droppable", true);
+                        } else {
+                            to.classed("undroppable", true);
+                        }
+                    } else {
+                        egm.rootSelection.selectAll(".droppable, .undroppable").classed("droppable", false).classed("undroppable", false);
+                    }
+                }).on("dragend", function () {
+                    var pos = egm.getPos();
+                    var to = d3.select(document.elementFromPoint(pos.x, pos.y).parentNode);
+                    var fromNode = from.datum();
+                    var toNode = to.datum();
+                    if (toNode && fromNode != toNode) {
+                        if (dragToNode_ && (!isDroppable_ || isDroppable_(fromNode, toNode))) {
+                            dragToNode_(fromNode, toNode);
+                        }
+                    } else {
+                        if (dragToOther_) {
+                            dragToOther_(fromNode);
+                        }
+                    }
+                    to.classed("droppable", false);
+                    to.classed("undroppable", false);
+                    from.classed("dragSource", false);
+                    egm.rootSelection.selectAll(".dragLine").remove();
+                }));
+                return this;
+            };
+            f.isDroppable_ = function (from, to) {
+                return true;
+            };
+            f.isDroppable = function (f) {
+                isDroppable_ = f;
+                return this;
+            };
+            f.dragToNode = function (f) {
+                dragToNode_ = f;
+                return this;
+            };
+            f.dragToOther = function (f) {
+                dragToOther_ = f;
+                return this;
+            };
+            return f;
+        };
+
         EgmUi.prototype.raddering = function (selection, type) {
             var _this = this;
-            var from;
-            selection.call(d3.behavior.drag().on("dragstart", function () {
-                from = d3.select(".selected");
-                from.classed("dragSource", true);
-                var pos = d3.mouse(_this.rootSelection.select(".contents").node());
-                _this.rootSelection.select(".contents").append("line").classed("dragLine", true).attr("x1", pos[0]).attr("y1", pos[1]).attr("x2", pos[0]).attr("y2", pos[1]);
-                d3.event.sourceEvent.stopPropagation();
-            }).on("drag", function () {
-                var dragLineSelection = _this.rootSelection.select(".dragLine");
-                var x1 = Number(dragLineSelection.attr("x1"));
-                var y1 = Number(dragLineSelection.attr("y1"));
-                var x2 = d3.event.x;
-                var y2 = d3.event.y;
-                var theta = Math.atan2(y2 - y1, x2 - x1);
-                var r = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1)) - 10;
-                dragLineSelection.attr("x2", x1 + r * Math.cos(theta)).attr("y2", y1 + r * Math.sin(theta));
-                var pos = _this.getPos();
-                var to = d3.select(document.elementFromPoint(pos.x, pos.y).parentNode);
-                var fromNode = from.datum();
-                var toNode = to.datum();
-                if (to.classed("element") && !to.classed("selected")) {
-                    if ((type == Raddering.RadderUp && _this.grid_.hasPath(fromNode.index, toNode.index)) || (type == Raddering.RadderDown && _this.grid_.hasPath(toNode.index, fromNode.index))) {
-                        to.classed("undroppable", true);
-                    } else {
-                        to.classed("droppable", true);
-                    }
-                } else {
-                    _this.rootSelection.selectAll(".droppable, .undroppable").classed("droppable", false).classed("undroppable", false);
+            selection.call(this.dragNode().isDroppable(function (fromNode, toNode) {
+                return !((type == Raddering.RadderUp && _this.grid_.hasPath(fromNode.index, toNode.index)) || (type == Raddering.RadderDown && _this.grid_.hasPath(toNode.index, fromNode.index)));
+            }).dragToNode(function (fromNode, toNode) {
+                switch (type) {
+                    case Raddering.RadderUp:
+                        if (!_this.grid_.hasPath(fromNode.index, toNode.index) && !_this.grid_.hasLink(toNode.index, fromNode.index)) {
+                            _this.grid_.radderUp(fromNode.index, toNode.index);
+                            _this.draw();
+                            _this.drawNodeConnection();
+                            _this.enableNodeButtons();
+                            _this.focusNode(toNode);
+                        }
+                        break;
+                    case Raddering.RadderDown:
+                        if (!_this.grid_.hasPath(toNode.index, fromNode.index) && !_this.grid_.hasLink(fromNode.index, toNode.index)) {
+                            _this.grid_.radderDown(fromNode.index, toNode.index);
+                            _this.draw();
+                            _this.drawNodeConnection();
+                            _this.enableNodeButtons();
+                            _this.focusNode(toNode);
+                        }
+                        break;
                 }
-            }).on("dragend", function () {
-                var pos = _this.getPos();
-                var to = d3.select(document.elementFromPoint(pos.x, pos.y).parentNode);
-                var fromNode = from.datum();
-                var toNode = to.datum();
-                if (toNode && fromNode != toNode) {
+            }).dragToOther(function (fromNode) {
+                var text = prompt("追加する要素の名前を入力してください");
+                if (text) {
+                    var node = _this.createNode(text);
                     switch (type) {
                         case Raddering.RadderUp:
-                            if (!_this.grid_.hasPath(fromNode.index, toNode.index) && !_this.grid_.hasLink(toNode.index, fromNode.index)) {
-                                _this.grid_.radderUp(fromNode.index, toNode.index);
-                                _this.draw();
-                                _this.selectElement(from);
-                            }
+                            _this.grid_.radderUpAppend(fromNode.index, node);
                             break;
                         case Raddering.RadderDown:
-                            if (!_this.grid_.hasPath(toNode.index, fromNode.index) && !_this.grid_.hasLink(fromNode.index, toNode.index)) {
-                                _this.grid_.radderDown(fromNode.index, toNode.index);
-                                _this.draw();
-                                _this.selectElement(from);
-                            }
+                            _this.grid_.radderDownAppend(fromNode.index, node);
                             break;
                     }
-                    _this.focusNode(toNode);
-                } else {
-                    var text = prompt("追加する要素の名前を入力してください");
-                    if (text) {
-                        var node = _this.createNode(text);
-                        switch (type) {
-                            case Raddering.RadderUp:
-                                _this.grid_.radderUpAppend(fromNode.index, node);
-                                break;
-                            case Raddering.RadderDown:
-                                _this.grid_.radderDownAppend(fromNode.index, node);
-                                break;
-                        }
-                        _this.draw();
-                        _this.selectElement(from);
-                        _this.focusNode(node);
-                    }
+                    _this.draw();
+                    _this.drawNodeConnection();
+                    _this.enableNodeButtons();
+                    _this.focusNode(node);
                 }
-                to.classed("droppable", false);
-                to.classed("undroppable", false);
-                from.classed("dragSource", false);
-                _this.rootSelection.selectAll(".dragLine").remove();
             }));
         };
 
@@ -1009,6 +1162,12 @@ function EgmEditController($scope, $routeParams, $http) {
         d3.select("#removeNodeButton").classed("invisible", false).attr("transform", new Svg.Transform.Translate(node.bottom().x, node.bottom().y));
     }).onDisable(function () {
         d3.select("#removeNodeButton").classed("invisible", true);
+    }));
+    d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "mergeNodeButton").attr("r", 15).call(egm.mergeNodeButton().onEnable(function (selection) {
+        var node = selection.datum();
+        d3.select("#mergeNodeButton").classed("invisible", false).attr("transform", new Svg.Transform.Translate(node.top().x, node.top().y));
+    }).onDisable(function () {
+        d3.select("#mergeNodeButton").classed("invisible", true);
     }));
 
     var projectId = $scope.projectId = $routeParams.projectId;

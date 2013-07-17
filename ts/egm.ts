@@ -18,6 +18,8 @@ module Egm {
 
   export interface MergeNodeButton {
     (selection : D3.Selection) : MergeNodeButton;
+    onEnable(f : (selection : D3.Selection) => void) : MergeNodeButton;
+    onDisable(f : () => void) : MergeNodeButton;
   }
 
 
@@ -55,6 +57,19 @@ module Egm {
   }
 
 
+  interface DragNode {
+    (selection : D3.Selection) : DragNode;
+    isDroppable(f : (from : Node, to : Node) => bool) : DragNode;
+    dragToNode(f : (from : Node, to : Node) => void) : DragNode;
+    dragToOther(f : (from : Node) => void) : DragNode;
+  }
+
+
+  interface ConnectNodeBehavior {
+    (selection : D3.Selection) : ConnectNodeBehavior;
+  }
+
+
   export enum Raddering {
     RadderUp,
     RadderDown
@@ -69,6 +84,8 @@ module Egm {
     private contentsZoomBehavior : D3.Behaviour.Zoom;
     private onEnableRemoveNodeButton : (selection : D3.Selection) => void;
     private onDisableRemoveNodeButton : () => void;
+    private onEnableMergeNodeButton : (selection : D3.Selection) => void;
+    private onDisableMergeNodeButton : () => void;
     private onEnableRadderUpButton : (selection : D3.Selection) => void;
     private onDisableRadderUpButton : () => void;
     private onEnableRadderDownButton : (selection : D3.Selection) => void;
@@ -92,11 +109,11 @@ module Egm {
         return this.grid_.nodes();
       }
       this.grid_.nodes(arg);
-      this.grid_.nodes().forEach(node => {
-        var rect = this.calcRect(node.text);
-        node.width = rect.width;
-        node.height = rect.height;
-      });
+      //this.grid_.nodes().forEach(node => {
+      //  var rect = this.calcRect(node.text);
+      //  node.width = rect.width;
+      //  node.height = rect.height;
+      //});
       return this;
     }
 
@@ -125,7 +142,7 @@ module Egm {
       var nodesSelection = this.contentsSelection
         .select(".nodes")
         .selectAll(".element")
-        .data(nodes)
+        .data(nodes, Object)
         ;
       nodesSelection.exit().remove();
       nodesSelection
@@ -135,10 +152,27 @@ module Egm {
         .call(this.appendElement())
         ;
 
+      nodesSelection.each(node => {
+        var rect = this.calcRect(node.text);
+        node.width = rect.width;
+        node.height = rect.height;
+      });
+      nodesSelection.selectAll("text")
+        .text(d => d.text)
+        .attr("x", d => EgmUi.rx - d.width / 2)
+        .attr("y", d => EgmUi.rx)
+        ;
+      nodesSelection.selectAll("rect")
+        .attr("x", d => - d.width / 2)
+        .attr("y", d => - d.height / 2)
+        .attr("width", d => d.width)
+        .attr("height", d => d.height)
+        ;
+
       var linksSelection = this.contentsSelection
         .select(".links")
         .selectAll(".link")
-        .data(links)
+        .data(links, Object)
         ;
       linksSelection.exit().remove();
       linksSelection
@@ -238,9 +272,9 @@ module Egm {
     private createNode(text : string) : Node {
       var node = new Egm.Node();
       node.text = text;
-      var rect = this.calcRect(node.text);
-      node.width = rect.width;
-      node.height = rect.height;
+      //var rect = this.calcRect(node.text);
+      //node.width = rect.width;
+      //node.height = rect.height;
       return node;
     }
 
@@ -288,15 +322,15 @@ module Egm {
           egm.draw();
         });
         return this;
-      }
+      };
       f.onEnable = function(f : (selection : D3.Selection) => void) : RemoveNodeButton {
         egm.onEnableRemoveNodeButton = f;
         return this;
-      }
+      };
       f.onDisable = function(f : () => void) : RemoveNodeButton {
         egm.onDisableRemoveNodeButton = f;
         return this;
-      }
+      };
       return f;
     }
 
@@ -304,8 +338,29 @@ module Egm {
     mergeNodeButton() : MergeNodeButton {
       var egm = this;
       var f : any = function(selection : D3.Selection) : MergeNodeButton {
+        selection.call(egm.dragNode()
+            .isDroppable((fromNode : Node, toNode : Node) : bool => {
+              return !egm.grid_.hasPath(toNode.index, fromNode.index)
+            })
+            .dragToNode((fromNode : Node, toNode : Node) : void => {
+              egm.grid_.mergeNode(fromNode.index, toNode.index);
+              //var rect = egm.calcRect(toNode.text);
+              //toNode.width = rect.width;
+              //toNode.height = rect.height;
+              egm.draw();
+              egm.unselectElement();
+              egm.focusNode(toNode);
+            }));
         return this;
       }
+      f.onEnable = function(f : (selection : D3.Selection) => void) : MergeNodeButton {
+        egm.onEnableMergeNodeButton = f;
+        return this;
+      };
+      f.onDisable = function(f : () => void) : MergeNodeButton {
+        egm.onDisableMergeNodeButton = f;
+        return this;
+      };
       return f;
     }
 
@@ -456,48 +511,49 @@ module Egm {
           .on("touchstart", onElementClick)
           ;
 
-        var rect = selection.append("rect");
-        selection.append("text")
-          .text(d => d.text)
-          .attr("x", d => EgmUi.rx - d.width / 2)
-          .attr("y", d => EgmUi.rx)
-          ;
-        rect
-          .attr("x", d => - d.width / 2)
-          .attr("y", d => - d.height / 2)
-          .attr("rx", EgmUi.rx)
-          .attr("width", d => d.width)
-          .attr("height", d => d.height)
-          ;
+        selection.append("rect").attr("rx", EgmUi.rx);
+        selection.append("text");
       }
     }
 
 
     private selectElement(selection : D3.Selection) : void {
-      var d : Node = selection.datum();
       this.rootSelection.selectAll(".selected").classed("selected", false);
-      this.rootSelection.selectAll(".connected").classed("connected", false);
       selection.classed("selected", true);
+      this.enableNodeButtons();
+      this.drawNodeConnection();
+    }
 
+
+    private drawNodeConnection() : void {
+      var d = this.rootSelection.select(".selected").datum();
+      this.rootSelection.selectAll(".connected").classed("connected", false);
+      if (d) {
+        d3.selectAll(".element")
+          .filter((d2 : Node) : bool => {
+            return this.grid_.hasPath(d.index, d2.index) || this.grid_.hasPath(d2.index, d.index);
+          })
+          .classed("connected", true)
+          ;
+        d3.selectAll(".link")
+          .filter((link : Link) : bool => {
+            return (this.grid_.hasPath(d.index, link.source.index)
+                && this.grid_.hasPath(d.index, link.target.index))
+              || (this.grid_.hasPath(link.source.index, d.index)
+                && this.grid_.hasPath(link.target.index, d.index));
+          })
+          .classed("connected", true)
+          ;
+      }
+    }
+
+
+    private enableNodeButtons() {
+      var selection = d3.select(".selected");
       this.enableRemoveNodeButton(selection);
+      this.enableMergeNodeButton(selection);
       this.enableRadderUpButton(selection);
       this.enableRadderDownButton(selection);
-
-      d3.selectAll(".element")
-        .filter((d2 : Node) : bool => {
-          return this.grid_.hasPath(d.index, d2.index) || this.grid_.hasPath(d2.index, d.index);
-        })
-        .classed("connected", true)
-        ;
-      d3.selectAll(".link")
-        .filter((link : Link) : bool => {
-          return (this.grid_.hasPath(d.index, link.source.index)
-              && this.grid_.hasPath(d.index, link.target.index))
-            || (this.grid_.hasPath(link.source.index, d.index)
-              && this.grid_.hasPath(link.target.index, d.index));
-        })
-        .classed("connected", true)
-        ;
     }
 
 
@@ -505,6 +561,7 @@ module Egm {
       this.rootSelection.selectAll(".selected").classed("selected", false);
       this.rootSelection.selectAll(".connected").classed("connected", false);
       this.disableRemoveNodeButton();
+      this.disableMergeNodeButton();
       this.disableRadderUpButton();
       this.disableRadderDownButton();
     }
@@ -552,6 +609,20 @@ module Egm {
     }
 
 
+    private enableMergeNodeButton(selection : D3.Selection) : void {
+      if (this.onEnableMergeNodeButton) {
+        this.onEnableMergeNodeButton(selection);
+      }
+    }
+
+
+    private disableMergeNodeButton() : void {
+      if (this.onDisableMergeNodeButton) {
+        this.onDisableMergeNodeButton();
+      }
+    }
+
+
     private enableUndoButton() : void {
       if (this.onEnableUndoButton) {
         this.onEnableUndoButton();
@@ -580,101 +651,144 @@ module Egm {
     }
 
 
-    private raddering(selection : D3.Selection, type : Raddering) : void {
-      var from;
-      selection.call(d3.behavior.drag()
-          .on("dragstart", () => {
-            from = d3.select(".selected");
-            from.classed("dragSource", true);
-            var pos = d3.mouse(this.rootSelection.select(".contents").node());
-            this.rootSelection.select(".contents")
-              .append("line")
-              .classed("dragLine", true)
-              .attr("x1", pos[0])
-              .attr("y1", pos[1])
-              .attr("x2", pos[0])
-              .attr("y2", pos[1])
-              ;
-            d3.event.sourceEvent.stopPropagation();
-          })
-          .on("drag", () => {
-            var dragLineSelection = this.rootSelection.select(".dragLine");
-            var x1 = Number(dragLineSelection.attr("x1"));
-            var y1 = Number(dragLineSelection.attr("y1"));
-            var x2 = d3.event.x;
-            var y2 = d3.event.y;
-            var theta = Math.atan2(y2 - y1, x2 - x1);
-            var r = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1)) - 10;
-            dragLineSelection
-              .attr("x2", x1 + r * Math.cos(theta))
-              .attr("y2", y1 + r * Math.sin(theta))
-              ;
-            var pos = this.getPos();
-            var to = d3.select(document.elementFromPoint(pos.x, pos.y).parentNode);
-            var fromNode : Node = from.datum();
-            var toNode : Node = to.datum();
-            if (to.classed("element") && !to.classed("selected")) {
-              if ((type == Raddering.RadderUp && this.grid_.hasPath(fromNode.index, toNode.index))
-                || (type == Raddering.RadderDown && this.grid_.hasPath(toNode.index, fromNode.index))) {
-                to.classed("undroppable", true);
-              } else {
-                to.classed("droppable", true);
-              }
-            } else {
-              this.rootSelection.selectAll(".droppable, .undroppable")
-                .classed("droppable", false)
-                .classed("undroppable", false)
+    private dragNode() : DragNode {
+      var egm = this;
+      var isDroppable_;
+      var dragToNode_;
+      var dragToOther_;
+      var f : any = function(selection : D3.Selection) : DragNode {
+        var from;
+        selection.call(d3.behavior.drag()
+            .on("dragstart", () => {
+              from = d3.select(".selected");
+              from.classed("dragSource", true);
+              var pos = d3.mouse(egm.rootSelection.select(".contents").node());
+              egm.rootSelection.select(".contents")
+                .append("line")
+                .classed("dragLine", true)
+                .attr("x1", pos[0])
+                .attr("y1", pos[1])
+                .attr("x2", pos[0])
+                .attr("y2", pos[1])
                 ;
+              d3.event.sourceEvent.stopPropagation();
+            })
+            .on("drag", () => {
+              var dragLineSelection = egm.rootSelection.select(".dragLine");
+              var x1 = Number(dragLineSelection.attr("x1"));
+              var y1 = Number(dragLineSelection.attr("y1"));
+              var x2 = d3.event.x;
+              var y2 = d3.event.y;
+              var theta = Math.atan2(y2 - y1, x2 - x1);
+              var r = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1)) - 10;
+              dragLineSelection
+                .attr("x2", x1 + r * Math.cos(theta))
+                .attr("y2", y1 + r * Math.sin(theta))
+                ;
+              var pos = egm.getPos();
+              var to = d3.select(document.elementFromPoint(pos.x, pos.y).parentNode);
+              var fromNode : Node = from.datum();
+              var toNode : Node = to.datum();
+              if (to.classed("element") && !to.classed("selected")) {
+                if (isDroppable_ && isDroppable_(fromNode, toNode)) {
+                  to.classed("droppable", true);
+                } else {
+                  to.classed("undroppable", true);
+                }
+              } else {
+                egm.rootSelection.selectAll(".droppable, .undroppable")
+                  .classed("droppable", false)
+                  .classed("undroppable", false)
+                  ;
+              }
+            })
+            .on("dragend", () => {
+              var pos = egm.getPos();
+              var to = d3.select(document.elementFromPoint(pos.x, pos.y).parentNode);
+              var fromNode : Node = from.datum();
+              var toNode : Node = to.datum();
+              if (toNode && fromNode != toNode) {
+                if (dragToNode_ && (!isDroppable_ || isDroppable_(fromNode, toNode))) {
+                  dragToNode_(fromNode, toNode);
+                }
+              } else {
+                if (dragToOther_) {
+                  dragToOther_(fromNode);
+                }
+              }
+              to.classed("droppable", false);
+              to.classed("undroppable", false);
+              from.classed("dragSource", false);
+              egm.rootSelection.selectAll(".dragLine").remove();
+            }))
+            ;
+        return this;
+      }
+      f.isDroppable_ = (from : Node, to : Node) : boolean => true;
+      f.isDroppable = function(f : (from : Node, to : Node) => boolean) : DragNode {
+        isDroppable_ = f;
+        return this;
+      }
+      f.dragToNode = function(f : (from : Node, to : Node) => void) : DragNode {
+        dragToNode_ = f;
+        return this;
+      }
+      f.dragToOther = function(f : (from : Node) => void) : DragNode {
+        dragToOther_ = f;
+        return this;
+      }
+      return f;
+    }
+
+
+    private raddering(selection : D3.Selection, type : Raddering) : void {
+      selection.call(this.dragNode()
+          .isDroppable((fromNode : Node, toNode : Node) : bool => {
+            return !((type == Raddering.RadderUp && this.grid_.hasPath(fromNode.index, toNode.index))
+              || (type == Raddering.RadderDown && this.grid_.hasPath(toNode.index, fromNode.index)))
+          })
+          .dragToNode((fromNode : Node, toNode : Node) : void => {
+            switch (type) {
+            case Raddering.RadderUp:
+              if (!this.grid_.hasPath(fromNode.index, toNode.index)
+                  && !this.grid_.hasLink(toNode.index, fromNode.index)) {
+                this.grid_.radderUp(fromNode.index, toNode.index);
+                this.draw();
+                this.drawNodeConnection();
+                this.enableNodeButtons();
+                this.focusNode(toNode);
+              }
+              break;
+            case Raddering.RadderDown:
+              if (!this.grid_.hasPath(toNode.index, fromNode.index)
+                  && !this.grid_.hasLink(fromNode.index, toNode.index)) {
+                this.grid_.radderDown(fromNode.index, toNode.index);
+                this.draw();
+                this.drawNodeConnection();
+                this.enableNodeButtons();
+                this.focusNode(toNode);
+              }
+              break;
             }
           })
-          .on("dragend", () => {
-            var pos = this.getPos();
-            var to = d3.select(document.elementFromPoint(pos.x, pos.y).parentNode);
-            var fromNode : Node = from.datum();
-            var toNode : Node = to.datum();
-            if (toNode && fromNode != toNode) {
+          .dragToOther((fromNode : Node) : void => {
+            var text = prompt("追加する要素の名前を入力してください");
+            if (text) {
+              var node = this.createNode(text);
               switch (type) {
               case Raddering.RadderUp:
-                if (!this.grid_.hasPath(fromNode.index, toNode.index)
-                    && !this.grid_.hasLink(toNode.index, fromNode.index)) {
-                  this.grid_.radderUp(fromNode.index, toNode.index);
-                  this.draw();
-                  this.selectElement(from);
-                }
+                this.grid_.radderUpAppend(fromNode.index, node);
                 break;
               case Raddering.RadderDown:
-                if (!this.grid_.hasPath(toNode.index, fromNode.index)
-                    && !this.grid_.hasLink(fromNode.index, toNode.index)) {
-                  this.grid_.radderDown(fromNode.index, toNode.index);
-                  this.draw();
-                  this.selectElement(from);
-                }
+                this.grid_.radderDownAppend(fromNode.index, node);
                 break;
               }
-              this.focusNode(toNode);
-            } else {
-              var text = prompt("追加する要素の名前を入力してください");
-              if (text) {
-                var node = this.createNode(text);
-                switch (type) {
-                case Raddering.RadderUp:
-                  this.grid_.radderUpAppend(fromNode.index, node);
-                  break;
-                case Raddering.RadderDown:
-                  this.grid_.radderDownAppend(fromNode.index, node);
-                  break;
-                }
-                this.draw();
-                this.selectElement(from);
-                this.focusNode(node);
-              }
+              this.draw();
+              this.drawNodeConnection();
+              this.enableNodeButtons();
+              this.focusNode(node);
             }
-            to.classed("droppable", false);
-            to.classed("undroppable", false);
-            from.classed("dragSource", false);
-            this.rootSelection.selectAll(".dragLine").remove();
-          }))
-          ;
+          }));
     }
 
 
