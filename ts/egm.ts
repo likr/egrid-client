@@ -200,6 +200,13 @@ module Egm {
         })
         ;
 
+      var linkWidthScale = d3.scale
+        .linear()
+        .domain(d3.extent(this.grid_.links(), (link) => {
+          return link.weight;
+        }))
+        .range([5, 15])
+        ;
       var transition = this.rootSelection.transition();
       transition.selectAll(".element")
         .attr("transform", (node : Egm.Node) : string => {
@@ -211,6 +218,7 @@ module Egm {
         .attr("d", (link : Egm.Link) : string => {
           return spline(link.points);
         })
+        .attr("stroke-width", d => linkWidthScale(d.weight))
         ;
 
       this.resetUndoButton();
@@ -750,8 +758,11 @@ module Egm {
           .dragToNode((fromNode : Node, toNode : Node) : void => {
             switch (type) {
             case Raddering.RadderUp:
-              if (!this.grid_.hasPath(fromNode.index, toNode.index)
-                  && !this.grid_.hasLink(toNode.index, fromNode.index)) {
+              if (this.grid_.hasLink(toNode.index, fromNode.index)) {
+                var link = this.grid_.link(toNode.index, fromNode.index);
+                this.grid_.incrementLinkWeight(link.index);
+                this.draw();
+              } else {
                 this.grid_.radderUp(fromNode.index, toNode.index);
                 this.draw();
                 this.drawNodeConnection();
@@ -760,8 +771,11 @@ module Egm {
               }
               break;
             case Raddering.RadderDown:
-              if (!this.grid_.hasPath(toNode.index, fromNode.index)
-                  && !this.grid_.hasLink(fromNode.index, toNode.index)) {
+              if (this.grid_.hasLink(fromNode.index, toNode.index)) {
+                var link = this.grid_.link(fromNode.index, toNode.index);
+                this.grid_.incrementLinkWeight(link.index);
+                this.draw();
+              } else {
                 this.grid_.radderDown(fromNode.index, toNode.index);
                 this.draw();
                 this.drawNodeConnection();

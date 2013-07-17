@@ -116,6 +116,7 @@ var Egm;
             this.x = 0;
             this.y = 0;
             this.theta = 0;
+            this.weight = 1;
             this.key = Node.nextKey++;
         }
         Node.prototype.left = function () {
@@ -150,6 +151,7 @@ var Egm;
         function Link(source, target) {
             this.source = source;
             this.target = target;
+            this.weight = 1;
             this.key = Link.nextKey++;
         }
         Link.prototype.toString = function () {
@@ -214,10 +216,12 @@ var Egm;
             this.execute({
                 execute: function () {
                     _this.links_.push(link);
+                    _this.updateLinkIndex();
                     _this.updateConnections();
                 },
                 revert: function () {
                     _this.links_.pop();
+                    _this.updateLinkIndex();
                     _this.updateConnections();
                 }
             });
@@ -258,6 +262,27 @@ var Egm;
                     node.text = oldText;
                 }
             });
+        };
+
+        Grid.prototype.updateLinkWeight = function (linkIndex, newWeight) {
+            var link = this.links_[linkIndex];
+            var oldWeight = link.weight;
+            this.execute({
+                execute: function () {
+                    link.weight = newWeight;
+                },
+                revert: function () {
+                    link.weight = oldWeight;
+                }
+            });
+        };
+
+        Grid.prototype.incrementLinkWeight = function (linkIndex) {
+            this.updateLinkWeight(linkIndex, this.links_[linkIndex].weight + 1);
+        };
+
+        Grid.prototype.decrementLinkWeight = function (linkIndex) {
+            this.updateLinkWeight(linkIndex, this.links_[linkIndex].weight - 1);
         };
 
         Grid.prototype.mergeNode = function (fromIndex, toIndex) {
@@ -346,6 +371,7 @@ var Egm;
                 return this.nodes_;
             }
             this.nodes_ = arg;
+            this.updateNodeIndex();
             this.updateConnections();
             return this;
         };
@@ -355,8 +381,24 @@ var Egm;
                 return this.links_;
             }
             this.links_ = arg;
+            this.updateLinkIndex();
             this.updateConnections();
             return this;
+        };
+
+        Grid.prototype.link = function (index1, index2) {
+            if (typeof index2 === "undefined") { index2 = undefined; }
+            if (index2 === undefined) {
+                return this.links_[index1];
+            } else {
+                return this.links_.reduce(function (p, link) {
+                    if (link.source.index == index1 && link.target.index == index2) {
+                        return link;
+                    } else {
+                        return p;
+                    }
+                }, undefined);
+            }
         };
 
         Grid.prototype.layout = function () {
@@ -462,6 +504,17 @@ var Egm;
                 node.index = i;
             });
         };
+
+        Grid.prototype.updateLinkIndex = function () {
+            this.links_.forEach(function (link, i) {
+                link.index = i;
+            });
+        };
+
+        Grid.prototype.updateIndex = function () {
+            this.updateNodeIndex();
+            this.updateLinkIndex();
+        };
         return Grid;
     })();
     Egm.Grid = Grid;
@@ -555,12 +608,17 @@ var Egm;
                 return spline(link.previousPoints);
             });
 
+            var linkWidthScale = d3.scale.linear().domain(d3.extent(this.grid_.links(), function (link) {
+                return link.weight;
+            })).range([5, 15]);
             var transition = this.rootSelection.transition();
             transition.selectAll(".element").attr("transform", function (node) {
                 return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString() + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString();
             });
             transition.selectAll(".link").attr("d", function (link) {
                 return spline(link.points);
+            }).attr("stroke-width", function (d) {
+                return linkWidthScale(d.weight);
             });
 
             this.resetUndoButton();
@@ -1013,7 +1071,11 @@ var Egm;
             }).dragToNode(function (fromNode, toNode) {
                 switch (type) {
                     case Raddering.RadderUp:
-                        if (!_this.grid_.hasPath(fromNode.index, toNode.index) && !_this.grid_.hasLink(toNode.index, fromNode.index)) {
+                        if (_this.grid_.hasLink(toNode.index, fromNode.index)) {
+                            var link = _this.grid_.link(toNode.index, fromNode.index);
+                            _this.grid_.incrementLinkWeight(link.index);
+                            _this.draw();
+                        } else {
                             _this.grid_.radderUp(fromNode.index, toNode.index);
                             _this.draw();
                             _this.drawNodeConnection();
@@ -1022,7 +1084,11 @@ var Egm;
                         }
                         break;
                     case Raddering.RadderDown:
-                        if (!_this.grid_.hasPath(toNode.index, fromNode.index) && !_this.grid_.hasLink(fromNode.index, toNode.index)) {
+                        if (_this.grid_.hasLink(fromNode.index, toNode.index)) {
+                            var link = _this.grid_.link(fromNode.index, toNode.index);
+                            _this.grid_.incrementLinkWeight(link.index);
+                            _this.draw();
+                        } else {
                             _this.grid_.radderDown(fromNode.index, toNode.index);
                             _this.draw();
                             _this.drawNodeConnection();

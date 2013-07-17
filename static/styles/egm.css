@@ -43,10 +43,16 @@ text.measure {
 }
 
 
-.element rect, .link {
+.element rect {
   stroke: purple;
   stroke-width: 5;
 }
+
+
+.link {
+  stroke: purple;
+}
+
 
 .link {
   fill: none;

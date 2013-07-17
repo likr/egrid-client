@@ -11,6 +11,7 @@ module Egm {
     public theta : number;
     public text : string;
     public dagre : any;
+    public weight : number;
     public key : number;
     private static nextKey = 0;
 
@@ -19,6 +20,7 @@ module Egm {
       this.x = 0;
       this.y = 0;
       this.theta = 0;
+      this.weight = 1;
       this.key = Node.nextKey++;
     }
 
@@ -55,14 +57,17 @@ module Egm {
 
 
   export class Link {
+    public index : number;
     public points : Svg.Point[];
     public previousPoints : Svg.Point[];
     public dagre : any;
+    public weight : number;
     public key : number;
     private static nextKey = 0;
 
 
     constructor(public source : Node, public target : Node) {
+      this.weight = 1;
       this.key = Link.nextKey++;
     }
 
@@ -145,10 +150,12 @@ module Egm {
       this.execute({
         execute : () => {
           this.links_.push(link);
+          this.updateLinkIndex();
           this.updateConnections();
         },
         revert : () => {
           this.links_.pop();
+          this.updateLinkIndex();
           this.updateConnections();
         }
       });
@@ -179,7 +186,7 @@ module Egm {
     }
 
 
-    updateNodeText(nodeIndex : number, newText : string) {
+    updateNodeText(nodeIndex : number, newText : string) : void {
       var node = this.nodes_[nodeIndex];
       var oldText = node.text;
       this.execute({
@@ -190,6 +197,30 @@ module Egm {
           node.text = oldText;
         }
       });
+    }
+
+
+    updateLinkWeight(linkIndex : number, newWeight : number) : void {
+      var link = this.links_[linkIndex];
+      var oldWeight = link.weight;
+      this.execute({
+        execute : () => {
+          link.weight = newWeight;
+        },
+        revert : () => {
+          link.weight = oldWeight;
+        }
+      });
+    }
+
+
+    incrementLinkWeight(linkIndex : number) : void {
+      this.updateLinkWeight(linkIndex, this.links_[linkIndex].weight + 1);
+    }
+
+
+    decrementLinkWeight(linkIndex : number) : void {
+      this.updateLinkWeight(linkIndex, this.links_[linkIndex].weight - 1);
     }
 
 
@@ -291,6 +322,7 @@ module Egm {
         return this.nodes_;
       }
       this.nodes_ = arg;
+      this.updateNodeIndex();
       this.updateConnections();
       return this;
     }
@@ -303,8 +335,26 @@ module Egm {
         return this.links_;
       }
       this.links_ = arg;
+      this.updateLinkIndex();
       this.updateConnections();
       return this;
+    }
+
+
+    link(linkIndex : number) : Link;
+    link(fromNodeIndex : number, toNodeIndex : number) : Link;
+    link(index1 : number, index2 : number=undefined) : Link {
+      if (index2 === undefined) {
+        return this.links_[index1];
+      } else {
+        return this.links_.reduce((p, link) => {
+          if (link.source.index == index1 && link.target.index == index2) {
+            return link;
+          } else {
+            return p;
+          }
+        }, undefined);
+      }
     }
 
 
@@ -419,6 +469,19 @@ module Egm {
       this.nodes_.forEach((node : Node, i : number) => {
         node.index = i;
       });
+    }
+
+
+    private updateLinkIndex() : void {
+      this.links_.forEach((link : Link, i : number) => {
+        link.index = i;
+      });
+    }
+
+
+    private updateIndex() : void {
+      this.updateNodeIndex();
+      this.updateLinkIndex();
     }
   }
 }
