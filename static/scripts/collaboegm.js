@@ -108,6 +108,20 @@ var Svg;
         return Rect;
     })();
     Svg.Rect = Rect;
+
+    var ViewBox = (function () {
+        function ViewBox(x, y, width, height) {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+        }
+        ViewBox.prototype.toString = function () {
+            return this.x + ' ' + this.y + ' ' + this.width + ' ' + this.height;
+        };
+        return ViewBox;
+    })();
+    Svg.ViewBox = ViewBox;
 })(Svg || (Svg = {}));
 var Egm;
 (function (Egm) {
@@ -537,7 +551,6 @@ var Egm;
                 return this.grid_.nodes();
             }
             this.grid_.nodes(arg);
-
             return this;
         };
 
@@ -647,6 +660,7 @@ var Egm;
             return function (selection) {
                 _this.rootSelection = selection;
 
+                selection.attr("viewBox", (new Svg.ViewBox(0, 0, $(window).width(), $(window).height())).toString());
                 selection.append("text").classed("measure", true);
 
                 selection.append("rect").attr("fill", "none").attr("width", "100%").attr("height", "100%");
@@ -667,7 +681,6 @@ var Egm;
         EgmUi.prototype.createNode = function (text) {
             var node = new Egm.Node();
             node.text = text;
-
             return node;
         };
 
@@ -727,7 +740,6 @@ var Egm;
                     return !egm.grid_.hasPath(toNode.index, fromNode.index);
                 }).dragToNode(function (fromNode, toNode) {
                     egm.grid_.mergeNode(fromNode.index, toNode.index);
-
                     egm.draw();
                     egm.unselectElement();
                     egm.focusNode(toNode);

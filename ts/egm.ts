@@ -109,11 +109,6 @@ module Egm {
         return this.grid_.nodes();
       }
       this.grid_.nodes(arg);
-      //this.grid_.nodes().forEach(node => {
-      //  var rect = this.calcRect(node.text);
-      //  node.width = rect.width;
-      //  node.height = rect.height;
-      //});
       return this;
     }
 
@@ -249,6 +244,7 @@ module Egm {
       return (selection) => {
         this.rootSelection = selection;
 
+        selection.attr("viewBox", (new Svg.ViewBox(0, 0, $(window).width(), $(window).height())).toString());
         selection.append("text")
           .classed("measure", true)
           ;
@@ -280,9 +276,6 @@ module Egm {
     private createNode(text : string) : Node {
       var node = new Egm.Node();
       node.text = text;
-      //var rect = this.calcRect(node.text);
-      //node.width = rect.width;
-      //node.height = rect.height;
       return node;
     }
 
@@ -352,9 +345,6 @@ module Egm {
             })
             .dragToNode((fromNode : Node, toNode : Node) : void => {
               egm.grid_.mergeNode(fromNode.index, toNode.index);
-              //var rect = egm.calcRect(toNode.text);
-              //toNode.width = rect.width;
-              //toNode.height = rect.height;
               egm.draw();
               egm.unselectElement();
               egm.focusNode(toNode);
