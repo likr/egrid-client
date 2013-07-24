@@ -1,13 +1,50 @@
-<div>
-  <form ng-submit="createProject()">
-    <label>Name</label>
-    <input type="text" name="name" ng-model="newProject.name"/>
+<div egm-application-view>
+  <h2>プロジェクト</h2>
 
-    <input type="submit"/>
-  </form>
-  <ul>
-    <li ng-repeat="project in projects">
-      <a href="/#/projects/{{project.key}}">{{project.name}}</a>
-    </li>
+  <ul class="breadcrumb">
+    <li class="active">プロジェクト</li>
   </ul>
+
+  <div tabset>
+    <div tab heading="一覧">
+      <h3>プロジェクト一覧</h3>
+      <table class="table">
+        <tr>
+          <th>#</th>
+          <th>名前</th>
+          <th>操作</th>
+        </tr>
+        <tr ng-repeat="project in projects">
+          <td>{{$index + 1}}</td>
+          <td>{{project.name}}</td>
+          <td><a href="/#/projects/{{project.key}}">確認</a>
+        </tr>
+      </table>
+    </div tab>
+
+    <div tab heading="新規">
+      <h3>新規プロジェクト</h3>
+      <form class="form-horizontal" ng-submit="createProject()">
+        <div class="control-group">
+          <label class="control-label" for="name">Name</label>
+          <div class="controls">
+            <input type="text" name="name" placeholder="Project Name" ng-model="newProject.name"/>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="note">Note</label>
+          <div class="controls">
+            <textarea name="note" rows="3" placeholder="Note" ng-model="newProject.note"></textarea>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="controls">
+            <input type="submit" class="btn"/>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>

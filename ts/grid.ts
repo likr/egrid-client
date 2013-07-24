@@ -16,11 +16,12 @@ module Egm {
     private static nextKey = 0;
 
 
-    constructor() {
+    constructor(text : string, weight : number = undefined) {
+      this.text = text;
       this.x = 0;
       this.y = 0;
       this.theta = 0;
-      this.weight = 1;
+      this.weight = weight || 1;
       this.key = Node.nextKey++;
     }
 
@@ -66,8 +67,8 @@ module Egm {
     private static nextKey = 0;
 
 
-    constructor(public source : Node, public target : Node) {
-      this.weight = 1;
+    constructor(public source : Node, public target : Node, weight : number = undefined) {
+      this.weight = weight || 1;
       this.key = Link.nextKey++;
     }
 
@@ -310,8 +311,22 @@ module Egm {
     }
 
 
-    toJSON() : string {
-      return "";
+    toJSON() : Object {
+      return {
+        nodes : this.nodes_.map(node => {
+          return {
+            text : node.text,
+            weight : node.text
+          };
+        }),
+        links : this.links_.map(link => {
+          return {
+            source : link.source.index,
+            target : link.target.index,
+            weight : link.weight
+          }
+        })
+      };
     }
 
 

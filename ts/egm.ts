@@ -94,7 +94,7 @@ module Egm {
     private onDisableUndoButton : () => void;
     private onEnableRedoButton : () => void;
     private onDisableRedoButton : () => void;
-    private onClickSaveButton : (jsonString : string) => void;
+    private onClickSaveButton : (json : Object) => void;
 
 
     constructor () {
@@ -240,19 +240,25 @@ module Egm {
     }
 
 
-    display() : (selection : D3.Selection) => void {
+    display(regionWidth : number = undefined, regionHeight : number = undefined)
+        : (selection : D3.Selection) => void {
+      console.log(regionWidth, regionHeight);
       return (selection) => {
         this.rootSelection = selection;
 
-        selection.attr("viewBox", (new Svg.ViewBox(0, 0, $(window).width(), $(window).height())).toString());
+        var displayWidth = regionWidth || $(window).width();
+        var displayHeight = regionHeight || $(window).height();
+        console.log(displayWidth, displayHeight);
+        console.log(selection, selection.node());
+        selection.attr("viewBox", (new Svg.ViewBox(0, 0, displayWidth, displayHeight)).toString());
         selection.append("text")
           .classed("measure", true)
           ;
 
         selection.append("rect")
-          .attr("fill", "none")
-          .attr("width", "100%")
-          .attr("height", "100%")
+          .attr("fill", "#fff")
+          .attr("width", displayWidth)
+          .attr("height", displayHeight)
           ;
 
         this.contentsSelection = selection.append("g").classed("contents", true);
@@ -274,8 +280,7 @@ module Egm {
 
 
     private createNode(text : string) : Node {
-      var node = new Egm.Node();
-      node.text = text;
+      var node = new Egm.Node(text);
       return node;
     }
 
@@ -284,6 +289,24 @@ module Egm {
       var translate = new Svg.Transform.Translate(
         $(document).width() / 2 - node.x,
         $(document).height() / 2 - node.y);
+      var scale = new Svg.Transform.Scale(this.contentsZoomBehavior.scale());
+      this.contentsZoomBehavior.translate([translate.x, translate.y]);
+      this.contentsSelection
+        .transition()
+        .attr("transform", translate.toString() + scale.toString());
+    }
+
+
+    focusCenter() : void {
+      var hExtent = d3.extent(this.grid_.nodes(), node => {
+        return node.center().x;
+      });
+      var vExtent = d3.extent(this.grid_.nodes(), node => {
+        return node.center().y;
+      });
+      var translate = new Svg.Transform.Translate(
+          (hExtent[0] + hExtent[1]) / 2,
+          (vExtent[0] + vExtent[1]) / 2);
       var scale = new Svg.Transform.Scale(this.contentsZoomBehavior.scale());
       this.contentsZoomBehavior.translate([translate.x, translate.y]);
       this.contentsSelection
@@ -400,7 +423,7 @@ module Egm {
 
     private save() : void {
       if (this.onClickSaveButton) {
-        this.onClickSaveButton(JSON.stringify(this.grid_));
+        this.onClickSaveButton(this.grid_.toJSON());
       }
     }
 

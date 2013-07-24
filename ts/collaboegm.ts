@@ -2,7 +2,14 @@
 /// <reference path="libs/d3/d3.d.ts"/>
 /// <reference path="egm.ts"/>
 
-angular.module('collaboegm', [])
+angular.module('collaboegm', ["ui.bootstrap"])
+  .directive("egmApplicationView", function() {
+    return {
+      restrict: "EA",
+      transclude: true,
+      templateUrl: "/partials/base.html"
+    };
+  })
   .config(['$routeProvider', function ($routeProvider) {
     $routeProvider
       .when("/projects", {
@@ -12,6 +19,10 @@ angular.module('collaboegm', [])
       .when("/projects/:projectId", {
         templateUrl : "/partials/project-detail.html",
         controller : ProjectDetailController
+      })
+      .when("/participants/:projectId/:participantId/grid", {
+        templateUrl : "/partials/egm-show.html",
+        controller : EgmShowController
       })
       .when("/participants/:projectId/:participantId/edit", {
         templateUrl : "/partials/egm-edit.html",
@@ -24,10 +35,11 @@ angular.module('collaboegm', [])
       .otherwise({
         redirectTo : "/projects"
       });
-  }]);
+  }])
+;
 
 
-function ProjectListController($scope, $http, $templateCache) {
+function ProjectListController($scope, $http, $templateCache, $location) {
   $http.get("/api/projects").success((data) => {
     $scope.projects = data;
   });
@@ -38,14 +50,14 @@ function ProjectListController($scope, $http, $templateCache) {
       url : '/api/projects',
       data : $scope.newProject
     }).success(function(data, status, headers, config) {
-      $scope.projects.push(data);
-      $scope.newProject = {};
+      var path = "/projects/" + data.key;
+      $location.path(path);
     });
   };
 }
 
 
-function ProjectDetailController($scope, $routeParams, $http) {
+function ProjectDetailController($scope, $routeParams, $http, $location) {
   var projectId = $routeParams.projectId;
   $scope.projectId = projectId;
   $http.get("/api/projects/" + projectId).success(data => {
@@ -61,8 +73,8 @@ function ProjectDetailController($scope, $routeParams, $http) {
       url : '/api/participants/' + projectId,
       data : $scope.newParticipant
     }).success(function(data) {
-      $scope.participants.push(data);
-      $scope.newParticipant = {};
+      var path = "/participants/" + projectId + "/" + data.key;
+      $location.path(path);
     });
   };
 }
@@ -71,9 +83,40 @@ function ProjectDetailController($scope, $routeParams, $http) {
 function ParticipantDetailController($scope, $routeParams, $http) {
   var projectId = $scope.projectId = $routeParams.projectId;
   var participantId = $scope.participantId = $routeParams.participantId;
+  var jsonUrl = "/api/participants/" + projectId + "/" + participantId + "/grid";
+
   $http.get("/api/participants/" + projectId + "/" + participantId).success(data => {
     $scope.participant = data;
   });
+
+  var gridTabInitialized = false;
+  $scope.gridTabSelected = function() {
+    if (!gridTabInitialized) {
+      var width = 960 / 12 * 10;
+      var height = 500;
+      var egm = new Egm.EgmUi;
+
+      d3.select("#display")
+        .attr("width", width)
+        .attr("height", height)
+        .style("display", "block")
+        .style("border", "solid")
+        .call(egm.display(width, height))
+        ;
+
+      $http.get(jsonUrl).success(data => {
+        var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight));
+        var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
+        egm
+          .nodes(nodes)
+          .links(links)
+          .draw()
+          .focusCenter()
+          ;
+      });
+      gridTabInitialized = true;
+    }
+  }
 }
 
 
@@ -83,7 +126,34 @@ interface Data {
 }
 
 
-function EgmEditController($scope, $routeParams, $http) {
+function EgmShowController($scope, $routeParams, $http, $location) {
+  var projectId = $scope.projectId = $routeParams.projectId;
+  var participantId = $scope.participantId = $routeParams.participantId;
+  var jsonUrl = "/api/participants/" + projectId + "/" + participantId + "/grid";
+
+  var egm = new Egm.EgmUi;
+  d3.select("#display")
+    .call(egm.display())
+    ;
+
+  $http.get(jsonUrl).success((data : Data) => {
+    var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight));
+    var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
+    egm
+      .nodes(nodes)
+      .links(links)
+      .draw()
+      .focusCenter()
+      ;
+  });
+}
+
+
+function EgmEditController($scope, $routeParams, $http, $location) {
+  var projectId = $scope.projectId = $routeParams.projectId;
+  var participantId = $scope.participantId = $routeParams.participantId;
+  var jsonUrl = "/api/participants/" + projectId + "/" + participantId + "/grid";
+
   var egm = new Egm.EgmUi;
   d3.select("#display")
     .call(egm.display())
@@ -107,7 +177,15 @@ function EgmEditController($scope, $routeParams, $http) {
         }));
   d3.select("#saveButton")
     .call(egm.saveButton()
-        .save(jsonString => {
+        .save(json => {
+          $http({
+            method : 'PUT',
+            url : jsonUrl,
+            data : json
+          }).success(function(data) {
+            var path = "/participants/" + projectId + "/" + participantId;
+            $location.path(path);
+          });
         }));
 
   d3.select("#display .contents")
@@ -183,14 +261,14 @@ function EgmEditController($scope, $routeParams, $http) {
           d3.select("#mergeNodeButton").classed("invisible", true);
         }));
 
-  var projectId = $scope.projectId = $routeParams.projectId;
-  var participantId = $scope.participantId = $routeParams.participantId;
-  var jsonUrl = "/api/participants/" + projectId + "/" + participantId + "/grid";
   $http.get(jsonUrl).success((data : Data) => {
+    var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight));
+    var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
     egm
-      .nodes(data.nodes)
-      .links(data.links)
+      .nodes(nodes)
+      .links(links)
       .draw()
+      .focusCenter()
       ;
   });
 }

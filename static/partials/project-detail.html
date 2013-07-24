@@ -1,16 +1,77 @@
-<div>
+<div egm-application-view>
   <h2>{{project.name}}</h2>
 
-  <form ng-submit="createParticipant()">
-    <label>Name</label>
-    <input type="text" name="name" ng-model="newParticipant.name"/>
-
-    <input type="submit"/>
-  </form>
-
-  <ul>
-    <li ng-repeat="participant in participants">
-      <a href="/#/participants/{{projectId}}/{{participant.key}}">{{participant.name}}</a>
-    </li>
+  <ul class="breadcrumb">
+    <li><a href="/">プロジェクト</a> <span class="divider">/</span></li>
+    <li class="active">{{project.name}}</li>
   </ul>
+
+  <div tabset>
+    <div tab heading="詳細">
+      <form class="form-horizontal">
+        <div class="control-group">
+          <label class="control-label" for="name">Name</label>
+          <div class="controls">
+            <input type="text" name="name" placeholder="Project Name" ng-model="project.name"/>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="note">Note</label>
+          <div class="controls">
+            <textarea name="note" rows="3" placeholder="Note" ng-model="project.note"></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div tab heading="被験者">
+      <div tabset>
+        <div tab heading="一覧">
+          <h3>被験者一覧</h3>
+          <table class="table">
+            <tr>
+              <th>#</th>
+              <th>名前</th>
+              <th>操作</th>
+            </tr>
+            <tr ng-repeat="participant in participants">
+              <td>{{$index + 1}}</td>
+              <td>{{participant.name}}</td>
+              <td><a href="/#/participants/{{projectId}}/{{participant.key}}">確認</a>
+            </tr>
+          </table>
+        </div>
+
+        <div tab heading="新規">
+          <h3>新規被験者</h3>
+          <form class="form-horizontal" ng-submit="createParticipant()">
+            <div class="control-group">
+              <label class="control-label" for="name">Name</label>
+              <div class="controls">
+                <input type="text" name="name" placeholder="Participant Name" ng-model="newParticipant.name"/>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label class="control-label" for="note">Note</label>
+              <div class="controls">
+                <textarea name="note" rows="3" placeholder="Note" ng-model="newParticipant.note"></textarea>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="controls">
+                <input type="submit" class="btn"/>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div tab heading="グリッド">
+      <h3>被験者全体グリッド</h3>
+    </div>
+  </div>
 </div>

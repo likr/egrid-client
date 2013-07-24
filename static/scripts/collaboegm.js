@@ -126,11 +126,13 @@ var Svg;
 var Egm;
 (function (Egm) {
     var Node = (function () {
-        function Node() {
+        function Node(text, weight) {
+            if (typeof weight === "undefined") { weight = undefined; }
+            this.text = text;
             this.x = 0;
             this.y = 0;
             this.theta = 0;
-            this.weight = 1;
+            this.weight = weight || 1;
             this.key = Node.nextKey++;
         }
         Node.prototype.left = function () {
@@ -162,10 +164,11 @@ var Egm;
     Egm.Node = Node;
 
     var Link = (function () {
-        function Link(source, target) {
+        function Link(source, target, weight) {
+            if (typeof weight === "undefined") { weight = undefined; }
             this.source = source;
             this.target = target;
-            this.weight = 1;
+            this.weight = weight || 1;
             this.key = Link.nextKey++;
         }
         Link.prototype.toString = function () {
@@ -377,7 +380,21 @@ var Egm;
         };
 
         Grid.prototype.toJSON = function () {
-            return "";
+            return {
+                nodes: this.nodes_.map(function (node) {
+                    return {
+                        text: node.text,
+                        weight: node.text
+                    };
+                }),
+                links: this.links_.map(function (link) {
+                    return {
+                        source: link.source.index,
+                        target: link.target.index,
+                        weight: link.weight
+                    };
+                })
+            };
         };
 
         Grid.prototype.nodes = function (arg) {
@@ -655,15 +672,22 @@ var Egm;
             }
         };
 
-        EgmUi.prototype.display = function () {
+        EgmUi.prototype.display = function (regionWidth, regionHeight) {
+            if (typeof regionWidth === "undefined") { regionWidth = undefined; }
+            if (typeof regionHeight === "undefined") { regionHeight = undefined; }
             var _this = this;
+            console.log(regionWidth, regionHeight);
             return function (selection) {
                 _this.rootSelection = selection;
 
-                selection.attr("viewBox", (new Svg.ViewBox(0, 0, $(window).width(), $(window).height())).toString());
+                var displayWidth = regionWidth || $(window).width();
+                var displayHeight = regionHeight || $(window).height();
+                console.log(displayWidth, displayHeight);
+                console.log(selection, selection.node());
+                selection.attr("viewBox", (new Svg.ViewBox(0, 0, displayWidth, displayHeight)).toString());
                 selection.append("text").classed("measure", true);
 
-                selection.append("rect").attr("fill", "none").attr("width", "100%").attr("height", "100%");
+                selection.append("rect").attr("fill", "#fff").attr("width", displayWidth).attr("height", displayHeight);
 
                 _this.contentsSelection = selection.append("g").classed("contents", true);
                 _this.contentsSelection.append("g").classed("links", true);
@@ -679,13 +703,25 @@ var Egm;
         };
 
         EgmUi.prototype.createNode = function (text) {
-            var node = new Egm.Node();
-            node.text = text;
+            var node = new Egm.Node(text);
             return node;
         };
 
         EgmUi.prototype.focusNode = function (node) {
             var translate = new Svg.Transform.Translate($(document).width() / 2 - node.x, $(document).height() / 2 - node.y);
+            var scale = new Svg.Transform.Scale(this.contentsZoomBehavior.scale());
+            this.contentsZoomBehavior.translate([translate.x, translate.y]);
+            this.contentsSelection.transition().attr("transform", translate.toString() + scale.toString());
+        };
+
+        EgmUi.prototype.focusCenter = function () {
+            var hExtent = d3.extent(this.grid_.nodes(), function (node) {
+                return node.center().x;
+            });
+            var vExtent = d3.extent(this.grid_.nodes(), function (node) {
+                return node.center().y;
+            });
+            var translate = new Svg.Transform.Translate((hExtent[0] + hExtent[1]) / 2, (vExtent[0] + vExtent[1]) / 2);
             var scale = new Svg.Transform.Scale(this.contentsZoomBehavior.scale());
             this.contentsZoomBehavior.translate([translate.x, translate.y]);
             this.contentsSelection.transition().attr("transform", translate.toString() + scale.toString());
@@ -793,7 +829,7 @@ var Egm;
 
         EgmUi.prototype.save = function () {
             if (this.onClickSaveButton) {
-                this.onClickSaveButton(JSON.stringify(this.grid_));
+                this.onClickSaveButton(this.grid_.toJSON());
             }
         };
 
@@ -1138,7 +1174,13 @@ var Egm;
     })();
     Egm.EgmUi = EgmUi;
 })(Egm || (Egm = {}));
-angular.module('collaboegm', []).config([
+angular.module('collaboegm', ["ui.bootstrap"]).directive("egmApplicationView", function () {
+    return {
+        restrict: "EA",
+        transclude: true,
+        templateUrl: "/partials/base.html"
+    };
+}).config([
     '$routeProvider',
     function ($routeProvider) {
         $routeProvider.when("/projects", {
@@ -1147,6 +1189,9 @@ angular.module('collaboegm', []).config([
         }).when("/projects/:projectId", {
             templateUrl: "/partials/project-detail.html",
             controller: ProjectDetailController
+        }).when("/participants/:projectId/:participantId/grid", {
+            templateUrl: "/partials/egm-show.html",
+            controller: EgmShowController
         }).when("/participants/:projectId/:participantId/edit", {
             templateUrl: "/partials/egm-edit.html",
             controller: EgmEditController
@@ -1159,7 +1204,7 @@ angular.module('collaboegm', []).config([
     }
 ]);
 
-function ProjectListController($scope, $http, $templateCache) {
+function ProjectListController($scope, $http, $templateCache, $location) {
     $http.get("/api/projects").success(function (data) {
         $scope.projects = data;
     });
@@ -1170,13 +1215,13 @@ function ProjectListController($scope, $http, $templateCache) {
             url: '/api/projects',
             data: $scope.newProject
         }).success(function (data, status, headers, config) {
-            $scope.projects.push(data);
-            $scope.newProject = {};
+            var path = "/projects/" + data.key;
+            $location.path(path);
         });
     };
 }
 
-function ProjectDetailController($scope, $routeParams, $http) {
+function ProjectDetailController($scope, $routeParams, $http, $location) {
     var projectId = $routeParams.projectId;
     $scope.projectId = projectId;
     $http.get("/api/projects/" + projectId).success(function (data) {
@@ -1192,8 +1237,8 @@ function ProjectDetailController($scope, $routeParams, $http) {
             url: '/api/participants/' + projectId,
             data: $scope.newParticipant
         }).success(function (data) {
-            $scope.participants.push(data);
-            $scope.newParticipant = {};
+            var path = "/participants/" + projectId + "/" + data.key;
+            $location.path(path);
         });
     };
 }
@@ -1201,12 +1246,59 @@ function ProjectDetailController($scope, $routeParams, $http) {
 function ParticipantDetailController($scope, $routeParams, $http) {
     var projectId = $scope.projectId = $routeParams.projectId;
     var participantId = $scope.participantId = $routeParams.participantId;
+    var jsonUrl = "/api/participants/" + projectId + "/" + participantId + "/grid";
+
     $http.get("/api/participants/" + projectId + "/" + participantId).success(function (data) {
         $scope.participant = data;
     });
+
+    var gridTabInitialized = false;
+    $scope.gridTabSelected = function () {
+        if (!gridTabInitialized) {
+            var width = 960 / 12 * 10;
+            var height = 500;
+            var egm = new Egm.EgmUi();
+
+            d3.select("#display").attr("width", width).attr("height", height).style("display", "block").style("border", "solid").call(egm.display(width, height));
+
+            $http.get(jsonUrl).success(function (data) {
+                var nodes = data.nodes.map(function (d) {
+                    return new Egm.Node(d.text, d.weight);
+                });
+                var links = data.links.map(function (d) {
+                    return new Egm.Link(nodes[d.source], nodes[d.target], d.weight);
+                });
+                egm.nodes(nodes).links(links).draw().focusCenter();
+            });
+            gridTabInitialized = true;
+        }
+    };
 }
 
-function EgmEditController($scope, $routeParams, $http) {
+function EgmShowController($scope, $routeParams, $http, $location) {
+    var projectId = $scope.projectId = $routeParams.projectId;
+    var participantId = $scope.participantId = $routeParams.participantId;
+    var jsonUrl = "/api/participants/" + projectId + "/" + participantId + "/grid";
+
+    var egm = new Egm.EgmUi();
+    d3.select("#display").call(egm.display());
+
+    $http.get(jsonUrl).success(function (data) {
+        var nodes = data.nodes.map(function (d) {
+            return new Egm.Node(d.text, d.weight);
+        });
+        var links = data.links.map(function (d) {
+            return new Egm.Link(nodes[d.source], nodes[d.target], d.weight);
+        });
+        egm.nodes(nodes).links(links).draw().focusCenter();
+    });
+}
+
+function EgmEditController($scope, $routeParams, $http, $location) {
+    var projectId = $scope.projectId = $routeParams.projectId;
+    var participantId = $scope.participantId = $routeParams.participantId;
+    var jsonUrl = "/api/participants/" + projectId + "/" + participantId + "/grid";
+
     var egm = new Egm.EgmUi();
     d3.select("#display").call(egm.display());
     d3.select("#appendNodeButton").call(egm.appendNodeButton());
@@ -1220,7 +1312,15 @@ function EgmEditController($scope, $routeParams, $http) {
     }).onDisable(function () {
         d3.select("#redoButton").node().disabled = true;
     }));
-    d3.select("#saveButton").call(egm.saveButton().save(function (jsonString) {
+    d3.select("#saveButton").call(egm.saveButton().save(function (json) {
+        $http({
+            method: 'PUT',
+            url: jsonUrl,
+            data: json
+        }).success(function (data) {
+            var path = "/participants/" + projectId + "/" + participantId;
+            $location.path(path);
+        });
     }));
 
     d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "radderUpButton").attr("r", 15).call(egm.radderUpButton().onEnable(function (selection) {
@@ -1248,10 +1348,13 @@ function EgmEditController($scope, $routeParams, $http) {
         d3.select("#mergeNodeButton").classed("invisible", true);
     }));
 
-    var projectId = $scope.projectId = $routeParams.projectId;
-    var participantId = $scope.participantId = $routeParams.participantId;
-    var jsonUrl = "/api/participants/" + projectId + "/" + participantId + "/grid";
     $http.get(jsonUrl).success(function (data) {
-        egm.nodes(data.nodes).links(data.links).draw();
+        var nodes = data.nodes.map(function (d) {
+            return new Egm.Node(d.text, d.weight);
+        });
+        var links = data.links.map(function (d) {
+            return new Egm.Link(nodes[d.source], nodes[d.target], d.weight);
+        });
+        egm.nodes(nodes).links(links).draw().focusCenter();
     });
 }
