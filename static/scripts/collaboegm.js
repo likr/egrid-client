@@ -433,11 +433,19 @@ var Egm;
         };
 
         Grid.prototype.layout = function () {
+            this.nodes_.forEach(function (node) {
+                var tmp = node.height;
+                node.height = node.width;
+                node.width = tmp;
+            });
+
             dagre.layout().nodes(this.nodes_).edges(this.links_).rankSep(200).edgeSep(20).run();
 
             this.nodes_.forEach(function (node) {
                 node.x = node.dagre.y;
                 node.y = node.dagre.x;
+                node.width = node.dagre.height;
+                node.height = node.dagre.width;
             });
 
             this.links_.forEach(function (link) {
@@ -676,14 +684,11 @@ var Egm;
             if (typeof regionWidth === "undefined") { regionWidth = undefined; }
             if (typeof regionHeight === "undefined") { regionHeight = undefined; }
             var _this = this;
-            console.log(regionWidth, regionHeight);
             return function (selection) {
                 _this.rootSelection = selection;
 
                 var displayWidth = regionWidth || $(window).width();
                 var displayHeight = regionHeight || $(window).height();
-                console.log(displayWidth, displayHeight);
-                console.log(selection, selection.node());
                 selection.attr("viewBox", (new Svg.ViewBox(0, 0, displayWidth, displayHeight)).toString());
                 selection.append("text").classed("measure", true);
 
@@ -1186,6 +1191,9 @@ angular.module('collaboegm', ["ui.bootstrap"]).directive("egmApplicationView", f
         $routeProvider.when("/projects", {
             templateUrl: "/partials/project-list.html",
             controller: ProjectListController
+        }).when("/projects/:projectId/grid", {
+            templateUrl: "/partials/egm-show-all.html",
+            controller: EgmShowAllController
         }).when("/projects/:projectId", {
             templateUrl: "/partials/project-detail.html",
             controller: ProjectDetailController
@@ -1349,6 +1357,26 @@ function EgmEditController($scope, $routeParams, $http, $location) {
     }));
 
     $http.get(jsonUrl).success(function (data) {
+        var nodes = data.nodes.map(function (d) {
+            return new Egm.Node(d.text, d.weight);
+        });
+        var links = data.links.map(function (d) {
+            return new Egm.Link(nodes[d.source], nodes[d.target], d.weight);
+        });
+        egm.nodes(nodes).links(links).draw().focusCenter();
+    });
+}
+
+function EgmShowAllController($scope, $routeParams, $http, $location) {
+    var projectId = $scope.projectId = $routeParams.projectId;
+    var participantId = $scope.participantId = $routeParams.participantId;
+    var jsonUrl = "/api/projects/" + projectId + "/grid";
+
+    var egm = new Egm.EgmUi();
+    d3.select("#display").call(egm.display());
+
+    $http.get(jsonUrl).success(function (data) {
+        console.log(data);
         var nodes = data.nodes.map(function (d) {
             return new Egm.Node(d.text, d.weight);
         });

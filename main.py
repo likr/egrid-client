@@ -89,13 +89,38 @@ class ParticipantHandler(webapp2.RequestHandler):
         self.response.write(json.dumps(participant.dump()))
 
 
-class ParticipantsJsonHandler(webapp2.RequestHandler):
+class ProjectGridHandler(webapp2.RequestHandler):
     def get(self, project_id):
         project = Project.get(project_id)
         participants = Participant.all().filter('project =', project)
+        all_nodes = []
+        all_links = []
+        index_offset = 0
+        node_texts = {}
         for participant in participants:
-            pass
-        self.response.write(DEFAULT_JSON)
+            grid = json.loads(participant.json)
+            nodes = grid['nodes']
+            links = grid['links']
+            index_map = []
+            for i, node in enumerate(nodes):
+                text = node['text']
+                if text in node_texts:
+                    #all_nodes[node_texts[text]]['weight'] += 1
+                    index_map.append(node_texts[text])
+                else:
+                    node_texts[text] = index_offset
+                    index_map.append(index_offset)
+                    all_nodes.append(node)
+                    index_offset += 1
+            for link in links:
+                all_links.append({
+                    'source': index_map[link['source']],
+                    'target': index_map[link['target']],
+                })
+        self.response.write(json.dumps({
+            'nodes': all_nodes,
+            'links': all_links,
+        }))
 
 
 class ParticipantJsonHandler(webapp2.RequestHandler):
@@ -105,7 +130,7 @@ class ParticipantJsonHandler(webapp2.RequestHandler):
 
     def put(self, project_id, participant_id):
         participant = Participant.get(participant_id)
-        participant.json = self.request.body or DEFAULT_JSON
+        participant.json = self.request.body.decode('utf-8') or DEFAULT_JSON
         participant.put()
         self.response.write(json.dumps(participant.dump()))
 
@@ -113,6 +138,7 @@ class ParticipantJsonHandler(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
     ('/api/projects', ProjectsHandler),
     ('/api/projects/([\w\-]+)', ProjectHandler),
+    ('/api/projects/([\w\-]+)/grid', ProjectGridHandler),
     ('/api/participants/([\w\-]+)', ParticipantsHandler),
     ('/api/participants/([\w\-]+)/([\w\-]+)', ParticipantHandler),
     ('/api/participants/([\w\-]+)/([\w\-]+)/grid', ParticipantJsonHandler),

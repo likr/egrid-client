@@ -16,6 +16,10 @@ angular.module('collaboegm', ["ui.bootstrap"])
         templateUrl : "/partials/project-list.html",
         controller : ProjectListController
       })
+      .when("/projects/:projectId/grid", {
+        templateUrl : "/partials/egm-show-all.html",
+        controller : EgmShowAllController
+      })
       .when("/projects/:projectId", {
         templateUrl : "/partials/project-detail.html",
         controller : ProjectDetailController
@@ -262,6 +266,30 @@ function EgmEditController($scope, $routeParams, $http, $location) {
         }));
 
   $http.get(jsonUrl).success((data : Data) => {
+    var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight));
+    var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
+    egm
+      .nodes(nodes)
+      .links(links)
+      .draw()
+      .focusCenter()
+      ;
+  });
+}
+
+
+function EgmShowAllController($scope, $routeParams, $http, $location) {
+  var projectId = $scope.projectId = $routeParams.projectId;
+  var participantId = $scope.participantId = $routeParams.participantId;
+  var jsonUrl = "/api/projects/" + projectId + "/grid";
+
+  var egm = new Egm.EgmUi;
+  d3.select("#display")
+    .call(egm.display())
+    ;
+
+  $http.get(jsonUrl).success((data : Data) => {
+    console.log(data);
     var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight));
     var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
     egm

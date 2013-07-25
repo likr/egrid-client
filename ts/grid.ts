@@ -374,6 +374,12 @@ module Egm {
 
 
     layout() : void {
+      this.nodes_.forEach(node => {
+        var tmp = node.height;
+        node.height = node.width;
+        node.width = tmp
+      });
+
       dagre.layout()
         .nodes(this.nodes_)
         .edges(this.links_)
@@ -385,6 +391,8 @@ module Egm {
       this.nodes_.forEach(node => {
         node.x = node.dagre.y;
         node.y = node.dagre.x;
+        node.width = node.dagre.height;
+        node.height = node.dagre.width;
       });
 
       this.links_.forEach(link => {

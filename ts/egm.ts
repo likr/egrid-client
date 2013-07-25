@@ -242,14 +242,11 @@ module Egm {
 
     display(regionWidth : number = undefined, regionHeight : number = undefined)
         : (selection : D3.Selection) => void {
-      console.log(regionWidth, regionHeight);
       return (selection) => {
         this.rootSelection = selection;
 
         var displayWidth = regionWidth || $(window).width();
         var displayHeight = regionHeight || $(window).height();
-        console.log(displayWidth, displayHeight);
-        console.log(selection, selection.node());
         selection.attr("viewBox", (new Svg.ViewBox(0, 0, displayWidth, displayHeight)).toString());
         selection.append("text")
           .classed("measure", true)
