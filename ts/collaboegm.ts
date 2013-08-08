@@ -153,7 +153,7 @@ function EgmShowController($scope, $routeParams, $http, $location) {
 }
 
 
-function EgmEditController($scope, $routeParams, $http, $location) {
+function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
   var projectId = $scope.projectId = $routeParams.projectId;
   var participantId = $scope.participantId = $routeParams.participantId;
   var jsonUrl = "/api/participants/" + projectId + "/" + participantId + "/grid";
@@ -162,7 +162,22 @@ function EgmEditController($scope, $routeParams, $http, $location) {
   d3.select("#display")
     .call(egm.display())
     ;
-  d3.select("#appendNodeButton").call(egm.appendNodeButton());
+  d3.select("#appendNodeButton")
+    .call(egm.appendNodeButton()
+        .onClick((callback) => {
+          console.log("moge");
+          var d = $dialog.dialog({
+              backdrop: true,
+              keyboard: true,
+              backdropClick: true,
+              templateUrl: '/partials/input-text-dialog.html',
+              controller: 'InputTextDialogController'
+          });
+          d.open().then((result) => {
+            console.log(result);
+            callback(result);
+          });
+        }));
   d3.select("#undoButton")
     .call(egm.undoButton()
         .onEnable(() => {
@@ -299,4 +314,19 @@ function EgmShowAllController($scope, $routeParams, $http, $location) {
       .focusCenter()
       ;
   });
+}
+
+
+function InputTextDialogController($scope, dialog) {
+  $scope.close = function(result) {
+    dialog.close(result);
+  }
+}
+
+
+function openTextInputDialog() {
+}
+
+
+function closeTextInputDialog() {
 }

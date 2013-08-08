@@ -6,6 +6,7 @@
 module Egm {
   export interface AppendNodeButton {
     (selection : D3.Selection) : AppendNodeButton;
+    onClick(f : (callback : (result : string) => void) => void) : AppendNodeButton;
   }
 
 
@@ -314,21 +315,30 @@ module Egm {
 
     appendNodeButton() : AppendNodeButton {
       var egm = this;
+      var onClickPrompt;
       var f : any = function(selection : D3.Selection) : AppendNodeButton {
         selection.on("click", () => {
-          var name = prompt("追加する要素の名前を入力してください");
-          if (name) {
-            var node = egm.createNode(name);
-            egm.grid_.appendNode(node);
-            egm.draw();
-            var addedElement = egm.contentsSelection.select(".element.new");
-            egm.rootSelection.selectAll(".element.new").classed("new", false);
-            egm.selectElement(addedElement);
-            egm.focusNode(addedElement.datum());
-          }
+          console.log("hoge");
+          console.log(onClickPrompt);
+          onClickPrompt && onClickPrompt((name : string) : void => {
+            console.log(name);
+            if (name) {
+              var node = egm.createNode(name);
+              egm.grid_.appendNode(node);
+              egm.draw();
+              var addedElement = egm.contentsSelection.select(".element.new");
+              egm.rootSelection.selectAll(".element.new").classed("new", false);
+              egm.selectElement(addedElement);
+              egm.focusNode(addedElement.datum());
+            }
+          });
         });
         return this;
       };
+      f.onClick = function(f : (callback : (result : string) => void) => void) : AppendNodeButton {
+        onClickPrompt = f;
+        return this;
+      }
       return f;
     }
 

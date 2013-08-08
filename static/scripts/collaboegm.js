@@ -734,19 +734,28 @@ var Egm;
 
         EgmUi.prototype.appendNodeButton = function () {
             var egm = this;
+            var onClickPrompt;
             var f = function (selection) {
                 selection.on("click", function () {
-                    var name = prompt("追加する要素の名前を入力してください");
-                    if (name) {
-                        var node = egm.createNode(name);
-                        egm.grid_.appendNode(node);
-                        egm.draw();
-                        var addedElement = egm.contentsSelection.select(".element.new");
-                        egm.rootSelection.selectAll(".element.new").classed("new", false);
-                        egm.selectElement(addedElement);
-                        egm.focusNode(addedElement.datum());
-                    }
+                    console.log("hoge");
+                    console.log(onClickPrompt);
+                    onClickPrompt && onClickPrompt(function (name) {
+                        console.log(name);
+                        if (name) {
+                            var node = egm.createNode(name);
+                            egm.grid_.appendNode(node);
+                            egm.draw();
+                            var addedElement = egm.contentsSelection.select(".element.new");
+                            egm.rootSelection.selectAll(".element.new").classed("new", false);
+                            egm.selectElement(addedElement);
+                            egm.focusNode(addedElement.datum());
+                        }
+                    });
                 });
+                return this;
+            };
+            f.onClick = function (f) {
+                onClickPrompt = f;
                 return this;
             };
             return f;
@@ -1302,14 +1311,27 @@ function EgmShowController($scope, $routeParams, $http, $location) {
     });
 }
 
-function EgmEditController($scope, $routeParams, $http, $location) {
+function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
     var projectId = $scope.projectId = $routeParams.projectId;
     var participantId = $scope.participantId = $routeParams.participantId;
     var jsonUrl = "/api/participants/" + projectId + "/" + participantId + "/grid";
 
     var egm = new Egm.EgmUi();
     d3.select("#display").call(egm.display());
-    d3.select("#appendNodeButton").call(egm.appendNodeButton());
+    d3.select("#appendNodeButton").call(egm.appendNodeButton().onClick(function (callback) {
+        console.log("moge");
+        var d = $dialog.dialog({
+            backdrop: true,
+            keyboard: true,
+            backdropClick: true,
+            templateUrl: '/partials/input-text-dialog.html',
+            controller: 'InputTextDialogController'
+        });
+        d.open().then(function (result) {
+            console.log(result);
+            callback(result);
+        });
+    }));
     d3.select("#undoButton").call(egm.undoButton().onEnable(function () {
         d3.select("#undoButton").node().disabled = false;
     }).onDisable(function () {
@@ -1385,4 +1407,16 @@ function EgmShowAllController($scope, $routeParams, $http, $location) {
         });
         egm.nodes(nodes).links(links).draw().focusCenter();
     });
+}
+
+function InputTextDialogController($scope, dialog) {
+    $scope.close = function (result) {
+        dialog.close(result);
+    };
+}
+
+function openTextInputDialog() {
+}
+
+function closeTextInputDialog() {
 }
