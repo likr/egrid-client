@@ -6,6 +6,8 @@ module Egm {
     public index : number;
     public x : number;
     public y : number;
+    public baseWidth : number;
+    public baseHeight : number;
     public width : number;
     public height : number;
     public theta : number;
@@ -416,6 +418,17 @@ module Egm {
 
     hasLink(fromIndex : number, toIndex : number) : boolean {
       return this.linkMatrix[fromIndex][toIndex];
+    }
+
+
+    numConnectedNodes(index : number) : number {
+      var result = 0;
+      this.nodes_.forEach((_, j) => {
+        if (this.pathMatrix[index][j] || this.pathMatrix[j][index]) {
+          result += 1;
+        }
+      })
+      return result;
     }
 
 
