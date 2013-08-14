@@ -407,6 +407,16 @@ var Egm;
             return this;
         };
 
+        Grid.prototype.findNode = function (text) {
+            var result = null;
+            this.nodes_.forEach(function (node) {
+                if (node.text == text) {
+                    result = node;
+                }
+            });
+            return result;
+        };
+
         Grid.prototype.links = function (arg) {
             if (arg === undefined) {
                 return this.links_;
@@ -600,7 +610,7 @@ var Egm;
 
             var nodesSelection = this.contentsSelection.select(".nodes").selectAll(".element").data(nodes, Object);
             nodesSelection.exit().remove();
-            nodesSelection.enter().append("g").classed("new", true).call(this.appendElement());
+            nodesSelection.enter().append("g").call(this.appendElement());
 
             nodesSelection.each(function (node) {
                 var rect = _this.calcRect(node.text);
@@ -737,16 +747,18 @@ var Egm;
             var onClickPrompt;
             var f = function (selection) {
                 selection.on("click", function () {
-                    console.log("hoge");
-                    console.log(onClickPrompt);
-                    onClickPrompt && onClickPrompt(function (name) {
-                        console.log(name);
-                        if (name) {
-                            var node = egm.createNode(name);
-                            egm.grid_.appendNode(node);
-                            egm.draw();
-                            var addedElement = egm.contentsSelection.select(".element.new");
-                            egm.rootSelection.selectAll(".element.new").classed("new", false);
+                    onClickPrompt && onClickPrompt(function (text) {
+                        if (text) {
+                            var node;
+                            if (node = egm.grid_.findNode(text)) {
+                            } else {
+                                node = egm.createNode(text);
+                                egm.grid_.appendNode(node);
+                                egm.draw();
+                            }
+                            var addedElement = egm.contentsSelection.selectAll(".element").filter(function (node) {
+                                return node.text == text;
+                            });
                             egm.selectElement(addedElement);
                             egm.focusNode(addedElement.datum());
                         }
@@ -813,6 +825,10 @@ var Egm;
             var f = function (selection) {
                 _this.raddering(selection, Raddering.RadderUp);
             };
+            f.onClick = function (f) {
+                grid.openLadderUpPrompt = f;
+                return this;
+            };
             f.onEnable = function (f) {
                 grid.onEnableRadderUpButton = f;
                 return this;
@@ -828,6 +844,10 @@ var Egm;
             var grid = this;
             var f = function (selection) {
                 grid.raddering(selection, Raddering.RadderDown);
+                return this;
+            };
+            f.onClick = function (f) {
+                grid.openLadderDownPrompt = f;
                 return this;
             };
             f.onEnable = function (f) {
@@ -1128,9 +1148,7 @@ var Egm;
 
         EgmUi.prototype.raddering = function (selection, type) {
             var _this = this;
-            selection.call(this.dragNode().isDroppable(function (fromNode, toNode) {
-                return !((type == Raddering.RadderUp && _this.grid_.hasPath(fromNode.index, toNode.index)) || (type == Raddering.RadderDown && _this.grid_.hasPath(toNode.index, fromNode.index)));
-            }).dragToNode(function (fromNode, toNode) {
+            var dragToNode = function (fromNode, toNode) {
                 switch (type) {
                     case Raddering.RadderUp:
                         if (_this.grid_.hasLink(toNode.index, fromNode.index)) {
@@ -1159,23 +1177,43 @@ var Egm;
                         }
                         break;
                 }
-            }).dragToOther(function (fromNode) {
-                var text = prompt("追加する要素の名前を入力してください");
-                if (text) {
-                    var node = _this.createNode(text);
-                    switch (type) {
-                        case Raddering.RadderUp:
-                            _this.grid_.radderUpAppend(fromNode.index, node);
-                            break;
-                        case Raddering.RadderDown:
-                            _this.grid_.radderDownAppend(fromNode.index, node);
-                            break;
-                    }
-                    _this.draw();
-                    _this.drawNodeConnection();
-                    _this.enableNodeButtons();
-                    _this.focusNode(node);
+            };
+
+            selection.call(this.dragNode().isDroppable(function (fromNode, toNode) {
+                return !((type == Raddering.RadderUp && _this.grid_.hasPath(fromNode.index, toNode.index)) || (type == Raddering.RadderDown && _this.grid_.hasPath(toNode.index, fromNode.index)));
+            }).dragToNode(dragToNode).dragToOther(function (fromNode) {
+                var openPrompt;
+                switch (type) {
+                    case Raddering.RadderUp:
+                        openPrompt = _this.openLadderUpPrompt;
+                        break;
+                    case Raddering.RadderDown:
+                        openPrompt = _this.openLadderDownPrompt;
+                        break;
                 }
+
+                openPrompt && openPrompt(function (text) {
+                    if (text) {
+                        var node;
+                        if (node = _this.grid_.findNode(text)) {
+                            dragToNode(fromNode, node);
+                        } else {
+                            node = _this.createNode(text);
+                            switch (type) {
+                                case Raddering.RadderUp:
+                                    _this.grid_.radderUpAppend(fromNode.index, node);
+                                    break;
+                                case Raddering.RadderDown:
+                                    _this.grid_.radderDownAppend(fromNode.index, node);
+                                    break;
+                            }
+                            _this.draw();
+                            _this.drawNodeConnection();
+                            _this.enableNodeButtons();
+                            _this.focusNode(node);
+                        }
+                    }
+                });
             }));
         };
 
@@ -1193,6 +1231,14 @@ angular.module('collaboegm', ["ui.bootstrap"]).directive("egmApplicationView", f
         restrict: "EA",
         transclude: true,
         templateUrl: "/partials/base.html"
+    };
+}).directive('focusMe', function ($timeout) {
+    return {
+        link: function (scope, element, attrs, model) {
+            $timeout(function () {
+                element[0].focus();
+            });
+        }
     };
 }).config([
     '$routeProvider',
@@ -1315,23 +1361,43 @@ function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
     var projectId = $scope.projectId = $routeParams.projectId;
     var participantId = $scope.participantId = $routeParams.participantId;
     var jsonUrl = "/api/participants/" + projectId + "/" + participantId + "/grid";
+    var overallJsonUrl = "/api/projects/" + projectId + "/grid";
+    var overallTexts = [];
 
     var egm = new Egm.EgmUi();
     d3.select("#display").call(egm.display());
-    d3.select("#appendNodeButton").call(egm.appendNodeButton().onClick(function (callback) {
-        console.log("moge");
-        var d = $dialog.dialog({
-            backdrop: true,
-            keyboard: true,
-            backdropClick: true,
-            templateUrl: '/partials/input-text-dialog.html',
-            controller: 'InputTextDialogController'
+
+    $scope.call = function (callback) {
+        callback();
+    };
+
+    function callWithProxy(f) {
+        $scope.callback = f;
+        $("#ngClickProxy").trigger("click");
+    }
+
+    function openInputTextDialog(callback) {
+        callWithProxy(function () {
+            var texts = overallTexts.concat(egm.nodes().map(function (node) {
+                return node.text;
+            }));
+            var d = $dialog.dialog({
+                backdrop: true,
+                keyboard: true,
+                backdropClick: true,
+                templateUrl: '/partials/input-text-dialog.html',
+                controller: InputTextDialogController,
+                resolve: { texts: function () {
+                        return texts;
+                    } }
+            });
+            d.open().then(function (result) {
+                callback(result);
+            });
         });
-        d.open().then(function (result) {
-            console.log(result);
-            callback(result);
-        });
-    }));
+    }
+
+    d3.select("#appendNodeButton").call(egm.appendNodeButton().onClick(openInputTextDialog));
     d3.select("#undoButton").call(egm.undoButton().onEnable(function () {
         d3.select("#undoButton").node().disabled = false;
     }).onDisable(function () {
@@ -1353,13 +1419,13 @@ function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
         });
     }));
 
-    d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "radderUpButton").attr("r", 15).call(egm.radderUpButton().onEnable(function (selection) {
+    d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "radderUpButton").attr("r", 15).call(egm.radderUpButton().onClick(openInputTextDialog).onEnable(function (selection) {
         var node = selection.datum();
         d3.select("#radderUpButton").classed("invisible", false).attr("transform", new Svg.Transform.Translate(node.left().x, node.left().y));
     }).onDisable(function () {
         d3.select("#radderUpButton").classed("invisible", true);
     }));
-    d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "radderDownButton").attr("r", 15).call(egm.radderDownButton().onEnable(function (selection) {
+    d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "radderDownButton").attr("r", 15).call(egm.radderDownButton().onClick(openInputTextDialog).onEnable(function (selection) {
         var node = selection.datum();
         d3.select("#radderDownButton").classed("invisible", false).attr("transform", new Svg.Transform.Translate(node.right().x, node.right().y));
     }).onDisable(function () {
@@ -1387,6 +1453,12 @@ function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
         });
         egm.nodes(nodes).links(links).draw().focusCenter();
     });
+
+    $http.get(overallJsonUrl).success(function (data) {
+        data.nodes.forEach(function (d) {
+            overallTexts.push(d.text);
+        });
+    });
 }
 
 function EgmShowAllController($scope, $routeParams, $http, $location) {
@@ -1409,14 +1481,24 @@ function EgmShowAllController($scope, $routeParams, $http, $location) {
     });
 }
 
-function InputTextDialogController($scope, dialog) {
+function InputTextDialogController($scope, dialog, texts) {
+    texts.sort();
+    texts = unique(texts);
+    $scope.texts = texts;
     $scope.close = function (result) {
         dialog.close(result);
     };
 }
 
-function openTextInputDialog() {
-}
-
-function closeTextInputDialog() {
+function unique(array) {
+    var result = [];
+    if (array.length > 0) {
+        result.push(array[0]);
+        array.forEach(function (item) {
+            if (item != result[result.length - 1]) {
+                result.push(item);
+            }
+        });
+    }
+    return result;
 }

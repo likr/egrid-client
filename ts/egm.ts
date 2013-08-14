@@ -26,6 +26,7 @@ module Egm {
 
   export interface RadderUpButton {
     (selection : D3.Selection) : RadderUpButton;
+    onClick(f : (callback : (result : string) => void) => void) : RadderUpButton;
     onEnable(f : (selection : D3.Selection) => void) : RadderUpButton;
     onDisable(f : () => void) : RadderUpButton;
   }
@@ -33,6 +34,7 @@ module Egm {
 
   export interface RadderDownButton {
     (selection : D3.Selection) : RadderDownButton;
+    onClick(f : (callback : (result : string) => void) => void) : RadderDownButton;
     onEnable(f : (selection : D3.Selection) => void) : RadderDownButton;
     onDisable(f : () => void) : RadderDownButton;
   }
@@ -96,6 +98,9 @@ module Egm {
     private onEnableRedoButton : () => void;
     private onDisableRedoButton : () => void;
     private onClickSaveButton : (json : Object) => void;
+    private openAppendNodePrompt : (callback : (result : string) => void) => void;
+    private openLadderUpPrompt : (callback : (result : string) => void) => void;
+    private openLadderDownPrompt : (callback : (result : string) => void) => void;
 
 
     constructor () {
@@ -144,7 +149,6 @@ module Egm {
       nodesSelection
         .enter()
         .append("g")
-        .classed("new", true)
         .call(this.appendElement())
         ;
 
@@ -318,16 +322,20 @@ module Egm {
       var onClickPrompt;
       var f : any = function(selection : D3.Selection) : AppendNodeButton {
         selection.on("click", () => {
-          console.log("hoge");
-          console.log(onClickPrompt);
-          onClickPrompt && onClickPrompt((name : string) : void => {
-            console.log(name);
-            if (name) {
-              var node = egm.createNode(name);
-              egm.grid_.appendNode(node);
-              egm.draw();
-              var addedElement = egm.contentsSelection.select(".element.new");
-              egm.rootSelection.selectAll(".element.new").classed("new", false);
+          onClickPrompt && onClickPrompt((text : string) : void => {
+            if (text) {
+            var node;
+              if (node = egm.grid_.findNode(text)) {
+                // node already exists
+              } else {
+                // create new node
+                node = egm.createNode(text);
+                egm.grid_.appendNode(node);
+                egm.draw();
+              }
+              var addedElement = egm.contentsSelection
+                  .selectAll(".element")
+                  .filter(node => node.text == text);
               egm.selectElement(addedElement);
               egm.focusNode(addedElement.datum());
             }
@@ -398,14 +406,18 @@ module Egm {
       var f : any = (selection : D3.Selection) : void => {
         this.raddering(selection, Raddering.RadderUp);
       }
+      f.onClick = function(f : (callback : (result : string) => void) => void) : RadderUpButton {
+        grid.openLadderUpPrompt = f;
+        return this;
+      };
       f.onEnable = function(f : (selection : D3.Selection) => void) : RadderUpButton {
         grid.onEnableRadderUpButton = f;
         return this;
-      }
+      };
       f.onDisable = function(f : () => void) : RadderUpButton {
         grid.onDisableRadderUpButton = f;
         return this;
-      }
+      };
       return f;
     }
 
@@ -416,6 +428,10 @@ module Egm {
         grid.raddering(selection, Raddering.RadderDown);
         return this;
       }
+      f.onClick = function(f : (callback : (result : string) => void) => void) : RadderDownButton {
+        grid.openLadderDownPrompt = f;
+        return this;
+      };
       f.onEnable = function(f : (selection : D3.Selection) => void) : RadderDownButton {
         grid.onEnableRadderDownButton = f;
         return this;
@@ -770,58 +786,76 @@ module Egm {
 
 
     private raddering(selection : D3.Selection, type : Raddering) : void {
+      var dragToNode = (fromNode : Node, toNode : Node) : void => {
+        switch (type) {
+        case Raddering.RadderUp:
+          if (this.grid_.hasLink(toNode.index, fromNode.index)) {
+            var link = this.grid_.link(toNode.index, fromNode.index);
+            this.grid_.incrementLinkWeight(link.index);
+            this.draw();
+          } else {
+            this.grid_.radderUp(fromNode.index, toNode.index);
+            this.draw();
+            this.drawNodeConnection();
+            this.enableNodeButtons();
+            this.focusNode(toNode);
+          }
+          break;
+        case Raddering.RadderDown:
+          if (this.grid_.hasLink(fromNode.index, toNode.index)) {
+            var link = this.grid_.link(fromNode.index, toNode.index);
+            this.grid_.incrementLinkWeight(link.index);
+            this.draw();
+          } else {
+            this.grid_.radderDown(fromNode.index, toNode.index);
+            this.draw();
+            this.drawNodeConnection();
+            this.enableNodeButtons();
+            this.focusNode(toNode);
+          }
+          break;
+        }
+      };
+
       selection.call(this.dragNode()
           .isDroppable((fromNode : Node, toNode : Node) : bool => {
             return !((type == Raddering.RadderUp && this.grid_.hasPath(fromNode.index, toNode.index))
               || (type == Raddering.RadderDown && this.grid_.hasPath(toNode.index, fromNode.index)))
           })
-          .dragToNode((fromNode : Node, toNode : Node) : void => {
+          .dragToNode(dragToNode)
+          .dragToOther((fromNode : Node) : void => {
+            var openPrompt;
             switch (type) {
             case Raddering.RadderUp:
-              if (this.grid_.hasLink(toNode.index, fromNode.index)) {
-                var link = this.grid_.link(toNode.index, fromNode.index);
-                this.grid_.incrementLinkWeight(link.index);
-                this.draw();
-              } else {
-                this.grid_.radderUp(fromNode.index, toNode.index);
-                this.draw();
-                this.drawNodeConnection();
-                this.enableNodeButtons();
-                this.focusNode(toNode);
-              }
+              openPrompt = this.openLadderUpPrompt;
               break;
             case Raddering.RadderDown:
-              if (this.grid_.hasLink(fromNode.index, toNode.index)) {
-                var link = this.grid_.link(fromNode.index, toNode.index);
-                this.grid_.incrementLinkWeight(link.index);
-                this.draw();
-              } else {
-                this.grid_.radderDown(fromNode.index, toNode.index);
-                this.draw();
-                this.drawNodeConnection();
-                this.enableNodeButtons();
-                this.focusNode(toNode);
-              }
+              openPrompt = this.openLadderDownPrompt;
               break;
             }
-          })
-          .dragToOther((fromNode : Node) : void => {
-            var text = prompt("追加する要素の名前を入力してください");
-            if (text) {
-              var node = this.createNode(text);
-              switch (type) {
-              case Raddering.RadderUp:
-                this.grid_.radderUpAppend(fromNode.index, node);
-                break;
-              case Raddering.RadderDown:
-                this.grid_.radderDownAppend(fromNode.index, node);
-                break;
+
+            openPrompt && openPrompt(text => {
+              if (text) {
+                var node;
+                if (node = this.grid_.findNode(text)) {
+                  dragToNode(fromNode, node);
+                } else {
+                  node = this.createNode(text);
+                  switch (type) {
+                  case Raddering.RadderUp:
+                    this.grid_.radderUpAppend(fromNode.index, node);
+                    break;
+                  case Raddering.RadderDown:
+                    this.grid_.radderDownAppend(fromNode.index, node);
+                    break;
+                  }
+                  this.draw();
+                  this.drawNodeConnection();
+                  this.enableNodeButtons();
+                  this.focusNode(node);
+                }
               }
-              this.draw();
-              this.drawNodeConnection();
-              this.enableNodeButtons();
-              this.focusNode(node);
-            }
+            })
           }));
     }
 

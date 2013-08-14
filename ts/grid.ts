@@ -343,6 +343,17 @@ module Egm {
     }
 
 
+    findNode(text : string) : Node {
+      var result = null;
+      this.nodes_.forEach(node => {
+        if (node.text == text) {
+          result = node;
+        }
+      });
+      return result;
+    }
+
+
     links() : Link[];
     links(links : Link[]) : Grid;
     links(arg? : Link[]) : any {

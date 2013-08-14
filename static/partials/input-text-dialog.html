@@ -2,8 +2,15 @@
   <h3>This is the title</h3>
 </div>
 <div class="modal-body">
-  <p>Enter a value to pass to <code>close</code> as the result: <input ng-model="result" /></p>
+  <form ng-submit="close(result)">
+    <input ng-model="result" focus-me/>
+    <input type="submit" class="btn btn-primary"/>
+  </form>
+  <table class="table">
+    <tr ng-repeat="text in texts | filter:result" ng-dblclick="close(text)">
+      <td>{{text}}</td>
+    </li>
+  </table>
 </div>
 <div class="modal-footer">
-  <button ng-click="close(result)" class="btn btn-primary" >Close</button>
 </div>
