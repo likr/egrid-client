@@ -301,7 +301,7 @@ module Egm {
 
 
     private focusNode(node : Node) : void {
-      var s = this.contentsZoomBehavior.scale();
+      var s = this.contentsZoomBehavior.scale() || 1;
       var translate = new Svg.Transform.Translate(
         this.displayWidth / 2 - node.center().x * s,
         this.displayHeight / 2 - node.center().y * s

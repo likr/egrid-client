@@ -740,7 +740,7 @@ var Egm;
         };
 
         EgmUi.prototype.focusNode = function (node) {
-            var s = this.contentsZoomBehavior.scale();
+            var s = this.contentsZoomBehavior.scale() || 1;
             var translate = new Svg.Transform.Translate(this.displayWidth / 2 - node.center().x * s, this.displayHeight / 2 - node.center().y * s);
             var scale = new Svg.Transform.Scale(s);
             this.contentsZoomBehavior.translate([translate.x, translate.y]);
