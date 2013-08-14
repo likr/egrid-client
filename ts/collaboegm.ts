@@ -234,13 +234,15 @@ function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
         }));
 
   function showNodeController(selection) {
-    var nodeRect = selection.node().getBoundingClientRect();
-    var controllerWidth = $("#nodeController").width();
-    d3.select("#nodeController")
-      .classed("invisible", false)
-      .style("top", nodeRect.top + nodeRect.height + 10 + "px")
-      .style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px")
-      ;
+    if (!selection.empty()) {
+      var nodeRect = selection.node().getBoundingClientRect();
+      var controllerWidth = $("#nodeController").width();
+      d3.select("#nodeController")
+        .classed("invisible", false)
+        .style("top", nodeRect.top + nodeRect.height + 10 + "px")
+        .style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px")
+        ;
+    }
   }
 
   function hideNodeController() {

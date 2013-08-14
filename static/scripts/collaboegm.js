@@ -535,15 +535,20 @@ var Egm;
             this.links_.forEach(function (link) {
                 _this.linkMatrix[link.source.index][link.target.index] = true;
             });
-            this.pathMatrix = this.nodes_.map(function (_, fromIndex) {
-                return _this.nodes_.map(function (_, toIndex) {
+            this.nodes_.forEach(function (node) {
+                node.isTop = node.isBottom = true;
+            });
+            this.pathMatrix = this.nodes_.map(function (fromNode, fromIndex) {
+                return _this.nodes_.map(function (toNode, toIndex) {
                     var checkedFlags = _this.nodes_.map(function (_) {
                         return false;
                     });
                     var front = [fromIndex];
                     while (front.length > 0) {
                         var nodeIndex = front.pop();
-                        if (nodeIndex == toIndex) {
+                        if (nodeIndex != fromIndex && nodeIndex == toIndex) {
+                            fromNode.isBottom = false;
+                            toNode.isTop = false;
                             return true;
                         }
                         if (!checkedFlags[nodeIndex]) {
@@ -646,6 +651,8 @@ var Egm;
                 return -d.baseWidth / 2;
             }).attr("y", function (d) {
                 return -d.baseHeight / 2;
+            }).attr("rx", function (d) {
+                return (d.original || d.isTop || d.isBottom) ? 0 : EgmUi.rx;
             }).attr("width", function (d) {
                 return d.baseWidth;
             }).attr("height", function (d) {
@@ -787,6 +794,7 @@ var Egm;
                             if (node = egm.grid_.findNode(text)) {
                             } else {
                                 node = egm.createNode(text);
+                                node.original = true;
                                 egm.grid_.appendNode(node);
                                 egm.disableNodeButtons();
                                 egm.draw(function () {
@@ -996,7 +1004,7 @@ var Egm;
                 };
                 selection.classed("element", true).on("click", onElementClick).on("touchstart", onElementClick);
 
-                selection.append("rect").attr("rx", EgmUi.rx);
+                selection.append("rect");
                 selection.append("text");
             };
         };
@@ -1469,9 +1477,11 @@ function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
     }));
 
     function showNodeController(selection) {
-        var nodeRect = selection.node().getBoundingClientRect();
-        var controllerWidth = $("#nodeController").width();
-        d3.select("#nodeController").classed("invisible", false).style("top", nodeRect.top + nodeRect.height + 10 + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
+        if (!selection.empty()) {
+            var nodeRect = selection.node().getBoundingClientRect();
+            var controllerWidth = $("#nodeController").width();
+            d3.select("#nodeController").classed("invisible", false).style("top", nodeRect.top + nodeRect.height + 10 + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
+        }
     }
 
     function hideNodeController() {

@@ -177,6 +177,7 @@ module Egm {
       nodesSelection.selectAll("rect")
         .attr("x", d => - d.baseWidth / 2)
         .attr("y", d => - d.baseHeight / 2)
+        .attr("rx", d => (d.original || d.isTop || d.isBottom) ? 0 : EgmUi.rx)
         .attr("width", d => d.baseWidth)
         .attr("height", d => d.baseHeight)
         ;
@@ -360,6 +361,7 @@ module Egm {
               } else {
                 // create new node
                 node = egm.createNode(text);
+                node.original = true;
                 egm.grid_.appendNode(node);
                 egm.disableNodeButtons();
                 egm.draw(() => {
@@ -590,7 +592,7 @@ module Egm {
           .on("touchstart", onElementClick)
           ;
 
-        selection.append("rect").attr("rx", EgmUi.rx);
+        selection.append("rect");
         selection.append("text");
       }
     }

@@ -15,6 +15,9 @@ module Egm {
     public dagre : any;
     public weight : number;
     public key : number;
+    public original : boolean;
+    public isTop : boolean;
+    public isBottom : boolean;
     private static nextKey = 0;
 
 
@@ -489,13 +492,18 @@ module Egm {
       this.links_.forEach(link => {
         this.linkMatrix[link.source.index][link.target.index] = true;
       });
-      this.pathMatrix = this.nodes_.map((_, fromIndex) => {
-        return this.nodes_.map((_, toIndex) => {
+      this.nodes_.forEach(node => {
+        node.isTop = node.isBottom = true;
+      });
+      this.pathMatrix = this.nodes_.map((fromNode, fromIndex) => {
+        return this.nodes_.map((toNode, toIndex) => {
           var checkedFlags : boolean[] = this.nodes_.map(_ => false);
           var front : number[] = [fromIndex];
           while (front.length > 0) {
             var nodeIndex = front.pop();
-            if (nodeIndex == toIndex) {
+            if (nodeIndex != fromIndex && nodeIndex == toIndex) {
+              fromNode.isBottom = false;
+              toNode.isTop = false;
               return true;
             }
             if (!checkedFlags[nodeIndex]) {
