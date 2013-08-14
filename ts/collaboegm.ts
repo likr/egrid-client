@@ -233,80 +233,52 @@ function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
           });
         }));
 
-  d3.select("#display .contents")
-    .append("circle")
-    .classed("invisible", true)
-    .attr("id", "radderUpButton")
-    .attr("r", 15)
+  function showNodeController(selection) {
+    var nodeRect = selection.node().getBoundingClientRect();
+    var controllerWidth = $("#nodeController").width();
+    d3.select("#nodeController")
+      .classed("invisible", false)
+      .style("top", nodeRect.top + nodeRect.height + 10 + "px")
+      .style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px")
+      ;
+  }
+
+  function hideNodeController() {
+    d3.select("#nodeController")
+      .classed("invisible", true);
+  }
+
+  function moveNodeController(selection) {
+    var nodeRect = selection.node().getBoundingClientRect();
+    var controllerWidth = $("#nodeController").width();
+    d3.select("#nodeController")
+      .style("top", nodeRect.top + nodeRect.height + 10 + "px")
+      .style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px")
+      ;
+  }
+
+  d3.select("#ladderUpButton")
     .call(egm.radderUpButton()
         .onClick(openInputTextDialog)
-        .onEnable(selection => {
-          var node = selection.datum();
-          d3.select("#radderUpButton")
-            .classed("invisible", false)
-            .attr("transform", new Svg.Transform.Translate(
-                node.left().x,
-                node.left().y))
-            ;
-        })
-        .onDisable(() => {
-          d3.select("#radderUpButton").classed("invisible", true);
-        }));
-  d3.select("#display .contents")
-    .append("circle")
-    .classed("invisible", true)
-    .attr("id", "radderDownButton")
-    .attr("r", 15)
+        .onEnable(showNodeController)
+        .onDisable(hideNodeController)
+    );
+  d3.select("#ladderDownButton")
     .call(egm.radderDownButton()
         .onClick(openInputTextDialog)
-        .onEnable(selection => {
-          var node = selection.datum();
-          d3.select("#radderDownButton")
-            .classed("invisible", false)
-            .attr("transform", new Svg.Transform.Translate(
-                node.right().x,
-                node.right().y))
-            ;
-        })
-        .onDisable(() => {
-          d3.select("#radderDownButton").classed("invisible", true);
-        }));
-  d3.select("#display .contents")
-    .append("circle")
-    .classed("invisible", true)
-    .attr("id", "removeNodeButton")
-    .attr("r", 15)
+        .onEnable(showNodeController)
+        .onDisable(hideNodeController)
+    );
+  d3.select("#removeNodeButton")
     .call(egm.removeNodeButton()
-        .onEnable(selection => {
-          var node = selection.datum();
-          d3.select("#removeNodeButton")
-            .classed("invisible", false)
-            .attr("transform", new Svg.Transform.Translate(
-                node.bottom().x,
-                node.bottom().y))
-            ;
-        })
-        .onDisable(() => {
-          d3.select("#removeNodeButton").classed("invisible", true);
-        }));
-  d3.select("#display .contents")
-    .append("circle")
-    .classed("invisible", true)
-    .attr("id", "mergeNodeButton")
-    .attr("r", 15)
+        .onEnable(showNodeController)
+        .onDisable(hideNodeController)
+    );
+  d3.select("#mergeNodeButton")
     .call(egm.mergeNodeButton()
-        .onEnable(selection => {
-          var node = selection.datum();
-          d3.select("#mergeNodeButton")
-            .classed("invisible", false)
-            .attr("transform", new Svg.Transform.Translate(
-                node.top().x,
-                node.top().y))
-            ;
-        })
-        .onDisable(() => {
-          d3.select("#mergeNodeButton").classed("invisible", true);
-        }));
+        .onEnable(showNodeController)
+        .onDisable(hideNodeController)
+    );
 
   $http.get(jsonUrl).success((data : Data) => {
     var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight));

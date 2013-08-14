@@ -132,7 +132,7 @@ module Egm {
     }
 
 
-    draw() : EgmUi {
+    draw(f = undefined) : EgmUi {
       var spline = d3.svg.line()
         .x(d => d.x)
         .y(d => d.y)
@@ -233,6 +233,7 @@ module Egm {
         })
         .attr("stroke-width", d => linkWidthScale(d.weight))
         ;
+      transition.each("end", f);
 
       this.resetUndoButton();
       this.resetRedoButton();
@@ -287,6 +288,8 @@ module Egm {
               var scale = new Svg.Transform.Scale(d3.event.scale);
               this.contentsSelection.attr(
                 "transform", translate.toString() + scale.toString());
+
+              this.enableRemoveNodeButton(d3.select(".selected"));
           })
           ;
         selection.call(this.contentsZoomBehavior);
@@ -358,7 +361,10 @@ module Egm {
                 // create new node
                 node = egm.createNode(text);
                 egm.grid_.appendNode(node);
-                egm.draw();
+                egm.disableNodeButtons();
+                egm.draw(() => {
+                  egm.enableNodeButtons();
+                });
               }
               var addedElement = egm.contentsSelection
                   .selectAll(".element")
@@ -497,6 +503,7 @@ module Egm {
     private undo() : void {
       this.grid_.undo();
       this.draw();
+      this.disableNodeButtons();
     }
 
 
@@ -506,7 +513,7 @@ module Egm {
         selection.on("click", () => {
           egm.undo();
         });
-        this.resetUndoButton;
+        egm.resetUndoButton();
         return this;
       }
       f.onEnable = function(f : () => void) : UndoButton {
@@ -524,6 +531,7 @@ module Egm {
     private redo() : void {
       this.grid_.redo();
       this.draw();
+      this.disableNodeButtons();
     }
 
 
@@ -533,7 +541,7 @@ module Egm {
         selection.on("click", () => {
           egm.redo();
         });
-        this.resetRedoButton;
+        egm.resetRedoButton();
         return this;
       }
       f.onEnable = function(f : () => void) : RedoButton {
@@ -628,13 +636,18 @@ module Egm {
     }
 
 
-    private unselectElement() {
-      this.rootSelection.selectAll(".selected").classed("selected", false);
-      this.rootSelection.selectAll(".connected").classed("connected", false);
+    private disableNodeButtons() {
       this.disableRemoveNodeButton();
       this.disableMergeNodeButton();
       this.disableRadderUpButton();
       this.disableRadderDownButton();
+    }
+
+
+    private unselectElement() {
+      this.rootSelection.selectAll(".selected").classed("selected", false);
+      this.rootSelection.selectAll(".connected").classed("connected", false);
+      this.disableNodeButtons();
     }
 
 
@@ -733,7 +746,7 @@ module Egm {
             .on("dragstart", () => {
               from = d3.select(".selected");
               from.classed("dragSource", true);
-              var pos = d3.mouse(egm.rootSelection.select(".contents").node());
+              var pos = [from.datum().center().x, from.datum().center().y];
               egm.rootSelection.select(".contents")
                 .append("line")
                 .classed("dragLine", true)
@@ -748,8 +761,9 @@ module Egm {
               var dragLineSelection = egm.rootSelection.select(".dragLine");
               var x1 = Number(dragLineSelection.attr("x1"));
               var y1 = Number(dragLineSelection.attr("y1"));
-              var x2 = d3.event.x;
-              var y2 = d3.event.y;
+              var p2 = d3.mouse(egm.rootSelection.select(".contents").node());
+              var x2 = p2[0];
+              var y2 = p2[1];
               var theta = Math.atan2(y2 - y1, x2 - x1);
               var r = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1)) - 10;
               dragLineSelection
@@ -822,10 +836,12 @@ module Egm {
             this.draw();
           } else {
             this.grid_.radderUp(fromNode.index, toNode.index);
-            this.draw();
+            this.draw(() => {
+              this.enableNodeButtons();
+            });
             this.drawNodeConnection();
-            this.enableNodeButtons();
             this.focusNode(toNode);
+            this.disableNodeButtons();
           }
           break;
         case Raddering.RadderDown:
@@ -835,10 +851,12 @@ module Egm {
             this.draw();
           } else {
             this.grid_.radderDown(fromNode.index, toNode.index);
-            this.draw();
+            this.draw(() => {
+              this.enableNodeButtons();
+            });
             this.drawNodeConnection();
-            this.enableNodeButtons();
             this.focusNode(toNode);
+            this.disableNodeButtons();
           }
           break;
         }
@@ -876,9 +894,10 @@ module Egm {
                     this.grid_.radderDownAppend(fromNode.index, node);
                     break;
                   }
-                  this.draw();
+                  this.draw(() => {
+                    this.enableNodeButtons();
+                  });
                   this.drawNodeConnection();
-                  this.enableNodeButtons();
                   this.focusNode(node);
                 }
               }

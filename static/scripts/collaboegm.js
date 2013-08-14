@@ -608,7 +608,8 @@ var Egm;
             return this;
         };
 
-        EgmUi.prototype.draw = function () {
+        EgmUi.prototype.draw = function (f) {
+            if (typeof f === "undefined") { f = undefined; }
             var _this = this;
             var spline = d3.svg.line().x(function (d) {
                 return d.x;
@@ -685,6 +686,7 @@ var Egm;
             }).attr("stroke-width", function (d) {
                 return linkWidthScale(d.weight);
             });
+            transition.each("end", f);
 
             this.resetUndoButton();
             this.resetRedoButton();
@@ -729,6 +731,8 @@ var Egm;
                     var translate = new Svg.Transform.Translate(d3.event.translate[0], d3.event.translate[1]);
                     var scale = new Svg.Transform.Scale(d3.event.scale);
                     _this.contentsSelection.attr("transform", translate.toString() + scale.toString());
+
+                    _this.enableRemoveNodeButton(d3.select(".selected"));
                 });
                 selection.call(_this.contentsZoomBehavior);
             };
@@ -784,7 +788,10 @@ var Egm;
                             } else {
                                 node = egm.createNode(text);
                                 egm.grid_.appendNode(node);
-                                egm.draw();
+                                egm.disableNodeButtons();
+                                egm.draw(function () {
+                                    egm.enableNodeButtons();
+                                });
                             }
                             var addedElement = egm.contentsSelection.selectAll(".element").filter(function (node) {
                                 return node.text == text;
@@ -915,6 +922,7 @@ var Egm;
         EgmUi.prototype.undo = function () {
             this.grid_.undo();
             this.draw();
+            this.disableNodeButtons();
         };
 
         EgmUi.prototype.undoButton = function () {
@@ -923,7 +931,7 @@ var Egm;
                 selection.on("click", function () {
                     egm.undo();
                 });
-                this.resetUndoButton;
+                egm.resetUndoButton();
                 return this;
             };
             f.onEnable = function (f) {
@@ -940,6 +948,7 @@ var Egm;
         EgmUi.prototype.redo = function () {
             this.grid_.redo();
             this.draw();
+            this.disableNodeButtons();
         };
 
         EgmUi.prototype.redoButton = function () {
@@ -948,7 +957,7 @@ var Egm;
                 selection.on("click", function () {
                     egm.redo();
                 });
-                this.resetRedoButton;
+                egm.resetRedoButton();
                 return this;
             };
             f.onEnable = function (f) {
@@ -1021,13 +1030,17 @@ var Egm;
             this.enableRadderDownButton(selection);
         };
 
-        EgmUi.prototype.unselectElement = function () {
-            this.rootSelection.selectAll(".selected").classed("selected", false);
-            this.rootSelection.selectAll(".connected").classed("connected", false);
+        EgmUi.prototype.disableNodeButtons = function () {
             this.disableRemoveNodeButton();
             this.disableMergeNodeButton();
             this.disableRadderUpButton();
             this.disableRadderDownButton();
+        };
+
+        EgmUi.prototype.unselectElement = function () {
+            this.rootSelection.selectAll(".selected").classed("selected", false);
+            this.rootSelection.selectAll(".connected").classed("connected", false);
+            this.disableNodeButtons();
         };
 
         EgmUi.prototype.enableRadderUpButton = function (selection) {
@@ -1112,15 +1125,16 @@ var Egm;
                 selection.call(d3.behavior.drag().on("dragstart", function () {
                     from = d3.select(".selected");
                     from.classed("dragSource", true);
-                    var pos = d3.mouse(egm.rootSelection.select(".contents").node());
+                    var pos = [from.datum().center().x, from.datum().center().y];
                     egm.rootSelection.select(".contents").append("line").classed("dragLine", true).attr("x1", pos[0]).attr("y1", pos[1]).attr("x2", pos[0]).attr("y2", pos[1]);
                     d3.event.sourceEvent.stopPropagation();
                 }).on("drag", function () {
                     var dragLineSelection = egm.rootSelection.select(".dragLine");
                     var x1 = Number(dragLineSelection.attr("x1"));
                     var y1 = Number(dragLineSelection.attr("y1"));
-                    var x2 = d3.event.x;
-                    var y2 = d3.event.y;
+                    var p2 = d3.mouse(egm.rootSelection.select(".contents").node());
+                    var x2 = p2[0];
+                    var y2 = p2[1];
                     var theta = Math.atan2(y2 - y1, x2 - x1);
                     var r = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1)) - 10;
                     dragLineSelection.attr("x2", x1 + r * Math.cos(theta)).attr("y2", y1 + r * Math.sin(theta));
@@ -1187,10 +1201,12 @@ var Egm;
                             _this.draw();
                         } else {
                             _this.grid_.radderUp(fromNode.index, toNode.index);
-                            _this.draw();
+                            _this.draw(function () {
+                                _this.enableNodeButtons();
+                            });
                             _this.drawNodeConnection();
-                            _this.enableNodeButtons();
                             _this.focusNode(toNode);
+                            _this.disableNodeButtons();
                         }
                         break;
                     case Raddering.RadderDown:
@@ -1200,10 +1216,12 @@ var Egm;
                             _this.draw();
                         } else {
                             _this.grid_.radderDown(fromNode.index, toNode.index);
-                            _this.draw();
+                            _this.draw(function () {
+                                _this.enableNodeButtons();
+                            });
                             _this.drawNodeConnection();
-                            _this.enableNodeButtons();
                             _this.focusNode(toNode);
+                            _this.disableNodeButtons();
                         }
                         break;
                 }
@@ -1237,9 +1255,10 @@ var Egm;
                                     _this.grid_.radderDownAppend(fromNode.index, node);
                                     break;
                             }
-                            _this.draw();
+                            _this.draw(function () {
+                                _this.enableNodeButtons();
+                            });
                             _this.drawNodeConnection();
-                            _this.enableNodeButtons();
                             _this.focusNode(node);
                         }
                     }
@@ -1449,30 +1468,26 @@ function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
         });
     }));
 
-    d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "radderUpButton").attr("r", 15).call(egm.radderUpButton().onClick(openInputTextDialog).onEnable(function (selection) {
-        var node = selection.datum();
-        d3.select("#radderUpButton").classed("invisible", false).attr("transform", new Svg.Transform.Translate(node.left().x, node.left().y));
-    }).onDisable(function () {
-        d3.select("#radderUpButton").classed("invisible", true);
-    }));
-    d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "radderDownButton").attr("r", 15).call(egm.radderDownButton().onClick(openInputTextDialog).onEnable(function (selection) {
-        var node = selection.datum();
-        d3.select("#radderDownButton").classed("invisible", false).attr("transform", new Svg.Transform.Translate(node.right().x, node.right().y));
-    }).onDisable(function () {
-        d3.select("#radderDownButton").classed("invisible", true);
-    }));
-    d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "removeNodeButton").attr("r", 15).call(egm.removeNodeButton().onEnable(function (selection) {
-        var node = selection.datum();
-        d3.select("#removeNodeButton").classed("invisible", false).attr("transform", new Svg.Transform.Translate(node.bottom().x, node.bottom().y));
-    }).onDisable(function () {
-        d3.select("#removeNodeButton").classed("invisible", true);
-    }));
-    d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "mergeNodeButton").attr("r", 15).call(egm.mergeNodeButton().onEnable(function (selection) {
-        var node = selection.datum();
-        d3.select("#mergeNodeButton").classed("invisible", false).attr("transform", new Svg.Transform.Translate(node.top().x, node.top().y));
-    }).onDisable(function () {
-        d3.select("#mergeNodeButton").classed("invisible", true);
-    }));
+    function showNodeController(selection) {
+        var nodeRect = selection.node().getBoundingClientRect();
+        var controllerWidth = $("#nodeController").width();
+        d3.select("#nodeController").classed("invisible", false).style("top", nodeRect.top + nodeRect.height + 10 + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
+    }
+
+    function hideNodeController() {
+        d3.select("#nodeController").classed("invisible", true);
+    }
+
+    function moveNodeController(selection) {
+        var nodeRect = selection.node().getBoundingClientRect();
+        var controllerWidth = $("#nodeController").width();
+        d3.select("#nodeController").style("top", nodeRect.top + nodeRect.height + 10 + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
+    }
+
+    d3.select("#ladderUpButton").call(egm.radderUpButton().onClick(openInputTextDialog).onEnable(showNodeController).onDisable(hideNodeController));
+    d3.select("#ladderDownButton").call(egm.radderDownButton().onClick(openInputTextDialog).onEnable(showNodeController).onDisable(hideNodeController));
+    d3.select("#removeNodeButton").call(egm.removeNodeButton().onEnable(showNodeController).onDisable(hideNodeController));
+    d3.select("#mergeNodeButton").call(egm.mergeNodeButton().onEnable(showNodeController).onDisable(hideNodeController));
 
     $http.get(jsonUrl).success(function (data) {
         var nodes = data.nodes.map(function (d) {
