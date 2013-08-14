@@ -152,21 +152,31 @@ module Egm {
         .call(this.appendElement())
         ;
 
+      var nodeSizeScale = d3.scale
+        .linear()
+        .domain(d3.extent(this.grid_.nodes(), node => {
+          return this.grid_.numConnectedNodes(node.index);
+        }))
+        .range([1, 2])
+        ;
       nodesSelection.each(node => {
         var rect = this.calcRect(node.text);
-        node.width = rect.width;
-        node.height = rect.height;
+        var n = this.grid_.numConnectedNodes(node.index);
+        node.baseWidth = rect.width;
+        node.baseHeight = rect.height;
+        node.width = node.baseWidth * nodeSizeScale(n);
+        node.height = node.baseHeight * nodeSizeScale(n);
       });
       nodesSelection.selectAll("text")
         .text(d => d.text)
-        .attr("x", d => EgmUi.rx - d.width / 2)
+        .attr("x", d => EgmUi.rx - d.baseWidth / 2)
         .attr("y", d => EgmUi.rx)
         ;
       nodesSelection.selectAll("rect")
-        .attr("x", d => - d.width / 2)
-        .attr("y", d => - d.height / 2)
-        .attr("width", d => d.width)
-        .attr("height", d => d.height)
+        .attr("x", d => - d.baseWidth / 2)
+        .attr("y", d => - d.baseHeight / 2)
+        .attr("width", d => d.baseWidth)
+        .attr("height", d => d.baseHeight)
         ;
 
       var linksSelection = this.contentsSelection
@@ -211,7 +221,8 @@ module Egm {
       transition.selectAll(".element")
         .attr("transform", (node : Egm.Node) : string => {
           return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString()
-            + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString();
+            + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString()
+            + (new Svg.Transform.Scale(nodeSizeScale(this.grid_.numConnectedNodes(node.index)))).toString();
         })
         ;
       transition.selectAll(".link")

@@ -481,6 +481,17 @@ var Egm;
             return this.linkMatrix[fromIndex][toIndex];
         };
 
+        Grid.prototype.numConnectedNodes = function (index) {
+            var _this = this;
+            var result = 0;
+            this.nodes_.forEach(function (_, j) {
+                if (_this.pathMatrix[index][j] || _this.pathMatrix[j][index]) {
+                    result += 1;
+                }
+            });
+            return result;
+        };
+
         Grid.prototype.execute = function (command) {
             var _this = this;
             if (this.transaction) {
@@ -612,26 +623,32 @@ var Egm;
             nodesSelection.exit().remove();
             nodesSelection.enter().append("g").call(this.appendElement());
 
+            var nodeSizeScale = d3.scale.linear().domain(d3.extent(this.grid_.nodes(), function (node) {
+                return _this.grid_.numConnectedNodes(node.index);
+            })).range([1, 2]);
             nodesSelection.each(function (node) {
                 var rect = _this.calcRect(node.text);
-                node.width = rect.width;
-                node.height = rect.height;
+                var n = _this.grid_.numConnectedNodes(node.index);
+                node.baseWidth = rect.width;
+                node.baseHeight = rect.height;
+                node.width = node.baseWidth * nodeSizeScale(n);
+                node.height = node.baseHeight * nodeSizeScale(n);
             });
             nodesSelection.selectAll("text").text(function (d) {
                 return d.text;
             }).attr("x", function (d) {
-                return EgmUi.rx - d.width / 2;
+                return EgmUi.rx - d.baseWidth / 2;
             }).attr("y", function (d) {
                 return EgmUi.rx;
             });
             nodesSelection.selectAll("rect").attr("x", function (d) {
-                return -d.width / 2;
+                return -d.baseWidth / 2;
             }).attr("y", function (d) {
-                return -d.height / 2;
+                return -d.baseHeight / 2;
             }).attr("width", function (d) {
-                return d.width;
+                return d.baseWidth;
             }).attr("height", function (d) {
-                return d.height;
+                return d.baseHeight;
             });
 
             var linksSelection = this.contentsSelection.select(".links").selectAll(".link").data(links, Object);
@@ -661,7 +678,7 @@ var Egm;
             })).range([5, 15]);
             var transition = this.rootSelection.transition();
             transition.selectAll(".element").attr("transform", function (node) {
-                return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString() + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString();
+                return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString() + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString() + (new Svg.Transform.Scale(nodeSizeScale(_this.grid_.numConnectedNodes(node.index)))).toString();
             });
             transition.selectAll(".link").attr("d", function (link) {
                 return spline(link.points);
@@ -1468,6 +1485,18 @@ function EgmShowAllController($scope, $routeParams, $http, $location) {
 
     var egm = new Egm.EgmUi();
     d3.select("#display").call(egm.display());
+    d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "removeNodeButton").attr("r", 15).call(egm.removeNodeButton().onEnable(function (selection) {
+        var node = selection.datum();
+        d3.select("#removeNodeButton").classed("invisible", false).attr("transform", new Svg.Transform.Translate(node.bottom().x, node.bottom().y));
+    }).onDisable(function () {
+        d3.select("#removeNodeButton").classed("invisible", true);
+    }));
+    d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "mergeNodeButton").attr("r", 15).call(egm.mergeNodeButton().onEnable(function (selection) {
+        var node = selection.datum();
+        d3.select("#mergeNodeButton").classed("invisible", false).attr("transform", new Svg.Transform.Translate(node.top().x, node.top().y));
+    }).onDisable(function () {
+        d3.select("#mergeNodeButton").classed("invisible", true);
+    }));
 
     $http.get(jsonUrl).success(function (data) {
         console.log(data);

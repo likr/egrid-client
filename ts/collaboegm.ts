@@ -337,6 +337,42 @@ function EgmShowAllController($scope, $routeParams, $http, $location) {
   d3.select("#display")
     .call(egm.display())
     ;
+  d3.select("#display .contents")
+    .append("circle")
+    .classed("invisible", true)
+    .attr("id", "removeNodeButton")
+    .attr("r", 15)
+    .call(egm.removeNodeButton()
+        .onEnable(selection => {
+          var node = selection.datum();
+          d3.select("#removeNodeButton")
+            .classed("invisible", false)
+            .attr("transform", new Svg.Transform.Translate(
+                node.bottom().x,
+                node.bottom().y))
+            ;
+        })
+        .onDisable(() => {
+          d3.select("#removeNodeButton").classed("invisible", true);
+        }));
+  d3.select("#display .contents")
+    .append("circle")
+    .classed("invisible", true)
+    .attr("id", "mergeNodeButton")
+    .attr("r", 15)
+    .call(egm.mergeNodeButton()
+        .onEnable(selection => {
+          var node = selection.datum();
+          d3.select("#mergeNodeButton")
+            .classed("invisible", false)
+            .attr("transform", new Svg.Transform.Translate(
+                node.top().x,
+                node.top().y))
+            ;
+        })
+        .onDisable(() => {
+          d3.select("#mergeNodeButton").classed("invisible", true);
+        }));
 
   $http.get(jsonUrl).success((data : Data) => {
     console.log(data);
