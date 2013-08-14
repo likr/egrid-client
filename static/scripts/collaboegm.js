@@ -714,12 +714,12 @@ var Egm;
             return function (selection) {
                 _this.rootSelection = selection;
 
-                var displayWidth = regionWidth || $(window).width();
-                var displayHeight = regionHeight || $(window).height();
-                selection.attr("viewBox", (new Svg.ViewBox(0, 0, displayWidth, displayHeight)).toString());
+                _this.displayWidth = regionWidth || $(window).width();
+                _this.displayHeight = regionHeight || $(window).height();
+                selection.attr("viewBox", (new Svg.ViewBox(0, 0, _this.displayWidth, _this.displayHeight)).toString());
                 selection.append("text").classed("measure", true);
 
-                selection.append("rect").attr("fill", "#fff").attr("width", displayWidth).attr("height", displayHeight);
+                selection.append("rect").attr("fill", "#fff").attr("width", _this.displayWidth).attr("height", _this.displayHeight);
 
                 _this.contentsSelection = selection.append("g").classed("contents", true);
                 _this.contentsSelection.append("g").classed("links", true);
@@ -740,22 +740,35 @@ var Egm;
         };
 
         EgmUi.prototype.focusNode = function (node) {
-            var translate = new Svg.Transform.Translate($(document).width() / 2 - node.x, $(document).height() / 2 - node.y);
-            var scale = new Svg.Transform.Scale(this.contentsZoomBehavior.scale());
+            var s = this.contentsZoomBehavior.scale();
+            var translate = new Svg.Transform.Translate(this.displayWidth / 2 - node.center().x * s, this.displayHeight / 2 - node.center().y * s);
+            var scale = new Svg.Transform.Scale(s);
             this.contentsZoomBehavior.translate([translate.x, translate.y]);
             this.contentsSelection.transition().attr("transform", translate.toString() + scale.toString());
         };
 
         EgmUi.prototype.focusCenter = function () {
-            var hExtent = d3.extent(this.grid_.nodes(), function (node) {
-                return node.center().x;
+            var left = d3.min(this.grid_.nodes(), function (node) {
+                return node.left().x;
             });
-            var vExtent = d3.extent(this.grid_.nodes(), function (node) {
-                return node.center().y;
+            var right = d3.max(this.grid_.nodes(), function (node) {
+                return node.right().x;
             });
-            var translate = new Svg.Transform.Translate((hExtent[0] + hExtent[1]) / 2, (vExtent[0] + vExtent[1]) / 2);
-            var scale = new Svg.Transform.Scale(this.contentsZoomBehavior.scale());
+            var top = d3.min(this.grid_.nodes(), function (node) {
+                return node.top().y;
+            });
+            var bottom = d3.max(this.grid_.nodes(), function (node) {
+                return node.bottom().y;
+            });
+
+            var s = 0.9 * d3.min([
+                this.displayWidth / (right - left),
+                this.displayHeight / (bottom - top)
+            ]);
+            var translate = new Svg.Transform.Translate((this.displayWidth - (right - left) * s) / 2, (this.displayHeight - (bottom - top) * s) / 2);
+            var scale = new Svg.Transform.Scale(s);
             this.contentsZoomBehavior.translate([translate.x, translate.y]);
+            this.contentsZoomBehavior.scale(scale.sx);
             this.contentsSelection.transition().attr("transform", translate.toString() + scale.toString());
         };
 

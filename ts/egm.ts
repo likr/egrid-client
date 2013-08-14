@@ -82,6 +82,8 @@ module Egm {
   export class EgmUi {
     private static rx : number = 20;
     private grid_ : Grid;
+    private displayWidth : number;
+    private displayHeight : number;
     private rootSelection : D3.Selection;
     private contentsSelection : D3.Selection;
     private contentsZoomBehavior : D3.Behaviour.Zoom;
@@ -261,17 +263,17 @@ module Egm {
       return (selection) => {
         this.rootSelection = selection;
 
-        var displayWidth = regionWidth || $(window).width();
-        var displayHeight = regionHeight || $(window).height();
-        selection.attr("viewBox", (new Svg.ViewBox(0, 0, displayWidth, displayHeight)).toString());
+        this.displayWidth = regionWidth || $(window).width();
+        this.displayHeight = regionHeight || $(window).height();
+        selection.attr("viewBox", (new Svg.ViewBox(0, 0, this.displayWidth, this.displayHeight)).toString());
         selection.append("text")
           .classed("measure", true)
           ;
 
         selection.append("rect")
           .attr("fill", "#fff")
-          .attr("width", displayWidth)
-          .attr("height", displayHeight)
+          .attr("width", this.displayWidth)
+          .attr("height", this.displayHeight)
           ;
 
         this.contentsSelection = selection.append("g").classed("contents", true);
@@ -299,10 +301,12 @@ module Egm {
 
 
     private focusNode(node : Node) : void {
+      var s = this.contentsZoomBehavior.scale();
       var translate = new Svg.Transform.Translate(
-        $(document).width() / 2 - node.x,
-        $(document).height() / 2 - node.y);
-      var scale = new Svg.Transform.Scale(this.contentsZoomBehavior.scale());
+        this.displayWidth / 2 - node.center().x * s,
+        this.displayHeight / 2 - node.center().y * s
+         );
+      var scale = new Svg.Transform.Scale(s);
       this.contentsZoomBehavior.translate([translate.x, translate.y]);
       this.contentsSelection
         .transition()
@@ -311,17 +315,29 @@ module Egm {
 
 
     focusCenter() : void {
-      var hExtent = d3.extent(this.grid_.nodes(), node => {
-        return node.center().x;
+      var left = d3.min(this.grid_.nodes(), node => {
+        return node.left().x;
       });
-      var vExtent = d3.extent(this.grid_.nodes(), node => {
-        return node.center().y;
+      var right = d3.max(this.grid_.nodes(), node => {
+        return node.right().x;
       });
+      var top = d3.min(this.grid_.nodes(), node => {
+        return node.top().y;
+      });
+      var bottom = d3.max(this.grid_.nodes(), node => {
+        return node.bottom().y;
+      });
+
+      var s = 0.9 * d3.min([
+          this.displayWidth / (right - left),
+          this.displayHeight / (bottom - top)]);
       var translate = new Svg.Transform.Translate(
-          (hExtent[0] + hExtent[1]) / 2,
-          (vExtent[0] + vExtent[1]) / 2);
-      var scale = new Svg.Transform.Scale(this.contentsZoomBehavior.scale());
+          (this.displayWidth - (right - left) * s) / 2,
+          (this.displayHeight - (bottom - top) * s) / 2
+          );
+      var scale = new Svg.Transform.Scale(s);
       this.contentsZoomBehavior.translate([translate.x, translate.y]);
+      this.contentsZoomBehavior.scale(scale.sx);
       this.contentsSelection
         .transition()
         .attr("transform", translate.toString() + scale.toString());
