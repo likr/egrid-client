@@ -19,12 +19,24 @@
 </div>
 <div class="navbar navbar-inverse navbar-fixed-bottom">
   <div class="navbar-inner">
-    <form class="navbar-form pull-right">
-      <button id="appendNodeButton" class="btn">アイテムの追加</button>
-      <button id="saveButton" class="btn">保存</button>
-      <button id="undoButton" class="btn">取り消し</button>
-      <button id="redoButton" class="btn">やり直し</button>
-    </form>
+    <div class="container">
+      <ul class="nav pull-right">
+        <li><a id="appendNodeButton">アイテムの追加</a></button>
+        <li class="dropdown">
+          <a class="dropdown-toggle">操作<b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li><a id="saveButton">保存</a></li>
+            <li><a id="quitButton">閉じる</a></li>
+            <li class="divider"></li>
+            <li><a id="undoButton">取り消し</a></li>
+            <li><a id="redoButton">やり直し</a></li>
+            <li class="divider"></li>
+            <li><a id="filterButton">フィルター</a></li>
+            <li><a id="layoutButton">レイアウト設定</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
   </div>
 </div>
 <div id="nodeController" class="btn-group invisible" style="position: absolute; top: 0; left: 0;">
