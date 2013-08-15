@@ -763,16 +763,16 @@ module Egm {
               var dragLineSelection = egm.rootSelection.select(".dragLine");
               var x1 = Number(dragLineSelection.attr("x1"));
               var y1 = Number(dragLineSelection.attr("y1"));
-              var p2 = d3.mouse(egm.rootSelection.select(".contents").node());
-              var x2 = p2[0];
-              var y2 = p2[1];
+              var p2 = egm.getPos(egm.rootSelection.select(".contents").node());
+              var x2 = p2.x;
+              var y2 = p2.y;
               var theta = Math.atan2(y2 - y1, x2 - x1);
               var r = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1)) - 10;
               dragLineSelection
                 .attr("x2", x1 + r * Math.cos(theta))
                 .attr("y2", y1 + r * Math.sin(theta))
                 ;
-              var pos = egm.getPos();
+              var pos = egm.getPos(document.body);
               var to = d3.select(document.elementFromPoint(pos.x, pos.y).parentNode);
               var fromNode : Node = from.datum();
               var toNode : Node = to.datum();
@@ -790,7 +790,7 @@ module Egm {
               }
             })
             .on("dragend", () => {
-              var pos = egm.getPos();
+              var pos = egm.getPos(document.body);
               var to = d3.select(document.elementFromPoint(pos.x, pos.y).parentNode);
               var fromNode : Node = from.datum();
               var toNode : Node = to.datum();
@@ -908,10 +908,10 @@ module Egm {
     }
 
 
-    private getPos() : Svg.Point {
+    private getPos(container) : Svg.Point {
       var xy = d3.event.sourceEvent instanceof MouseEvent
-        ? d3.mouse(document.body)
-        : d3.touches(document.body, d3.event.sourceEvent.changedTouches)[0];
+        ? d3.mouse(container)
+        : d3.touches(container, d3.event.sourceEvent.changedTouches)[0];
       return new Svg.Point(xy[0], xy[1]);
     }
   }
