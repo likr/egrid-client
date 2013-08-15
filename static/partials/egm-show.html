@@ -19,8 +19,18 @@
 </div>
 <div class="navbar navbar-inverse navbar-fixed-bottom">
   <div class="navbar-inner">
-    <form class="navbar-form pull-right">
-      <button class="btn">閉じる</button>
-    </form>
+    <div class="container">
+      <ul class="nav pull-right">
+        <li class="dropdown">
+          <a class="dropdown-toggle">操作<b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="quitButton" href="/#/participants/{{projectId}}/{{participantId}}">閉じる</a></li>
+            <li class="divider"></li>
+            <li><a id="layoutButton">レイアウト設定</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
   </div>
 </div>

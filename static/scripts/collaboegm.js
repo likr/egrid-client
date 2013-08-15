@@ -1456,14 +1456,14 @@ function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
 
     d3.select("#appendNodeButton").call(egm.appendNodeButton().onClick(openInputTextDialog));
     d3.select("#undoButton").call(egm.undoButton().onEnable(function () {
-        d3.select("#undoButton").node().disabled = false;
+        d3.select("#undoButtonContainer").classed("disabled", false);
     }).onDisable(function () {
-        d3.select("#undoButton").node().disabled = true;
+        d3.select("#undoButtonContainer").classed("disabled", true);
     }));
     d3.select("#redoButton").call(egm.redoButton().onEnable(function () {
-        d3.select("#redoButton").node().disabled = false;
+        d3.select("#redoButtonContainer").classed("disabled", false);
     }).onDisable(function () {
-        d3.select("#redoButton").node().disabled = true;
+        d3.select("#redoButtonContainer").classed("disabled", true);
     }));
     d3.select("#saveButton").call(egm.saveButton().save(function (json) {
         $http({
@@ -1523,18 +1523,21 @@ function EgmShowAllController($scope, $routeParams, $http, $location) {
 
     var egm = new Egm.EgmUi();
     d3.select("#display").call(egm.display());
-    d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "removeNodeButton").attr("r", 15).call(egm.removeNodeButton().onEnable(function (selection) {
-        var node = selection.datum();
-        d3.select("#removeNodeButton").classed("invisible", false).attr("transform", new Svg.Transform.Translate(node.bottom().x, node.bottom().y));
-    }).onDisable(function () {
-        d3.select("#removeNodeButton").classed("invisible", true);
-    }));
-    d3.select("#display .contents").append("circle").classed("invisible", true).attr("id", "mergeNodeButton").attr("r", 15).call(egm.mergeNodeButton().onEnable(function (selection) {
-        var node = selection.datum();
-        d3.select("#mergeNodeButton").classed("invisible", false).attr("transform", new Svg.Transform.Translate(node.top().x, node.top().y));
-    }).onDisable(function () {
-        d3.select("#mergeNodeButton").classed("invisible", true);
-    }));
+
+    function showNodeController(selection) {
+        if (!selection.empty()) {
+            var nodeRect = selection.node().getBoundingClientRect();
+            var controllerWidth = $("#nodeController").width();
+            d3.select("#nodeController").classed("invisible", false).style("top", nodeRect.top + nodeRect.height + 10 + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
+        }
+    }
+
+    function hideNodeController() {
+        d3.select("#nodeController").classed("invisible", true);
+    }
+
+    d3.select("#removeNodeButton").call(egm.removeNodeButton().onEnable(showNodeController).onDisable(hideNodeController));
+    d3.select("#mergeNodeButton").call(egm.mergeNodeButton().onEnable(showNodeController).onDisable(hideNodeController));
 
     $http.get(jsonUrl).success(function (data) {
         console.log(data);
