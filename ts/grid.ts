@@ -501,9 +501,11 @@ module Egm {
           var front : number[] = [fromIndex];
           while (front.length > 0) {
             var nodeIndex = front.pop();
-            if (nodeIndex != fromIndex && nodeIndex == toIndex) {
-              fromNode.isBottom = false;
-              toNode.isTop = false;
+            if (nodeIndex == toIndex) {
+              if (nodeIndex != fromIndex) {
+                fromNode.isBottom = false;
+                toNode.isTop = false;
+              }
               return true;
             }
             if (!checkedFlags[nodeIndex]) {
