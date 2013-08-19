@@ -139,8 +139,8 @@ module Egm {
         .interpolate("basis")
         ;
 
-      var nodes = this.grid_.nodes();
-      var links = this.grid_.links();
+      var nodes = this.grid_.nodes().filter(d => d.active);
+      var links = this.grid_.links().filter(d => d.source.active && d.target.active);
 
       var nodesSelection = this.contentsSelection
         .select(".nodes")

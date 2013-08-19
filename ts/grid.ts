@@ -18,17 +18,23 @@ module Egm {
     public original : boolean;
     public isTop : boolean;
     public isBottom : boolean;
+    public active : boolean;
+    public participants : string[];
     private static nextKey = 0;
 
 
-    constructor(text : string, weight : number = undefined, original : boolean = undefined) {
+    constructor(
+        text : string, weight : number = undefined,
+        original : boolean = undefined, participants : string [] = undefined) {
       this.text = text;
       this.x = 0;
       this.y = 0;
       this.theta = 0;
       this.weight = weight || 1;
       this.key = Node.nextKey++;
+      this.active = true;
       this.original = original || false;
+      this.participants = participants || [];
     }
 
 
@@ -392,28 +398,30 @@ module Egm {
 
 
     layout() : void {
-      this.nodes_.forEach(node => {
+      var nodes = this.nodes_.filter(node => node.active);
+      var links = this.links_.filter(link => link.source.active && link.target.active);
+      nodes.forEach(node => {
         var tmp = node.height;
         node.height = node.width;
         node.width = tmp
       });
 
       dagre.layout()
-        .nodes(this.nodes_)
-        .edges(this.links_)
+        .nodes(nodes)
+        .edges(links)
         .rankSep(200)
         .edgeSep(20)
         .run()
         ;
 
-      this.nodes_.forEach(node => {
+      nodes.forEach(node => {
         node.x = node.dagre.y;
         node.y = node.dagre.x;
         node.width = node.dagre.height;
         node.height = node.dagre.width;
       });
 
-      this.links_.forEach(link => {
+      links.forEach(link => {
         link.dagre.points.forEach(point => {
           var tmp = point.x;
           point.x = point.y;

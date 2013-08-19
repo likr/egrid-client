@@ -366,30 +366,10 @@ function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
           }
         });
         d.open().then(result => {
-          var removed = data.nodes.map(_ => false);
-          var index_map = {};
-          var j = 0;
-          var nodes = data.nodes
-            .filter((d, i) => {
-              if (d.participants.some(key => result[key])) {
-                index_map[i] = j++;
-                return true;
-              } else {
-                removed[i] = true
-                return false;
-              }
-            })
-            .map(d => new Egm.Node(d.text, d.weight, d.original))
-            ;
-          var links = data.links
-            .filter(d => {
-              return !removed[d.source] && !removed[d.target];
-            })
-            .map(d => new Egm.Link(nodes[index_map[d.source]], nodes[index_map[d.target]], d.weight));
+          egm.nodes().forEach(d => {
+            d.active = d.participants.some(key => result[key]);
+          });
           egm
-            .links([])
-            .nodes(nodes)
-            .links(links)
             .draw()
             .focusCenter()
             ;
@@ -399,7 +379,7 @@ function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
 
   $http.get(jsonUrl).success((data_ : Data) => {
     data = data_
-    var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight, d.original));
+    var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight, d.original, d.participants));
     var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
     egm
       .nodes(nodes)

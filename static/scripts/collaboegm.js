@@ -126,16 +126,19 @@ var Svg;
 var Egm;
 (function (Egm) {
     var Node = (function () {
-        function Node(text, weight, original) {
+        function Node(text, weight, original, participants) {
             if (typeof weight === "undefined") { weight = undefined; }
             if (typeof original === "undefined") { original = undefined; }
+            if (typeof participants === "undefined") { participants = undefined; }
             this.text = text;
             this.x = 0;
             this.y = 0;
             this.theta = 0;
             this.weight = weight || 1;
             this.key = Node.nextKey++;
+            this.active = true;
             this.original = original || false;
+            this.participants = participants || [];
         }
         Node.prototype.left = function () {
             return Svg.Rect.left(this.x, this.y, this.width, this.height);
@@ -446,22 +449,28 @@ var Egm;
         };
 
         Grid.prototype.layout = function () {
-            this.nodes_.forEach(function (node) {
+            var nodes = this.nodes_.filter(function (node) {
+                return node.active;
+            });
+            var links = this.links_.filter(function (link) {
+                return link.source.active && link.target.active;
+            });
+            nodes.forEach(function (node) {
                 var tmp = node.height;
                 node.height = node.width;
                 node.width = tmp;
             });
 
-            dagre.layout().nodes(this.nodes_).edges(this.links_).rankSep(200).edgeSep(20).run();
+            dagre.layout().nodes(nodes).edges(links).rankSep(200).edgeSep(20).run();
 
-            this.nodes_.forEach(function (node) {
+            nodes.forEach(function (node) {
                 node.x = node.dagre.y;
                 node.y = node.dagre.x;
                 node.width = node.dagre.height;
                 node.height = node.dagre.width;
             });
 
-            this.links_.forEach(function (link) {
+            links.forEach(function (link) {
                 link.dagre.points.forEach(function (point) {
                     var tmp = point.x;
                     point.x = point.y;
@@ -627,8 +636,12 @@ var Egm;
                 return d.y;
             }).interpolate("basis");
 
-            var nodes = this.grid_.nodes();
-            var links = this.grid_.links();
+            var nodes = this.grid_.nodes().filter(function (d) {
+                return d.active;
+            });
+            var links = this.grid_.links().filter(function (d) {
+                return d.source.active && d.target.active;
+            });
 
             var nodesSelection = this.contentsSelection.select(".nodes").selectAll(".element").data(nodes, Object);
             nodesSelection.exit().remove();
@@ -1592,30 +1605,12 @@ function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
                 }
             });
             d.open().then(function (result) {
-                var removed = data.nodes.map(function (_) {
-                    return false;
-                });
-                var index_map = {};
-                var j = 0;
-                var nodes = data.nodes.filter(function (d, i) {
-                    if (d.participants.some(function (key) {
+                egm.nodes().forEach(function (d) {
+                    d.active = d.participants.some(function (key) {
                         return result[key];
-                    })) {
-                        index_map[i] = j++;
-                        return true;
-                    } else {
-                        removed[i] = true;
-                        return false;
-                    }
-                }).map(function (d) {
-                    return new Egm.Node(d.text, d.weight, d.original);
+                    });
                 });
-                var links = data.links.filter(function (d) {
-                    return !removed[d.source] && !removed[d.target];
-                }).map(function (d) {
-                    return new Egm.Link(nodes[index_map[d.source]], nodes[index_map[d.target]], d.weight);
-                });
-                egm.links([]).nodes(nodes).links(links).draw().focusCenter();
+                egm.draw().focusCenter();
             });
         });
     });
@@ -1623,7 +1618,7 @@ function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
     $http.get(jsonUrl).success(function (data_) {
         data = data_;
         var nodes = data.nodes.map(function (d) {
-            return new Egm.Node(d.text, d.weight, d.original);
+            return new Egm.Node(d.text, d.weight, d.original, d.participants);
         });
         var links = data.links.map(function (d) {
             return new Egm.Link(nodes[d.source], nodes[d.target], d.weight);
