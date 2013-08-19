@@ -236,6 +236,27 @@ module Egm {
         ;
       transition.each("end", f);
 
+
+      var left = d3.min(this.grid_.nodes(), node => {
+        return node.left().x;
+      });
+      var right = d3.max(this.grid_.nodes(), node => {
+        return node.right().x;
+      });
+      var top = d3.min(this.grid_.nodes(), node => {
+        return node.top().y;
+      });
+      var bottom = d3.max(this.grid_.nodes(), node => {
+        return node.bottom().y;
+      });
+
+      var s = 0.9 * d3.min([
+          this.displayWidth / (right - left),
+          this.displayHeight / (bottom - top)]) || 1;
+      this.contentsZoomBehavior
+        .scaleExtent([s, 1])
+        ;
+
       this.resetUndoButton();
       this.resetRedoButton();
       return this;

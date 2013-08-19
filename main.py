@@ -105,11 +105,14 @@ class ProjectGridHandler(webapp2.RequestHandler):
             for i, node in enumerate(nodes):
                 text = node['text']
                 if text in node_texts:
-                    #all_nodes[node_texts[text]]['weight'] += 1
+                    all_nodes[node_texts[text]]['weight'] += 1
+                    all_nodes[node_texts[text]]['participants'].append(str(participant.key()))
                     index_map.append(node_texts[text])
                 else:
                     node_texts[text] = index_offset
                     index_map.append(index_offset)
+                    node['participants'] = [str(participant.key())]
+                    node['weight'] = 1
                     all_nodes.append(node)
                     index_offset += 1
             for link in links:

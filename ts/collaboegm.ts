@@ -302,10 +302,21 @@ function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
 }
 
 
-function EgmShowAllController($scope, $routeParams, $http, $location) {
+function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
+  var data;
   var projectId = $scope.projectId = $routeParams.projectId;
-  var participantId = $scope.participantId = $routeParams.participantId;
+  var participantsUrl = "/api/participants/" + projectId;
   var jsonUrl = "/api/projects/" + projectId + "/grid";
+  var filter = {};
+
+  $scope.call = function(callback) {
+    callback();
+  };
+
+  function callWithProxy(f) {
+    $scope.callback = f;
+    $("#ngClickProxy").trigger("click");
+  }
 
   var egm = new Egm.EgmUi;
   d3.select("#display")
@@ -340,8 +351,54 @@ function EgmShowAllController($scope, $routeParams, $http, $location) {
         .onDisable(hideNodeController)
     );
 
-  $http.get(jsonUrl).success((data : Data) => {
-    console.log(data);
+  d3.select("#filterButton")
+    .on("click", () => {
+      callWithProxy(() => {
+        var d = $dialog.dialog({
+          backdrop: true,
+          keyboard: true,
+          backdropClick: true,
+          templateUrl: '/partials/filter-participants-dialog.html',
+          controller: FilterParticipantsDialogController,
+          resolve: {
+            participants: () => $scope.participants,
+            filter: () => filter
+          }
+        });
+        d.open().then(result => {
+          var removed = data.nodes.map(_ => false);
+          var index_map = {};
+          var j = 0;
+          var nodes = data.nodes
+            .filter((d, i) => {
+              if (d.participants.some(key => result[key])) {
+                index_map[i] = j++;
+                return true;
+              } else {
+                removed[i] = true
+                return false;
+              }
+            })
+            .map(d => new Egm.Node(d.text, d.weight, d.original))
+            ;
+          var links = data.links
+            .filter(d => {
+              return !removed[d.source] && !removed[d.target];
+            })
+            .map(d => new Egm.Link(nodes[index_map[d.source]], nodes[index_map[d.target]], d.weight));
+          egm
+            .links([])
+            .nodes(nodes)
+            .links(links)
+            .draw()
+            .focusCenter()
+            ;
+        });
+      });
+    });
+
+  $http.get(jsonUrl).success((data_ : Data) => {
+    data = data_
     var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight, d.original));
     var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
     egm
@@ -350,6 +407,13 @@ function EgmShowAllController($scope, $routeParams, $http, $location) {
       .draw()
       .focusCenter()
       ;
+  });
+
+  $http.get(participantsUrl).success(participants => {
+    $scope.participants = participants;
+    $scope.participants.forEach(participant => {
+      filter[participant.key] = true;
+    });
   });
 }
 
@@ -364,6 +428,15 @@ function InputTextDialogController($scope, dialog, texts) {
 }
 
 
+function FilterParticipantsDialogController($scope, dialog, participants, filter) {
+  $scope.results = filter;
+  $scope.participants = participants;
+  $scope.close = () => {
+    dialog.close($scope.results);
+  };
+}
+
+
 function unique(array : any[]) : any[] {
   var result = [];
   if (array.length > 0) {
@@ -375,4 +448,8 @@ function unique(array : any[]) : any[] {
     });
   }
   return result;
+}
+
+
+function mergeGrids(grids) {
 }

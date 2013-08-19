@@ -322,7 +322,7 @@ module Egm {
         nodes : this.nodes_.map(node => {
           return {
             text : node.text,
-            weight : node.text,
+            weight : node.weight,
             original : node.original
           };
         }),
