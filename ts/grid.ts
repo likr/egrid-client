@@ -21,13 +21,14 @@ module Egm {
     private static nextKey = 0;
 
 
-    constructor(text : string, weight : number = undefined) {
+    constructor(text : string, weight : number = undefined, original : boolean = undefined) {
       this.text = text;
       this.x = 0;
       this.y = 0;
       this.theta = 0;
       this.weight = weight || 1;
       this.key = Node.nextKey++;
+      this.original = original || false;
     }
 
 
@@ -321,7 +322,8 @@ module Egm {
         nodes : this.nodes_.map(node => {
           return {
             text : node.text,
-            weight : node.text
+            weight : node.text,
+            original : node.original
           };
         }),
         links : this.links_.map(link => {

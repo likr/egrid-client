@@ -334,7 +334,7 @@ module Egm {
 
       var s = 0.9 * d3.min([
           this.displayWidth / (right - left),
-          this.displayHeight / (bottom - top)]);
+          this.displayHeight / (bottom - top)]) || 1;
       var translate = new Svg.Transform.Translate(
           (this.displayWidth - (right - left) * s) / 2,
           (this.displayHeight - (bottom - top) * s) / 2

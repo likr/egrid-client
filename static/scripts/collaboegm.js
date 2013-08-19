@@ -126,14 +126,16 @@ var Svg;
 var Egm;
 (function (Egm) {
     var Node = (function () {
-        function Node(text, weight) {
+        function Node(text, weight, original) {
             if (typeof weight === "undefined") { weight = undefined; }
+            if (typeof original === "undefined") { original = undefined; }
             this.text = text;
             this.x = 0;
             this.y = 0;
             this.theta = 0;
             this.weight = weight || 1;
             this.key = Node.nextKey++;
+            this.original = original || false;
         }
         Node.prototype.left = function () {
             return Svg.Rect.left(this.x, this.y, this.width, this.height);
@@ -384,7 +386,8 @@ var Egm;
                 nodes: this.nodes_.map(function (node) {
                     return {
                         text: node.text,
-                        weight: node.text
+                        weight: node.text,
+                        original: node.original
                     };
                 }),
                 links: this.links_.map(function (link) {
@@ -777,7 +780,7 @@ var Egm;
             var s = 0.9 * d3.min([
                 this.displayWidth / (right - left),
                 this.displayHeight / (bottom - top)
-            ]);
+            ]) || 1;
             var translate = new Svg.Transform.Translate((this.displayWidth - (right - left) * s) / 2, (this.displayHeight - (bottom - top) * s) / 2);
             var scale = new Svg.Transform.Scale(s);
             this.contentsZoomBehavior.translate([translate.x, translate.y]);
@@ -1385,7 +1388,7 @@ function ParticipantDetailController($scope, $routeParams, $http) {
 
             $http.get(jsonUrl).success(function (data) {
                 var nodes = data.nodes.map(function (d) {
-                    return new Egm.Node(d.text, d.weight);
+                    return new Egm.Node(d.text, d.weight, d.original);
                 });
                 var links = data.links.map(function (d) {
                     return new Egm.Link(nodes[d.source], nodes[d.target], d.weight);
@@ -1407,7 +1410,7 @@ function EgmShowController($scope, $routeParams, $http, $location) {
 
     $http.get(jsonUrl).success(function (data) {
         var nodes = data.nodes.map(function (d) {
-            return new Egm.Node(d.text, d.weight);
+            return new Egm.Node(d.text, d.weight, d.original);
         });
         var links = data.links.map(function (d) {
             return new Egm.Link(nodes[d.source], nodes[d.target], d.weight);
@@ -1503,7 +1506,7 @@ function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
 
     $http.get(jsonUrl).success(function (data) {
         var nodes = data.nodes.map(function (d) {
-            return new Egm.Node(d.text, d.weight);
+            return new Egm.Node(d.text, d.weight, d.original);
         });
         var links = data.links.map(function (d) {
             return new Egm.Link(nodes[d.source], nodes[d.target], d.weight);
@@ -1544,7 +1547,7 @@ function EgmShowAllController($scope, $routeParams, $http, $location) {
     $http.get(jsonUrl).success(function (data) {
         console.log(data);
         var nodes = data.nodes.map(function (d) {
-            return new Egm.Node(d.text, d.weight);
+            return new Egm.Node(d.text, d.weight, d.original);
         });
         var links = data.links.map(function (d) {
             return new Egm.Link(nodes[d.source], nodes[d.target], d.weight);

@@ -118,7 +118,7 @@ function ParticipantDetailController($scope, $routeParams, $http) {
         ;
 
       $http.get(jsonUrl).success(data => {
-        var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight));
+        var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight, d.original));
         var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
         egm
           .nodes(nodes)
@@ -150,7 +150,7 @@ function EgmShowController($scope, $routeParams, $http, $location) {
     ;
 
   $http.get(jsonUrl).success((data : Data) => {
-    var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight));
+    var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight, d.original));
     var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
     egm
       .nodes(nodes)
@@ -283,7 +283,7 @@ function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
     );
 
   $http.get(jsonUrl).success((data : Data) => {
-    var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight));
+    var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight, d.original));
     var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
     egm
       .nodes(nodes)
@@ -342,7 +342,7 @@ function EgmShowAllController($scope, $routeParams, $http, $location) {
 
   $http.get(jsonUrl).success((data : Data) => {
     console.log(data);
-    var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight));
+    var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight, d.original));
     var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
     egm
       .nodes(nodes)
