@@ -397,9 +397,14 @@ module Egm {
     }
 
 
-    layout() : void {
-      var nodes = this.nodes_.filter(node => node.active);
-      var links = this.links_.filter(link => link.source.active && link.target.active);
+    layout(checkActive : boolean = false) : void {
+      var nodes = this.nodes_;
+      var links = this.links_;
+      if (checkActive) {
+        nodes = nodes.filter(node => node.active);
+        links = links.filter(link => link.source.active && link.target.active);
+      }
+
       nodes.forEach(node => {
         var tmp = node.height;
         node.height = node.width;
@@ -445,11 +450,13 @@ module Egm {
     }
 
 
-    numConnectedNodes(index : number) : number {
+    numConnectedNodes(index : number, checkActive : boolean = false) : number {
       var result = 0;
-      this.nodes_.forEach((_, j) => {
-        if (this.pathMatrix[index][j] || this.pathMatrix[j][index]) {
-          result += 1;
+      this.nodes_.forEach((node, j) => {
+        if (!checkActive || (checkActive && node.active)) {
+          if (this.pathMatrix[index][j] || this.pathMatrix[j][index]) {
+            result += 1;
+          }
         }
       })
       return result;

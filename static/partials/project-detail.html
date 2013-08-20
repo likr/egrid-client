@@ -2,12 +2,12 @@
   <h2>{{project.name}}</h2>
 
   <ul class="breadcrumb">
-    <li><a href="/">プロジェクト</a> <span class="divider">/</span></li>
+    <li><a href="/">Projects</a> <span class="divider">/</span></li>
     <li class="active">{{project.name}}</li>
   </ul>
 
   <div tabset>
-    <div tab heading="詳細">
+    <div tab heading="Detail">
       <form class="form-horizontal">
         <div class="control-group">
           <label class="control-label" for="name">Name</label>
@@ -25,26 +25,26 @@
       </form>
     </div>
 
-    <div tab heading="被験者">
+    <div tab heading="Participants">
       <div tabset>
-        <div tab heading="一覧">
-          <h3>被験者一覧</h3>
+        <div tab heading="List">
+          <h3>Participants</h3>
           <table class="table">
             <tr>
               <th>#</th>
-              <th>名前</th>
-              <th>操作</th>
+              <th>Name</th>
+              <th>Action</th>
             </tr>
             <tr ng-repeat="participant in participants">
               <td>{{$index + 1}}</td>
               <td>{{participant.name}}</td>
-              <td><a href="/#/participants/{{projectId}}/{{participant.key}}">確認</a>
+              <td><a href="/#/participants/{{projectId}}/{{participant.key}}">Show</a>
             </tr>
           </table>
         </div>
 
-        <div tab heading="新規">
-          <h3>新規被験者</h3>
+        <div tab heading="New">
+          <h3>New Participant</h3>
           <form class="form-horizontal" ng-submit="createParticipant()">
             <div class="control-group">
               <label class="control-label" for="name">Name</label>
@@ -70,9 +70,9 @@
       </div>
     </div>
 
-    <div tab heading="グリッド">
-      <h3>被験者全体グリッド</h3>
-      <a href="/#/projects/{{project.key}}/grid" class="btn">表示</a>
+    <div tab heading="Evaluation Structure">
+      <h3>Overall Evaluation Structure</h3>
+      <a href="/#/projects/{{project.key}}/grid" class="btn">Show</a>
     </div>
   </div>
 </div>

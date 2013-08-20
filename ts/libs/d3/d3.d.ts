@@ -730,6 +730,7 @@ declare module D3 {
         sort<T>(comparator?: (a: T, b: T) => number): Selection;
         order: () => Selection;
         node: () => HTMLElementSVGLocatable;
+        empty: () => bool;
     }
 
     export interface EnterSelection {

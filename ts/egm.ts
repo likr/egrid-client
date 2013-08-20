@@ -4,6 +4,33 @@
 /// <reference path="grid.ts"/>
 
 module Egm {
+  export enum ViewMode {
+    Normal,
+    Edge
+  }
+
+
+  export enum InactiveNode {
+    Hidden,
+    Transparent
+  }
+
+
+  export class EgmOption {
+    public viewMode : ViewMode;
+    public inactiveNode : InactiveNode;
+    public scalingConnection : boolean;
+
+    static default() : EgmOption {
+      var option = new EgmOption;
+      option.viewMode = ViewMode.Normal;
+      option.inactiveNode = InactiveNode.Transparent;
+      option.scalingConnection = true;
+      return option;
+    }
+  }
+
+
   export interface AppendNodeButton {
     (selection : D3.Selection) : AppendNodeButton;
     onClick(f : (callback : (result : string) => void) => void) : AppendNodeButton;
@@ -82,6 +109,7 @@ module Egm {
   export class EgmUi {
     private static rx : number = 20;
     private grid_ : Grid;
+    private options_ : EgmOption;
     private displayWidth : number;
     private displayHeight : number;
     private rootSelection : D3.Selection;
@@ -107,6 +135,7 @@ module Egm {
 
     constructor () {
       this.grid_ = new Grid;
+      this.options_ = EgmOption.default();
     }
 
 
@@ -132,6 +161,17 @@ module Egm {
     }
 
 
+    options() : EgmOption;
+    options(options : EgmOption) : EgmUi;
+    options(arg? : EgmOption) : any {
+      if (arg === undefined) {
+        return this.options_;
+      }
+      this.options_ = arg;
+      return this;
+    }
+
+
     draw(f = undefined) : EgmUi {
       var spline = d3.svg.line()
         .x(d => d.x)
@@ -139,8 +179,12 @@ module Egm {
         .interpolate("basis")
         ;
 
-      var nodes = this.grid_.nodes().filter(d => d.active);
-      var links = this.grid_.links().filter(d => d.source.active && d.target.active);
+      var nodes = this.grid_.nodes();
+      var links = this.grid_.links();
+      if (this.options_.inactiveNode == InactiveNode.Hidden) {
+        nodes = nodes.filter(d => d.active);
+        links = links.filter(d => d.source.active && d.target.active);
+      }
 
       var nodesSelection = this.contentsSelection
         .select(".nodes")
@@ -154,16 +198,21 @@ module Egm {
         .call(this.appendElement())
         ;
 
-      var nodeSizeScale = d3.scale
-        .linear()
-        .domain(d3.extent(this.grid_.nodes(), node => {
-          return this.grid_.numConnectedNodes(node.index);
-        }))
-        .range([1, 2])
-        ;
+      var nodeSizeScale;
+      if (this.options_.scalingConnection) {
+        nodeSizeScale = d3.scale
+          .linear()
+          .domain(d3.extent(this.grid_.nodes(), node => {
+            return this.grid_.numConnectedNodes(node.index, true);
+          }))
+          .range([1, 2])
+          ;
+      } else {
+        nodeSizeScale = d3.scale.linear();
+      }
       nodesSelection.each(node => {
         var rect = this.calcRect(node.text);
-        var n = this.grid_.numConnectedNodes(node.index);
+        var n = this.grid_.numConnectedNodes(node.index, true);
         node.baseWidth = rect.width;
         node.baseHeight = rect.height;
         node.width = node.baseWidth * nodeSizeScale(n);
@@ -197,7 +246,7 @@ module Egm {
         });
         ;
 
-      this.grid_.layout();
+      this.grid_.layout(this.options_.inactiveNode == InactiveNode.Hidden);
 
       this.rootSelection.selectAll(".contents .links .link")
         .filter(link => link.previousPoints.length != link.points.length)
@@ -222,31 +271,40 @@ module Egm {
         ;
       var transition = this.rootSelection.transition();
       transition.selectAll(".element")
+        .attr("opacity", node => {
+          return node.active ? 1 : 0.3;
+        })
         .attr("transform", (node : Egm.Node) : string => {
           return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString()
             + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString()
-            + (new Svg.Transform.Scale(nodeSizeScale(this.grid_.numConnectedNodes(node.index)))).toString();
+            + (new Svg.Transform.Scale(nodeSizeScale(this.grid_.numConnectedNodes(node.index, true)))).toString();
         })
         ;
       transition.selectAll(".link")
         .attr("d", (link : Egm.Link) : string => {
           return spline(link.points);
         })
+        .attr("opacity", link => {
+          return link.source.active && link.target.active ? 1 : 0.3;
+        })
         .attr("stroke-width", d => linkWidthScale(d.weight))
         ;
       transition.each("end", f);
 
 
-      var left = d3.min(this.grid_.nodes(), node => {
+      var filterdNodes = this.options_.inactiveNode == InactiveNode.Hidden
+        ? this.grid_.nodes().filter(node => node.active)
+        : this.grid_.nodes()
+      var left = d3.min(filterdNodes, node => {
         return node.left().x;
       });
-      var right = d3.max(this.grid_.nodes(), node => {
+      var right = d3.max(filterdNodes, node => {
         return node.right().x;
       });
-      var top = d3.min(this.grid_.nodes(), node => {
+      var top = d3.min(filterdNodes, node => {
         return node.top().y;
       });
-      var bottom = d3.max(this.grid_.nodes(), node => {
+      var bottom = d3.max(filterdNodes, node => {
         return node.bottom().y;
       });
 
@@ -627,8 +685,14 @@ module Egm {
     }
 
 
+    public selectedNode() : Node {
+      var selection = this.rootSelection.select(".selected");
+      return selection.empty() ? null : selection.datum();
+    }
+
+
     private drawNodeConnection() : void {
-      var d = this.rootSelection.select(".selected").datum();
+      var d = this.selectedNode();
       this.rootSelection.selectAll(".connected").classed("connected", false);
       if (d) {
         d3.selectAll(".element")

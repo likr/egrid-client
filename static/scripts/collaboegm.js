@@ -448,13 +448,19 @@ var Egm;
             }
         };
 
-        Grid.prototype.layout = function () {
-            var nodes = this.nodes_.filter(function (node) {
-                return node.active;
-            });
-            var links = this.links_.filter(function (link) {
-                return link.source.active && link.target.active;
-            });
+        Grid.prototype.layout = function (checkActive) {
+            if (typeof checkActive === "undefined") { checkActive = false; }
+            var nodes = this.nodes_;
+            var links = this.links_;
+            if (checkActive) {
+                nodes = nodes.filter(function (node) {
+                    return node.active;
+                });
+                links = links.filter(function (link) {
+                    return link.source.active && link.target.active;
+                });
+            }
+
             nodes.forEach(function (node) {
                 var tmp = node.height;
                 node.height = node.width;
@@ -493,12 +499,15 @@ var Egm;
             return this.linkMatrix[fromIndex][toIndex];
         };
 
-        Grid.prototype.numConnectedNodes = function (index) {
+        Grid.prototype.numConnectedNodes = function (index, checkActive) {
+            if (typeof checkActive === "undefined") { checkActive = false; }
             var _this = this;
             var result = 0;
-            this.nodes_.forEach(function (_, j) {
-                if (_this.pathMatrix[index][j] || _this.pathMatrix[j][index]) {
-                    result += 1;
+            this.nodes_.forEach(function (node, j) {
+                if (!checkActive || (checkActive && node.active)) {
+                    if (_this.pathMatrix[index][j] || _this.pathMatrix[j][index]) {
+                        result += 1;
+                    }
                 }
             });
             return result;
@@ -600,6 +609,34 @@ var Egm;
 })(Egm || (Egm = {}));
 var Egm;
 (function (Egm) {
+    (function (ViewMode) {
+        ViewMode[ViewMode["Normal"] = 0] = "Normal";
+
+        ViewMode[ViewMode["Edge"] = 1] = "Edge";
+    })(Egm.ViewMode || (Egm.ViewMode = {}));
+    var ViewMode = Egm.ViewMode;
+
+    (function (InactiveNode) {
+        InactiveNode[InactiveNode["Hidden"] = 0] = "Hidden";
+
+        InactiveNode[InactiveNode["Transparent"] = 1] = "Transparent";
+    })(Egm.InactiveNode || (Egm.InactiveNode = {}));
+    var InactiveNode = Egm.InactiveNode;
+
+    var EgmOption = (function () {
+        function EgmOption() {
+        }
+        EgmOption.default = function () {
+            var option = new EgmOption();
+            option.viewMode = ViewMode.Normal;
+            option.inactiveNode = InactiveNode.Transparent;
+            option.scalingConnection = true;
+            return option;
+        };
+        return EgmOption;
+    })();
+    Egm.EgmOption = EgmOption;
+
     (function (Raddering) {
         Raddering[Raddering["RadderUp"] = 0] = "RadderUp";
 
@@ -610,6 +647,7 @@ var Egm;
     var EgmUi = (function () {
         function EgmUi() {
             this.grid_ = new Egm.Grid();
+            this.options_ = EgmOption.default();
         }
         EgmUi.prototype.nodes = function (arg) {
             if (arg === undefined) {
@@ -627,6 +665,14 @@ var Egm;
             return this;
         };
 
+        EgmUi.prototype.options = function (arg) {
+            if (arg === undefined) {
+                return this.options_;
+            }
+            this.options_ = arg;
+            return this;
+        };
+
         EgmUi.prototype.draw = function (f) {
             if (typeof f === "undefined") { f = undefined; }
             var _this = this;
@@ -636,23 +682,32 @@ var Egm;
                 return d.y;
             }).interpolate("basis");
 
-            var nodes = this.grid_.nodes().filter(function (d) {
-                return d.active;
-            });
-            var links = this.grid_.links().filter(function (d) {
-                return d.source.active && d.target.active;
-            });
+            var nodes = this.grid_.nodes();
+            var links = this.grid_.links();
+            if (this.options_.inactiveNode == InactiveNode.Hidden) {
+                nodes = nodes.filter(function (d) {
+                    return d.active;
+                });
+                links = links.filter(function (d) {
+                    return d.source.active && d.target.active;
+                });
+            }
 
             var nodesSelection = this.contentsSelection.select(".nodes").selectAll(".element").data(nodes, Object);
             nodesSelection.exit().remove();
             nodesSelection.enter().append("g").call(this.appendElement());
 
-            var nodeSizeScale = d3.scale.linear().domain(d3.extent(this.grid_.nodes(), function (node) {
-                return _this.grid_.numConnectedNodes(node.index);
-            })).range([1, 2]);
+            var nodeSizeScale;
+            if (this.options_.scalingConnection) {
+                nodeSizeScale = d3.scale.linear().domain(d3.extent(this.grid_.nodes(), function (node) {
+                    return _this.grid_.numConnectedNodes(node.index, true);
+                })).range([1, 2]);
+            } else {
+                nodeSizeScale = d3.scale.linear();
+            }
             nodesSelection.each(function (node) {
                 var rect = _this.calcRect(node.text);
-                var n = _this.grid_.numConnectedNodes(node.index);
+                var n = _this.grid_.numConnectedNodes(node.index, true);
                 node.baseWidth = rect.width;
                 node.baseHeight = rect.height;
                 node.width = node.baseWidth * nodeSizeScale(n);
@@ -684,7 +739,7 @@ var Egm;
             });
             ;
 
-            this.grid_.layout();
+            this.grid_.layout(this.options_.inactiveNode == InactiveNode.Hidden);
 
             this.rootSelection.selectAll(".contents .links .link").filter(function (link) {
                 return link.previousPoints.length != link.points.length;
@@ -703,26 +758,33 @@ var Egm;
                 return link.weight;
             })).range([5, 15]);
             var transition = this.rootSelection.transition();
-            transition.selectAll(".element").attr("transform", function (node) {
-                return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString() + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString() + (new Svg.Transform.Scale(nodeSizeScale(_this.grid_.numConnectedNodes(node.index)))).toString();
+            transition.selectAll(".element").attr("opacity", function (node) {
+                return node.active ? 1 : 0.3;
+            }).attr("transform", function (node) {
+                return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString() + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString() + (new Svg.Transform.Scale(nodeSizeScale(_this.grid_.numConnectedNodes(node.index, true)))).toString();
             });
             transition.selectAll(".link").attr("d", function (link) {
                 return spline(link.points);
+            }).attr("opacity", function (link) {
+                return link.source.active && link.target.active ? 1 : 0.3;
             }).attr("stroke-width", function (d) {
                 return linkWidthScale(d.weight);
             });
             transition.each("end", f);
 
-            var left = d3.min(this.grid_.nodes(), function (node) {
+            var filterdNodes = this.options_.inactiveNode == InactiveNode.Hidden ? this.grid_.nodes().filter(function (node) {
+                return node.active;
+            }) : this.grid_.nodes();
+            var left = d3.min(filterdNodes, function (node) {
                 return node.left().x;
             });
-            var right = d3.max(this.grid_.nodes(), function (node) {
+            var right = d3.max(filterdNodes, function (node) {
                 return node.right().x;
             });
-            var top = d3.min(this.grid_.nodes(), function (node) {
+            var top = d3.min(filterdNodes, function (node) {
                 return node.top().y;
             });
-            var bottom = d3.max(this.grid_.nodes(), function (node) {
+            var bottom = d3.max(filterdNodes, function (node) {
                 return node.bottom().y;
             });
 
@@ -1053,9 +1115,14 @@ var Egm;
             this.drawNodeConnection();
         };
 
+        EgmUi.prototype.selectedNode = function () {
+            var selection = this.rootSelection.select(".selected");
+            return selection.empty() ? null : selection.datum();
+        };
+
         EgmUi.prototype.drawNodeConnection = function () {
             var _this = this;
-            var d = this.rootSelection.select(".selected").datum();
+            var d = this.selectedNode();
             this.rootSelection.selectAll(".connected").classed("connected", false);
             if (d) {
                 d3.selectAll(".element").filter(function (d2) {
@@ -1555,6 +1622,7 @@ function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
 
 function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
     var data;
+    var participants;
     var projectId = $scope.projectId = $routeParams.projectId;
     var participantsUrl = "/api/participants/" + projectId;
     var jsonUrl = "/api/projects/" + projectId + "/grid";
@@ -1589,6 +1657,14 @@ function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
 
     d3.select("#filterButton").on("click", function () {
         callWithProxy(function () {
+            var node = egm.selectedNode();
+            participants.forEach(function (participant) {
+                if (node) {
+                    participant.active = node.participants.indexOf(participant.key) >= 0;
+                } else {
+                    participant.active = false;
+                }
+            });
             var d = $dialog.dialog({
                 backdrop: true,
                 keyboard: true,
@@ -1597,7 +1673,7 @@ function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
                 controller: FilterParticipantsDialogController,
                 resolve: {
                     participants: function () {
-                        return $scope.participants;
+                        return participants;
                     },
                     filter: function () {
                         return filter;
@@ -1615,6 +1691,24 @@ function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
         });
     });
 
+    d3.select("#layoutButton").on("click", function () {
+        callWithProxy(function () {
+            var d = $dialog.dialog({
+                backdrop: true,
+                keyboard: true,
+                backdropClick: true,
+                templateUrl: '/partials/setting-dialog.html',
+                controller: SettingDialogController,
+                resolve: { options: function () {
+                        return egm.options();
+                    } }
+            });
+            d.open().then(function () {
+                egm.draw();
+            });
+        });
+    });
+
     $http.get(jsonUrl).success(function (data_) {
         data = data_;
         var nodes = data.nodes.map(function (d) {
@@ -1626,9 +1720,10 @@ function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
         egm.nodes(nodes).links(links).draw().focusCenter();
     });
 
-    $http.get(participantsUrl).success(function (participants) {
-        $scope.participants = participants;
-        $scope.participants.forEach(function (participant) {
+    $http.get(participantsUrl).success(function (participants_) {
+        participants = participants_;
+        participants.forEach(function (participant) {
+            participant.active = false;
             filter[participant.key] = true;
         });
     });
@@ -1648,6 +1743,15 @@ function FilterParticipantsDialogController($scope, dialog, participants, filter
     $scope.participants = participants;
     $scope.close = function () {
         dialog.close($scope.results);
+    };
+}
+
+function SettingDialogController($scope, dialog, options) {
+    $scope.options = options;
+    $scope.ViewMode = Egm.ViewMode;
+    $scope.InactiveNode = Egm.InactiveNode;
+    $scope.close = function () {
+        dialog.close();
     };
 }
 

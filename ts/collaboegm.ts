@@ -304,6 +304,7 @@ function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
 
 function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
   var data;
+  var participants;
   var projectId = $scope.projectId = $routeParams.projectId;
   var participantsUrl = "/api/participants/" + projectId;
   var jsonUrl = "/api/projects/" + projectId + "/grid";
@@ -354,6 +355,14 @@ function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
   d3.select("#filterButton")
     .on("click", () => {
       callWithProxy(() => {
+        var node = egm.selectedNode();
+        participants.forEach(participant => {
+          if (node) {
+            participant.active = node.participants.indexOf(participant.key) >= 0;
+          } else {
+            participant.active = false;
+          }
+        });
         var d = $dialog.dialog({
           backdrop: true,
           keyboard: true,
@@ -361,8 +370,8 @@ function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
           templateUrl: '/partials/filter-participants-dialog.html',
           controller: FilterParticipantsDialogController,
           resolve: {
-            participants: () => $scope.participants,
-            filter: () => filter
+            participants : () => participants,
+            filter : () => filter
           }
         });
         d.open().then(result => {
@@ -373,6 +382,23 @@ function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
             .draw()
             .focusCenter()
             ;
+        });
+      });
+    });
+
+  d3.select("#layoutButton")
+    .on("click", () => {
+      callWithProxy(() => {
+        var d = $dialog.dialog({
+          backdrop: true,
+          keyboard: true,
+          backdropClick: true,
+          templateUrl: '/partials/setting-dialog.html',
+          controller: SettingDialogController,
+          resolve: {options : () => egm.options()}
+        });
+        d.open().then(() => {
+          egm.draw();
         });
       });
     });
@@ -389,9 +415,10 @@ function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
       ;
   });
 
-  $http.get(participantsUrl).success(participants => {
-    $scope.participants = participants;
-    $scope.participants.forEach(participant => {
+  $http.get(participantsUrl).success(participants_ => {
+    participants = participants_;
+    participants.forEach(participant => {
+      participant.active = false;
       filter[participant.key] = true;
     });
   });
@@ -414,6 +441,16 @@ function FilterParticipantsDialogController($scope, dialog, participants, filter
   $scope.close = () => {
     dialog.close($scope.results);
   };
+}
+
+
+function SettingDialogController($scope, dialog, options) {
+  $scope.options = options;
+  $scope.ViewMode = Egm.ViewMode;
+  $scope.InactiveNode = Egm.InactiveNode;
+  $scope.close = () => {
+    dialog.close();
+  }
 }
 
 

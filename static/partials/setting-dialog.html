@@ -1,0 +1,30 @@
+<div class="modal-header">
+  <h3>View Setting</h3>
+</div>
+<div class="modal-body">
+  <form class="form-horizontal">
+    <div class="control-group">
+      <label class="control-label">View Method</label>
+      <div class="controls">
+        <label class="radio"><input type="radio" ng-model="options.viewMode" ng-value="ViewMode.Normal"/>Normal View</label>
+        <label class="radio"><input type="radio" ng-model="options.viewMode" ng-value="ViewMode.Edge"/>Edge View</label>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label">Inactive Node</label>
+      <div class="controls">
+        <label class="radio"><input type="radio" ng-model="options.inactiveNode" ng-value="InactiveNode.Hidden"/>Hidden</label>
+        <label class="radio"><input type="radio" ng-model="options.inactiveNode" ng-value="InactiveNode.Transparent"/>Transparent</label>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label">Scaling Options</label>
+      <div class="controls">
+        <label class="checkbox"><input type="checkbox" ng-model="options.scalingConnection"/>Scaling connection</label>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="modal-footer">
+  <button class="btn" ng-click="close()">Close</button>
+</div>
