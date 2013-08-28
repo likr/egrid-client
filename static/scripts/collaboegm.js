@@ -697,14 +697,9 @@ var Egm;
             nodesSelection.exit().remove();
             nodesSelection.enter().append("g").call(this.appendElement());
 
-            var nodeSizeScale;
-            if (this.options_.scalingConnection) {
-                nodeSizeScale = d3.scale.linear().domain(d3.extent(this.grid_.nodes(), function (node) {
-                    return _this.grid_.numConnectedNodes(node.index, true);
-                })).range([1, 2]);
-            } else {
-                nodeSizeScale = d3.scale.linear();
-            }
+            var nodeSizeScale = d3.scale.linear().domain(d3.extent(this.grid_.nodes(), function (node) {
+                return _this.grid_.numConnectedNodes(node.index, true);
+            })).range([1, this.options_.scalingConnection ? 3 : 1]);
             nodesSelection.each(function (node) {
                 var rect = _this.calcRect(node.text);
                 var n = _this.grid_.numConnectedNodes(node.index, true);
