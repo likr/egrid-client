@@ -1,0 +1,23 @@
+{
+  "name": "egrid",
+  "version": "0.0.0",
+  "authors": [
+    "Yosuke ONOUE <onoue@likr-lab.com>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.0.3",
+    "bootstrap": "~2.3.2",
+    "angular": "~1.0.8",
+    "d3": "~3.3.6",
+    "angular-ui-bootstrap-bower": "~0.6.0"
+  }
+}
