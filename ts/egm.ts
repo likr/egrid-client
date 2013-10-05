@@ -1,5 +1,5 @@
-/// <reference path="libs/jquery/jquery.d.ts"/>
-/// <reference path="libs/d3/d3.d.ts"/>
+/// <reference path="ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
 /// <reference path="svg.ts"/>
 /// <reference path="grid.ts"/>
 
@@ -89,7 +89,7 @@ module Egm {
 
   interface DragNode {
     (selection : D3.Selection) : DragNode;
-    isDroppable(f : (from : Node, to : Node) => bool) : DragNode;
+    isDroppable(f : (from : Node, to : Node) => boolean) : DragNode;
     dragToNode(f : (from : Node, to : Node) => void) : DragNode;
     dragToOther(f : (from : Node) => void) : DragNode;
   }
@@ -114,7 +114,7 @@ module Egm {
     private displayHeight : number;
     private rootSelection : D3.Selection;
     private contentsSelection : D3.Selection;
-    private contentsZoomBehavior : D3.Behaviour.Zoom;
+    private contentsZoomBehavior : D3.Behavior.Zoom;
     private onEnableRemoveNodeButton : (selection : D3.Selection) => void;
     private onDisableRemoveNodeButton : () => void;
     private onEnableMergeNodeButton : (selection : D3.Selection) => void;
@@ -487,7 +487,7 @@ module Egm {
       var egm = this;
       var f : any = function(selection : D3.Selection) : MergeNodeButton {
         selection.call(egm.dragNode()
-            .isDroppable((fromNode : Node, toNode : Node) : bool => {
+            .isDroppable((fromNode : Node, toNode : Node) : boolean => {
               return !egm.grid_.hasPath(toNode.index, fromNode.index)
             })
             .dragToNode((fromNode : Node, toNode : Node) : void => {
@@ -691,13 +691,13 @@ module Egm {
       this.rootSelection.selectAll(".connected").classed("connected", false);
       if (d) {
         d3.selectAll(".element")
-          .filter((d2 : Node) : bool => {
+          .filter((d2 : Node) : boolean => {
             return this.grid_.hasPath(d.index, d2.index) || this.grid_.hasPath(d2.index, d.index);
           })
           .classed("connected", true)
           ;
         d3.selectAll(".link")
-          .filter((link : Link) : bool => {
+          .filter((link : Link) : boolean => {
             return (this.grid_.hasPath(d.index, link.source.index)
                 && this.grid_.hasPath(d.index, link.target.index))
               || (this.grid_.hasPath(link.source.index, d.index)
@@ -945,7 +945,7 @@ module Egm {
       };
 
       selection.call(this.dragNode()
-          .isDroppable((fromNode : Node, toNode : Node) : bool => {
+          .isDroppable((fromNode : Node, toNode : Node) : boolean => {
             return !((type == Raddering.RadderUp && this.grid_.hasPath(fromNode.index, toNode.index))
               || (type == Raddering.RadderDown && this.grid_.hasPath(toNode.index, fromNode.index)))
           })

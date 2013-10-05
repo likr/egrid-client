@@ -123,6 +123,8 @@ var Svg;
     })();
     Svg.ViewBox = ViewBox;
 })(Svg || (Svg = {}));
+/// <reference path="dagre.d.ts"/>
+/// <reference path="svg.ts"/>
 var Egm;
 (function (Egm) {
     var Node = (function () {
@@ -607,18 +609,20 @@ var Egm;
     })();
     Egm.Grid = Grid;
 })(Egm || (Egm = {}));
+/// <reference path="ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="svg.ts"/>
+/// <reference path="grid.ts"/>
 var Egm;
 (function (Egm) {
     (function (ViewMode) {
         ViewMode[ViewMode["Normal"] = 0] = "Normal";
-
         ViewMode[ViewMode["Edge"] = 1] = "Edge";
     })(Egm.ViewMode || (Egm.ViewMode = {}));
     var ViewMode = Egm.ViewMode;
 
     (function (InactiveNode) {
         InactiveNode[InactiveNode["Hidden"] = 0] = "Hidden";
-
         InactiveNode[InactiveNode["Transparent"] = 1] = "Transparent";
     })(Egm.InactiveNode || (Egm.InactiveNode = {}));
     var InactiveNode = Egm.InactiveNode;
@@ -639,7 +643,6 @@ var Egm;
 
     (function (Raddering) {
         Raddering[Raddering["RadderUp"] = 0] = "RadderUp";
-
         Raddering[Raddering["RadderDown"] = 1] = "RadderDown";
     })(Egm.Raddering || (Egm.Raddering = {}));
     var Raddering = Egm.Raddering;
@@ -886,7 +889,9 @@ var Egm;
                         if (text) {
                             var node;
                             if (node = egm.grid_.findNode(text)) {
+                                // node already exists
                             } else {
+                                // create new node
                                 node = egm.createNode(text);
                                 node.original = true;
                                 egm.grid_.appendNode(node);
@@ -1382,6 +1387,8 @@ var Egm;
     })();
     Egm.EgmUi = EgmUi;
 })(Egm || (Egm = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../egm.ts"/>
 var Controllers;
 (function (Controllers) {
     function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
@@ -1509,6 +1516,8 @@ var Controllers;
         return result;
     }
 })(Controllers || (Controllers = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../egm.ts"/>
 var Controllers;
 (function (Controllers) {
     function EgmShowController($scope, $routeParams, $http, $location) {
@@ -1531,6 +1540,9 @@ var Controllers;
     }
     Controllers.EgmShowController = EgmShowController;
 })(Controllers || (Controllers = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../egm.ts"/>
 var Controllers;
 (function (Controllers) {
     function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
@@ -1660,6 +1672,8 @@ var Controllers;
         };
     }
 })(Controllers || (Controllers = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../egm.ts"/>
 var Controllers;
 (function (Controllers) {
     function ParticipantDetailController($scope, $routeParams, $http) {
@@ -1740,6 +1754,15 @@ var Controllers;
     }
     Controllers.ProjectListController = ProjectListController;
 })(Controllers || (Controllers = {}));
+/// <reference path="ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+/// <reference path="ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="egm.ts"/>
+/// <reference path="controllers/egm_edit.ts"/>
+/// <reference path="controllers/egm_show.ts"/>
+/// <reference path="controllers/egm_show_all.ts"/>
+/// <reference path="controllers/participant_detail.ts"/>
+/// <reference path="controllers/project_detail.ts"/>
+/// <reference path="controllers/project_list.ts"/>
 angular.module('collaboegm', ["ui.bootstrap"]).directive("egmApplicationView", function () {
     return {
         restrict: "EA",

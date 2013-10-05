@@ -1,5 +1,5 @@
-/// <reference path="../libs/angularjs/angular.d.ts"/>
-/// <reference path="../libs/d3/d3.d.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
 /// <reference path="../egm.ts"/>
 
 module Controllers {

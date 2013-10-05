@@ -1,4 +1,4 @@
-/// <reference path="libs/dagre/dagre.d.ts"/>
+/// <reference path="dagre.d.ts"/>
 /// <reference path="svg.ts"/>
 
 module Egm {
@@ -125,8 +125,8 @@ module Egm {
   export class Grid {
     private nodes_ : Node[];
     private links_ : Link[];
-    private linkMatrix : bool[][];
-    private pathMatrix : bool[][];
+    private linkMatrix : boolean[][];
+    private pathMatrix : boolean[][];
     private undoStack : CommandTransaction[];
     private redoStack : CommandTransaction[];
     private transaction : CommandTransaction;
