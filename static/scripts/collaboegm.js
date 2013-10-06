@@ -786,10 +786,13 @@ var Egm;
                 return node.bottom().y;
             });
 
-            var s = 0.9 * d3.min([
-                this.displayWidth / (right - left),
-                this.displayHeight / (bottom - top)
-            ]) || 1;
+            var s = d3.min([
+                1,
+                0.9 * d3.min([
+                    this.displayWidth / (right - left),
+                    this.displayHeight / (bottom - top)
+                ]) || 1
+            ]);
             this.contentsZoomBehavior.scaleExtent([s, 1]);
 
             this.resetUndoButton();
@@ -869,10 +872,13 @@ var Egm;
                 return node.bottom().y;
             });
 
-            var s = 0.9 * d3.min([
-                this.displayWidth / (right - left),
-                this.displayHeight / (bottom - top)
-            ]) || 1;
+            var s = d3.min([
+                1,
+                0.9 * d3.min([
+                    this.displayWidth / (right - left),
+                    this.displayHeight / (bottom - top)
+                ]) || 1
+            ]);
             var translate = new Svg.Transform.Translate((this.displayWidth - (right - left) * s) / 2, (this.displayHeight - (bottom - top) * s) / 2);
             var scale = new Svg.Transform.Scale(s);
             this.contentsZoomBehavior.translate([translate.x, translate.y]);
