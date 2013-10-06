@@ -1399,6 +1399,7 @@ var Controllers;
         var overallTexts = [];
 
         var egm = new Egm.EgmUi();
+        egm.options().scalingConnection = false;
         d3.select("#display").call(egm.display());
 
         $scope.call = function (callback) {
