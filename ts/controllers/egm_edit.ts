@@ -128,6 +128,12 @@ module Controllers {
           .onEnable(showNodeController)
           .onDisable(hideNodeController)
       );
+    d3.select("#editNodeButton")
+      .call(egm.editNodeButton()
+          .onClick(openInputTextDialog)
+          .onEnable(showNodeController)
+          .onDisable(hideNodeController)
+      );
 
     $http.get(jsonUrl).success((data : Data) => {
       var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight, d.original));

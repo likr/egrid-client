@@ -51,6 +51,14 @@ module Egm {
   }
 
 
+  export interface EditNodeButton {
+    (selection : D3.Selection) : EditNodeButton;
+    onClick(f : (callback : (result : string) => void) => void) : EditNodeButton;
+    onEnable(f : (selection : D3.Selection) => void) : EditNodeButton;
+    onDisable(f : () => void) : EditNodeButton;
+  }
+
+
   export interface RadderUpButton {
     (selection : D3.Selection) : RadderUpButton;
     onClick(f : (callback : (result : string) => void) => void) : RadderUpButton;
@@ -119,6 +127,8 @@ module Egm {
     private onDisableRemoveNodeButton : () => void;
     private onEnableMergeNodeButton : (selection : D3.Selection) => void;
     private onDisableMergeNodeButton : () => void;
+    private onEnableEditNodeButton : (selection : D3.Selection) => void;
+    private onDisableEditNodeButton : () => void;
     private onEnableRadderUpButton : (selection : D3.Selection) => void;
     private onDisableRadderUpButton : () => void;
     private onEnableRadderDownButton : (selection : D3.Selection) => void;
@@ -432,7 +442,7 @@ module Egm {
         selection.on("click", () => {
           onClickPrompt && onClickPrompt((text : string) : void => {
             if (text) {
-            var node;
+              var node;
               if (node = egm.grid_.findNode(text)) {
                 // node already exists
               } else {
@@ -507,6 +517,37 @@ module Egm {
       };
       f.onDisable = function(f : () => void) : MergeNodeButton {
         egm.onDisableMergeNodeButton = f;
+        return this;
+      };
+      return f;
+    }
+
+
+    editNodeButton() : EditNodeButton {
+      var egm = this;
+      var onClickPrompt;
+      var f : any = function(selection : D3.Selection) : EditNodeButton {
+        selection.on("click", () => {
+          onClickPrompt && onClickPrompt((text : string) : void => {
+            var node = egm.rootSelection.select(".selected").datum();
+            if (text && node) {
+              egm.grid_.updateNodeText(node.index, text);
+              egm.draw();
+            }
+          });
+        })
+        return this;
+      };
+      f.onClick = function(f : (callback : (result : string) => void) => void) : EditNodeButton {
+        onClickPrompt = f;
+        return this;
+      };
+      f.onEnable = function(f : (selection : D3.Selection) => void) : EditNodeButton {
+        egm.onEnableEditNodeButton = f;
+        return this;
+      };
+      f.onDisable = function(f : () => void) : EditNodeButton {
+        egm.onDisableEditNodeButton = f;
         return this;
       };
       return f;
@@ -716,6 +757,7 @@ module Egm {
       var selection = d3.select(".selected");
       this.enableRemoveNodeButton(selection);
       this.enableMergeNodeButton(selection);
+      this.enableEditNodeButton(selection);
       this.enableRadderUpButton(selection);
       this.enableRadderDownButton(selection);
     }
@@ -724,6 +766,7 @@ module Egm {
     private disableNodeButtons() {
       this.disableRemoveNodeButton();
       this.disableMergeNodeButton();
+      this.disableEditNodeButton();
       this.disableRadderUpButton();
       this.disableRadderDownButton();
     }
@@ -788,6 +831,20 @@ module Egm {
     private disableMergeNodeButton() : void {
       if (this.onDisableMergeNodeButton) {
         this.onDisableMergeNodeButton();
+      }
+    }
+
+
+    private enableEditNodeButton(selection : D3.Selection) : void {
+      if (this.onEnableEditNodeButton) {
+        this.onEnableEditNodeButton(selection);
+      }
+    }
+
+
+    private disableEditNodeButton() : void {
+      if (this.onDisableEditNodeButton) {
+        this.onDisableEditNodeButton();
       }
     }
 

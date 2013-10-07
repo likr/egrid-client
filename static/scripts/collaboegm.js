@@ -969,6 +969,36 @@ var Egm;
             return f;
         };
 
+        EgmUi.prototype.editNodeButton = function () {
+            var egm = this;
+            var onClickPrompt;
+            var f = function (selection) {
+                selection.on("click", function () {
+                    onClickPrompt && onClickPrompt(function (text) {
+                        var node = egm.rootSelection.select(".selected").datum();
+                        if (text && node) {
+                            egm.grid_.updateNodeText(node.index, text);
+                            egm.draw();
+                        }
+                    });
+                });
+                return this;
+            };
+            f.onClick = function (f) {
+                onClickPrompt = f;
+                return this;
+            };
+            f.onEnable = function (f) {
+                egm.onEnableEditNodeButton = f;
+                return this;
+            };
+            f.onDisable = function (f) {
+                egm.onDisableEditNodeButton = f;
+                return this;
+            };
+            return f;
+        };
+
         EgmUi.prototype.radderUpButton = function () {
             var _this = this;
             var grid = this;
@@ -1144,6 +1174,7 @@ var Egm;
             var selection = d3.select(".selected");
             this.enableRemoveNodeButton(selection);
             this.enableMergeNodeButton(selection);
+            this.enableEditNodeButton(selection);
             this.enableRadderUpButton(selection);
             this.enableRadderDownButton(selection);
         };
@@ -1151,6 +1182,7 @@ var Egm;
         EgmUi.prototype.disableNodeButtons = function () {
             this.disableRemoveNodeButton();
             this.disableMergeNodeButton();
+            this.disableEditNodeButton();
             this.disableRadderUpButton();
             this.disableRadderDownButton();
         };
@@ -1206,6 +1238,18 @@ var Egm;
         EgmUi.prototype.disableMergeNodeButton = function () {
             if (this.onDisableMergeNodeButton) {
                 this.onDisableMergeNodeButton();
+            }
+        };
+
+        EgmUi.prototype.enableEditNodeButton = function (selection) {
+            if (this.onEnableEditNodeButton) {
+                this.onEnableEditNodeButton(selection);
+            }
+        };
+
+        EgmUi.prototype.disableEditNodeButton = function () {
+            if (this.onDisableEditNodeButton) {
+                this.onDisableEditNodeButton();
             }
         };
 
@@ -1482,6 +1526,7 @@ var Controllers;
         d3.select("#ladderDownButton").call(egm.radderDownButton().onClick(openInputTextDialog).onEnable(showNodeController).onDisable(hideNodeController));
         d3.select("#removeNodeButton").call(egm.removeNodeButton().onEnable(showNodeController).onDisable(hideNodeController));
         d3.select("#mergeNodeButton").call(egm.mergeNodeButton().onEnable(showNodeController).onDisable(hideNodeController));
+        d3.select("#editNodeButton").call(egm.editNodeButton().onClick(openInputTextDialog).onEnable(showNodeController).onDisable(hideNodeController));
 
         $http.get(jsonUrl).success(function (data) {
             var nodes = data.nodes.map(function (d) {
