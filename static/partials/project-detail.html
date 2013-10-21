@@ -2,67 +2,67 @@
   <h2>{{project.name}}</h2>
 
   <ul class="breadcrumb">
-    <li><a href="/">Projects</a> <span class="divider">/</span></li>
+    <li><a href="/">{{ 'PROJECT.PROJECTS' | translate }}</a> <span class="divider">/</span></li>
     <li class="active">{{project.name}}</li>
   </ul>
 
   <div tabset>
-    <div tab heading="Detail">
+    <div tab heading="{{ 'ACTION.DETAIL' | translate }}">
       <form class="form-horizontal">
         <div class="control-group">
-          <label class="control-label" for="name">Name</label>
+          <label class="control-label" for="name">{{ 'PROJECT.ATTRIBUTES.NAME' | translate }}</label>
           <div class="controls">
-            <input type="text" name="name" placeholder="Project Name" ng-model="project.name"/>
+            <input type="text" name="name" placeholder="{{ 'PROJECT.ATTRIBUTES.PLACEHOLDERS.NAME' | translate }}" ng-model="project.name"/>
           </div>
         </div>
 
         <div class="control-group">
-          <label class="control-label" for="note">Note</label>
+          <label class="control-label" for="note">{{ 'PROJECT.ATTRIBUTES.NOTE' | translate }}</label>
           <div class="controls">
-            <textarea name="note" rows="3" placeholder="Note" ng-model="project.note"></textarea>
+            <textarea name="note" rows="3" placeholder="{{ 'PROJECT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate }}" ng-model="project.note"></textarea>
           </div>
         </div>
       </form>
     </div>
 
-    <div tab heading="Participants">
+    <div tab heading="{{ 'PARTICIPANT.PARTICIPANTS' | translate }}">
       <div tabset>
-        <div tab heading="List">
-          <h3>Participants</h3>
+        <div tab heading="{{ 'ACTION.LIST' | translate }}">
+          <h3>{{ 'PARTICIPANT.PARTICIPANTS' | translate }}</h3>
           <table class="table">
             <tr>
               <th>#</th>
-              <th>Name</th>
-              <th>Action</th>
+              <th>{{ 'PARTICIPANT.ATTRIBUTES.NAME' | translate }}</th>
+              <th>{{ 'ACTION.ACTION' | translate }}</th>
             </tr>
             <tr ng-repeat="participant in participants">
               <td>{{$index + 1}}</td>
               <td>{{participant.name}}</td>
-              <td><a href="/#/participants/{{projectId}}/{{participant.key}}">Show</a>
+              <td><a href="/#/participants/{{projectId}}/{{participant.key}}">{{ 'ACTION.SHOW' | translate }}</a>
             </tr>
           </table>
         </div>
 
-        <div tab heading="New">
-          <h3>New Participant</h3>
+        <div tab heading="{{ 'ACTION.NEW' | translate }}">
+          <h3>{{ 'PARTICIPANT.NEW' | translate }}</h3>
           <form class="form-horizontal" ng-submit="createParticipant()">
             <div class="control-group">
-              <label class="control-label" for="name">Name</label>
+              <label class="control-label" for="name">{{ 'PARTICIPANT.ATTRIBUTES.NAME' | translate }}</label>
               <div class="controls">
-                <input type="text" name="name" placeholder="Participant Name" ng-model="newParticipant.name"/>
+                <input type="text" name="name" placeholder="{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NAME' | translate }}" ng-model="newParticipant.name"/>
               </div>
             </div>
 
             <div class="control-group">
-              <label class="control-label" for="note">Note</label>
+              <label class="control-label" for="note">{{ 'PARTICIPANT.ATTRIBUTES.NOTE' | translate }}</label>
               <div class="controls">
-                <textarea name="note" rows="3" placeholder="Note" ng-model="newParticipant.note"></textarea>
+                <textarea name="note" rows="3" placeholder="{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate }}" ng-model="newParticipant.note"></textarea>
               </div>
             </div>
 
             <div class="control-group">
               <div class="controls">
-                <input type="submit" class="btn"/>
+                <input type="submit" class="btn" value="{{ 'ACTION.SUBMIT' | translate }}"/>
               </div>
             </div>
           </form>
@@ -70,9 +70,9 @@
       </div>
     </div>
 
-    <div tab heading="Evaluation Structure">
-      <h3>Overall Evaluation Structure</h3>
-      <a href="/#/projects/{{project.key}}/grid" class="btn">Show</a>
+    <div tab heading="{{ 'EGM.EVALUATION_STRUCTURE' | translate }}">
+      <h3>{{ 'EGM.OVERALL_EVALUATION_STRUCTURE' | translate }}</h3>
+      <a href="/#/projects/{{project.key}}/grid" class="btn">{{ 'ACTION.SHOW' | translate }}</a>
     </div>
   </div>
 </div>

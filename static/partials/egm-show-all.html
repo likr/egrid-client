@@ -22,16 +22,16 @@
     <div class="container">
       <ul class="nav pull-right">
         <li class="dropdown">
-          <a class="dropdown-toggle">Action<b class="caret"></b></a>
+          <a class="dropdown-toggle">{{ 'ACTION.ACTION' | translate }}<b class="caret"></b></a>
           <ul class="dropdown-menu">
-            <li><a id="quitButton" href="/#/projects/{{projectId}}">Quit</a></li>
-            <li><a id="exportButton">Export</a></li>
+            <li><a id="quitButton" href="/#/projects/{{projectId}}">{{ 'ACTION.QUIT' | translate }}</a></li>
+            <li><a id="exportButton">{{ 'ACTION.EXPORT' | translate }}</a></li>
             <li class="divider"></li>
-            <li><a id="undoButton">Undo</a></li>
-            <li><a id="redoButton">Redo</a></li>
+            <li><a id="undoButton">{{ 'ACTION.UNDO' | translate }}</a></li>
+            <li><a id="redoButton">{{ 'ACTION.REDO' | translate }}</a></li>
             <li class="divider"></li>
-            <li><a id="filterButton">Filtering</a></li>
-            <li><a id="layoutButton">Layout Settings</a></li>
+            <li><a id="filterButton">{{ 'ACTION.FILTER' | translate }}</a></li>
+            <li><a id="layoutButton">{{ 'EGM.APP.LAYOUT_SETTINGS' | translate }}</a></li>
           </ul>
         </li>
       </ul>
@@ -39,7 +39,7 @@
   </div>
 </div>
 <div id="nodeController" class="btn-group invisible" style="position: absolute; top: 0; left: 0;">
-  <button id="removeNodeButton" class="btn"><i class="icon-remove"></i></button>
-  <button id="mergeNodeButton" class="btn"><i class="icon-plus"></i></button>
+  <button id="removeNodeButton" class="btn" title="{{ 'EGM.APP.REMOVE_NODE' | translate }}"><i class="icon-remove"></i></button>
+  <button id="mergeNodeButton" class="btn" title="{{ 'EGM.APP.MERGE_NODE' | translate }}"><i class="icon-plus"></i></button>
 </div>
 <span id="ngClickProxy" class="invisible" ng-click="call(callback)"></span>

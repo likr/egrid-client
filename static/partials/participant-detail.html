@@ -3,7 +3,7 @@
 
   <ul class="breadcrumb">
     <li>
-      <a href="/">プロジェクト</a> <span class="divider">/</span>
+      <a href="/">{{ 'PROJECT.PROJECTS' | translate }}</a> <span class="divider">/</span>
     </li>
     <li>
       <a href="/#/projects/{{participant.project.key}}">{{participant.project.name}}</a>
@@ -15,26 +15,26 @@
   </ul>
 
   <div tabset>
-    <div tab heading="詳細">
+    <div tab heading="{{ 'ACTION.DETAIL' | translate }}">
       <form class="form-horizontal" ng-submit="createParticipant()">
         <div class="control-group">
-          <label class="control-label" for="name">Name</label>
+          <label class="control-label" for="name">{{ 'PARTICIPANT.ATTRIBUTES.NAME' | translate }}</label>
           <div class="controls">
-            <input type="text" name="name" placeholder="Participant Name" ng-model="participant.name"/>
+            <input type="text" name="name" placeholder="{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NAME' | translate }}" ng-model="participant.name"/>
           </div>
         </div>
 
         <div class="control-group">
-          <label class="control-label" for="note">Note</label>
+          <label class="control-label" for="note">{{ 'PARTICIPANT.ATTRIBUTES.NOTE' | translate }}</label>
           <div class="controls">
-            <textarea name="note" rows="3" placeholder="Note" ng-model="participant.note"></textarea>
+            <textarea name="note" rows="3" placeholder="{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate }}" ng-model="participant.note"></textarea>
           </div>
         </div>
       </form>
     </div>
-    <div tab heading="グリッド" select="gridTabSelected()">
-      <a href="/#/participants/{{participant.project.key}}/{{participant.key}}/grid" class="btn">詳細</a>
-      <a href="/#/participants/{{participant.project.key}}/{{participant.key}}/edit" class="btn">編集</a>
+    <div tab heading="{{ 'EGM.EVALUATION_STRUCTURE' | translate }}" select="gridTabSelected()">
+      <a href="/#/participants/{{participant.project.key}}/{{participant.key}}/grid" class="btn">{{ 'ACTION.DETAIL' | translate }}</a>
+      <a href="/#/participants/{{participant.project.key}}/{{participant.key}}/edit" class="btn">{{ 'ACTION.EDIT' | translate }}</a>
       <svg id="display"></svg>
     </div>
   </div>

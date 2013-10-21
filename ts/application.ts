@@ -8,7 +8,7 @@
 /// <reference path="controllers/project_detail.ts"/>
 /// <reference path="controllers/project_list.ts"/>
 
-angular.module('collaboegm', ["ui.bootstrap"])
+angular.module('collaboegm', ["ui.bootstrap", "pascalprecht.translate"])
   .directive("egmApplicationView", function() {
     return {
       restrict: "EA",
@@ -55,4 +55,18 @@ angular.module('collaboegm', ["ui.bootstrap"])
         redirectTo : "/projects"
       });
   }])
-;
+  .config(["$translateProvider", function ($translateProvider) {
+    $translateProvider
+      .useStaticFilesLoader({
+        prefix: 'locations/',
+        suffix: '.json'
+      })
+      .fallbackLanguage("en")
+      .preferredLanguage("ja");
+  }])
+  .run(['$rootScope', '$translate', function($rootScope, $translate) {
+    $rootScope.changeLanguage = function(langKey) {
+      $translate.uses(langKey);
+    };
+  }])
+  ;

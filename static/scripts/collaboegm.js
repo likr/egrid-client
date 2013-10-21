@@ -1815,7 +1815,7 @@ var Controllers;
 /// <reference path="controllers/participant_detail.ts"/>
 /// <reference path="controllers/project_detail.ts"/>
 /// <reference path="controllers/project_list.ts"/>
-angular.module('collaboegm', ["ui.bootstrap"]).directive("egmApplicationView", function () {
+angular.module('collaboegm', ["ui.bootstrap", "pascalprecht.translate"]).directive("egmApplicationView", function () {
     return {
         restrict: "EA",
         transclude: true,
@@ -1853,5 +1853,21 @@ angular.module('collaboegm', ["ui.bootstrap"]).directive("egmApplicationView", f
         }).otherwise({
             redirectTo: "/projects"
         });
+    }
+]).config([
+    "$translateProvider",
+    function ($translateProvider) {
+        $translateProvider.useStaticFilesLoader({
+            prefix: 'locations/',
+            suffix: '.json'
+        }).fallbackLanguage("en").preferredLanguage("ja");
+    }
+]).run([
+    '$rootScope',
+    '$translate',
+    function ($rootScope, $translate) {
+        $rootScope.changeLanguage = function (langKey) {
+            $translate.uses(langKey);
+        };
     }
 ]);
