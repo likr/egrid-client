@@ -1772,6 +1772,10 @@ var Controllers;
         $http.get("/api/participants/" + projectId).success(function (data) {
             $scope.participants = data;
         });
+        $http.get("/api/collaborators/" + projectId).success(function (data) {
+            $scope.collaborators = data;
+        });
+
         $scope.newParticipant = {};
         $scope.createParticipant = function () {
             $http({
@@ -1781,6 +1785,18 @@ var Controllers;
             }).success(function (data) {
                 var path = "/participants/" + projectId + "/" + data.key;
                 $location.path(path);
+            });
+        };
+
+        $scope.newCollaborator = {};
+        $scope.createCollaborator = function () {
+            $http({
+                method: 'PUT',
+                url: '/api/collaborators/' + projectId,
+                data: $scope.newCollaborator
+            }).success(function (data) {
+                $scope.collaborators.push(data);
+                $scope.newCollaborator = {};
             });
         };
     }
@@ -1865,9 +1881,27 @@ angular.module('collaboegm', ["ui.bootstrap", "pascalprecht.translate"]).directi
 ]).run([
     '$rootScope',
     '$translate',
-    function ($rootScope, $translate) {
+    '$http',
+    function ($rootScope, $translate, $http) {
         $rootScope.changeLanguage = function (langKey) {
             $translate.uses(langKey);
+            $http({
+                method: "POST",
+                url: '/api/users',
+                data: {
+                    location: langKey
+                }
+            });
         };
+
+        $http.get("/api/users").success(function (user) {
+            $rootScope.user = user;
+            $translate.uses(user.location);
+        });
+
+        var dest_url = "/";
+        $http.get("/api/users/logout?dest_url=" + encodeURIComponent(dest_url)).success(function (data) {
+            $rootScope.logoutUrl = data.logout_url;
+        });
     }
 ]);

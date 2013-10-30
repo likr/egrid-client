@@ -8,6 +8,10 @@ module Controllers {
     $http.get("/api/participants/" + projectId).success(data => {
       $scope.participants = data;
     });
+    $http.get("/api/collaborators/" + projectId).success(data => {
+      $scope.collaborators = data;
+    });
+
     $scope.newParticipant = {};
     $scope.createParticipant = function() {
       $http({
@@ -17,6 +21,18 @@ module Controllers {
       }).success(function(data) {
         var path = "/participants/" + projectId + "/" + data.key;
         $location.path(path);
+      });
+    };
+
+    $scope.newCollaborator = {};
+    $scope.createCollaborator = function() {
+      $http({
+        method: 'PUT',
+        url: '/api/collaborators/' + projectId,
+        data: $scope.newCollaborator,
+      }).success(data => {
+        $scope.collaborators.push(data);
+        $scope.newCollaborator = {};
       });
     };
   }

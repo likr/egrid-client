@@ -19,6 +19,20 @@
     "SUBMIT": "送信",
     "UNDO": "元に戻す"
   },
+  "COLLABORATOR": {
+    "ATTRIBUTES": {
+      "IS_OWNER": "管理者",
+      "PLACEHOLDERS": {
+        "USER": "test@example.com"
+      },
+      "USER": "ユーザー名"
+    },
+    "COLLABORATOR": "コラボレーター",
+    "ROLE": {
+      "MANAGER": "管理者",
+      "ROLE": "役割"
+    }
+  },
   "EGM": {
     "APP": {
       "INACTIVE_NODE": {

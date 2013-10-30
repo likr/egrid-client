@@ -18,6 +18,31 @@
     <link rel="stylesheet" href="/styles/egm.css"/>
   </head>
   <body>
+    <div class="navbar navbar-inverse navbar-static-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand" href="/#">E-Grid</a>
+          <ul class="nav">
+            <li><a>Help</a></li>
+            <li><a>About</a></li>
+          </ul>
+          <ul class="nav nav-pills pull-right">
+            <li class="dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                {{ user.nickname }}さん<b class="caret"></b>
+              </a>
+              <ul class="dropdown-menu">
+                <li class="nav-header">Languages</li>
+                <li><a ng-click="changeLanguage('ja')">Japanese</a></li>
+                <li><a ng-click="changeLanguage('en')">English</a></li>
+                <li class="divider"></li>
+                <li><a href="{{ logoutUrl }}">Logout</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
     <div ng-view></div>
   </body>
 </html>

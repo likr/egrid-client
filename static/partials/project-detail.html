@@ -2,7 +2,7 @@
   <h2>{{project.name}}</h2>
 
   <ul class="breadcrumb">
-    <li><a href="/">{{ 'PROJECT.PROJECTS' | translate }}</a> <span class="divider">/</span></li>
+    <li><a href="/#/projects">{{ 'PROJECT.PROJECTS' | translate }}</a> <span class="divider">/</span></li>
     <li class="active">{{project.name}}</li>
   </ul>
 
@@ -28,7 +28,6 @@
     <div tab heading="{{ 'PARTICIPANT.PARTICIPANTS' | translate }}">
       <div tabset>
         <div tab heading="{{ 'ACTION.LIST' | translate }}">
-          <h3>{{ 'PARTICIPANT.PARTICIPANTS' | translate }}</h3>
           <table class="table">
             <tr>
               <th>#</th>
@@ -44,7 +43,6 @@
         </div>
 
         <div tab heading="{{ 'ACTION.NEW' | translate }}">
-          <h3>{{ 'PARTICIPANT.NEW' | translate }}</h3>
           <form class="form-horizontal" ng-submit="createParticipant()">
             <div class="control-group">
               <label class="control-label" for="name">{{ 'PARTICIPANT.ATTRIBUTES.NAME' | translate }}</label>
@@ -73,6 +71,51 @@
     <div tab heading="{{ 'EGM.EVALUATION_STRUCTURE' | translate }}">
       <h3>{{ 'EGM.OVERALL_EVALUATION_STRUCTURE' | translate }}</h3>
       <a href="/#/projects/{{project.key}}/grid" class="btn">{{ 'ACTION.SHOW' | translate }}</a>
+    </div>
+
+    <div tab heading="{{ 'COLLABORATOR.COLLABORATOR' | translate }}">
+      <div tabset>
+        <div tab heading="{{ 'ACTION.LIST' | translate }}">
+          <table class="table">
+            <tr>
+              <th>#</th>
+              <th>{{ 'COLLABORATOR.ATTRIBUTES.USER' | translate }}</th>
+              <th>{{ 'COLLABORATOR.ROLE.ROLE' | translate }}</th>
+            </tr>
+            <tr ng-repeat="collaborator in collaborators">
+              <td>{{ $index + 1 }}</td>
+              <td>{{ collaborator.user.nickname }}</td>
+              <td>{{ collaborator.is_manager }}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div tab heading="{{ 'ACTION.NEW' | translate }}">
+          <form class="form-horizontal" ng-submit="createCollaborator()">
+            <div class="control-group">
+              <label class="control-label" for="name">{{ 'COLLABORATOR.ATTRIBUTES.USER' | translate }}</label>
+              <div class="controls">
+                <input type="text" name="name" placeholder="{{ 'COLLABORATOR.ATTRIBUTES.PLACEHOLDERS.USER' | translate }}" ng-model="newCollaborator.user"/>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label class="control-label" for="note">{{ 'COLLABORATOR.ROLE.ROLE' | translate }}</label>
+              <div class="controls">
+                <label class="checkbox">
+                  <input type="checkbox" ng-model="newCollaborator.is_manager"/>{{ 'COLLABORATOR.ROLE.MANAGER' | translate }}
+                </label>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="controls">
+                <input type="submit" class="btn" value="{{ 'ACTION.SUBMIT' | translate }}"/>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </div>

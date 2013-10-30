@@ -64,9 +64,26 @@ angular.module('collaboegm', ["ui.bootstrap", "pascalprecht.translate"])
       .fallbackLanguage("en")
       .preferredLanguage("ja");
   }])
-  .run(['$rootScope', '$translate', function($rootScope, $translate) {
+  .run(['$rootScope', '$translate', '$http', function($rootScope, $translate, $http) {
     $rootScope.changeLanguage = function(langKey) {
       $translate.uses(langKey);
+      $http({
+        method: "POST",
+        url: '/api/users',
+        data: {
+          location: langKey,
+        },
+      });
     };
+
+    $http.get("/api/users").success(user => {
+      $rootScope.user = user;
+      $translate.uses(user.location);
+    });
+
+    var dest_url = "/";
+    $http.get("/api/users/logout?dest_url=" + encodeURIComponent(dest_url)).success(data => {
+      $rootScope.logoutUrl = data.logout_url;
+    });
   }])
   ;

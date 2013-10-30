@@ -19,6 +19,20 @@
     "SUBMIT": "Submit",
     "UNDO": "Undo"
   },
+  "COLLABORATOR": {
+    "ATTRIBUTES": {
+      "IS_OWNER": "Manager",
+      "PLACEHOLDERS": {
+        "USER": "test@example.com"
+      },
+      "USER": "User Name"
+    },
+    "COLLABORATOR": "Collaborator",
+    "ROLE": {
+      "MANAGER": "Manager",
+      "ROLE": "Role"
+    }
+  },
   "EGM": {
     "APP": {
       "INACTIVE_NODE": {
