@@ -817,7 +817,7 @@ module Egm {
     private unselectElement() {
       this.rootSelection.selectAll(".selected").classed("selected", false);
       this.rootSelection.selectAll(".connected").classed("connected", false);
-      this.rootSelection.selectAll(".link circle")
+      this.rootSelection.selectAll(".link .removeLinkButton")
         .attr("opacity", 0)
         ;
       this.disableNodeButtons();

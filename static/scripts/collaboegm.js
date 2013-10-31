@@ -1227,7 +1227,7 @@ var Egm;
         EgmUi.prototype.unselectElement = function () {
             this.rootSelection.selectAll(".selected").classed("selected", false);
             this.rootSelection.selectAll(".connected").classed("connected", false);
-            this.rootSelection.selectAll(".link circle").attr("opacity", 0);
+            this.rootSelection.selectAll(".link .removeLinkButton").attr("opacity", 0);
             this.disableNodeButtons();
         };
 
