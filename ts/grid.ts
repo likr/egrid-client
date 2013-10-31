@@ -199,6 +199,23 @@ module Egm {
     }
 
 
+    removeLink(removeLinkIndex : number) : void {
+      var removeLink = this.links_[removeLinkIndex];
+      this.execute({
+        execute : () => {
+          this.links_.splice(removeLinkIndex, 1);
+          this.updateLinkIndex();
+          this.updateConnections();
+        },
+        revert : () => {
+          this.links_.splice(removeLinkIndex, 0, removeLink);
+          this.updateLinkIndex();
+          this.updateConnections();
+        }
+      });
+    }
+
+
     updateNodeText(nodeIndex : number, newText : string) : void {
       var node = this.nodes_[nodeIndex];
       var oldText = node.text;

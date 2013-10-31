@@ -275,6 +275,23 @@ var Egm;
             });
         };
 
+        Grid.prototype.removeLink = function (removeLinkIndex) {
+            var _this = this;
+            var removeLink = this.links_[removeLinkIndex];
+            this.execute({
+                execute: function () {
+                    _this.links_.splice(removeLinkIndex, 1);
+                    _this.updateLinkIndex();
+                    _this.updateConnections();
+                },
+                revert: function () {
+                    _this.links_.splice(removeLinkIndex, 0, removeLink);
+                    _this.updateLinkIndex();
+                    _this.updateConnections();
+                }
+            });
+        };
+
         Grid.prototype.updateNodeText = function (nodeIndex, newText) {
             var node = this.nodes_[nodeIndex];
             var oldText = node.text;
@@ -732,14 +749,24 @@ var Egm;
 
             var linksSelection = this.contentsSelection.select(".links").selectAll(".link").data(links, Object);
             linksSelection.exit().remove();
-            linksSelection.enter().append("path").classed("link", true).each(function (link) {
+            linksSelection.enter().append("g").classed("link", true).each(function (link) {
                 link.points = [link.source.right(), link.target.left()];
+            }).call(function (selection) {
+                selection.append("path");
+                selection.append("g").classed("removeLinkButton", true).attr("transform", function (link) {
+                    return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
+                }).attr("opacity", 0).on("click", function (d) {
+                    _this.grid_.removeLink(d.index);
+                    _this.draw();
+                }).call(function (selection) {
+                    selection.append("circle").attr("r", 16).attr("fill", "lightgray").attr("stroke", "none");
+                    selection.append("image").attr("x", -8).attr("y", -8).attr("width", "16px").attr("height", "16px").attr("xlink:href", "/images/glyphicons_207_remove_2.png");
+                });
             });
-            ;
 
             this.grid_.layout(this.options_.inactiveNode == InactiveNode.Hidden);
 
-            this.rootSelection.selectAll(".contents .links .link").filter(function (link) {
+            this.rootSelection.selectAll(".contents .links .link path").filter(function (link) {
                 return link.previousPoints.length != link.points.length;
             }).attr("d", function (link) {
                 if (link.points.length > link.previousPoints.length) {
@@ -755,18 +782,25 @@ var Egm;
             var linkWidthScale = d3.scale.linear().domain(d3.extent(this.grid_.links(), function (link) {
                 return link.weight;
             })).range([5, 15]);
+
+            var selectedNode = this.selectedNode();
             var transition = this.rootSelection.transition();
             transition.selectAll(".element").attr("opacity", function (node) {
                 return node.active ? 1 : 0.3;
             }).attr("transform", function (node) {
                 return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString() + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString() + (new Svg.Transform.Scale(nodeSizeScale(_this.grid_.numConnectedNodes(node.index, true)))).toString();
             });
-            transition.selectAll(".link").attr("d", function (link) {
+            transition.selectAll(".link path").attr("d", function (link) {
                 return spline(link.points);
             }).attr("opacity", function (link) {
                 return link.source.active && link.target.active ? 1 : 0.3;
             }).attr("stroke-width", function (d) {
                 return linkWidthScale(d.weight);
+            });
+            transition.selectAll(".link .removeLinkButton").attr("transform", function (link) {
+                return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
+            }).attr("opacity", function (link) {
+                return link.source == selectedNode || link.target == selectedNode ? 1 : 0;
             });
             transition.each("end", f);
 
@@ -1167,6 +1201,9 @@ var Egm;
                 d3.selectAll(".link").filter(function (link) {
                     return (_this.grid_.hasPath(d.index, link.source.index) && _this.grid_.hasPath(d.index, link.target.index)) || (_this.grid_.hasPath(link.source.index, d.index) && _this.grid_.hasPath(link.target.index, d.index));
                 }).classed("connected", true);
+                d3.selectAll(".link .removeLinkButton").attr("opacity", function (link) {
+                    return link.source == d || link.target == d ? 1 : 0;
+                });
             }
         };
 
@@ -1190,6 +1227,7 @@ var Egm;
         EgmUi.prototype.unselectElement = function () {
             this.rootSelection.selectAll(".selected").classed("selected", false);
             this.rootSelection.selectAll(".connected").classed("connected", false);
+            this.rootSelection.selectAll(".link circle").attr("opacity", 0);
             this.disableNodeButtons();
         };
 

@@ -23,6 +23,9 @@ handlers:
 - url: /styles
   static_dir: static/styles
 
+- url: /images
+  static_dir: static/images
+
 - url: /partials
   static_dir: static/partials
 
