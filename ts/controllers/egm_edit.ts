@@ -32,7 +32,30 @@ module Controllers {
 
     function openInputTextDialog(callback) {
       callWithProxy(() => {
-        var texts = overallTexts.concat(egm.nodes().map(node => node.text));
+        var textsDict = {};
+        var texts = overallTexts.map(d => {
+          var obj = {
+            text: d.text,
+            weight: d.weight,
+          };
+          d.participants.forEach(p => {
+            if (p == participantId) {
+              obj.weight -= 1;
+            }
+          });
+          textsDict[d.text] = obj;
+          return obj;
+        });
+        egm.nodes().forEach(node => {
+          if (textsDict[node.text]) {
+            textsDict[node.text].weight += 1;
+          } else {
+            texts.push({
+              text: node.text,
+              weight: 1,
+            });
+          }
+        });
         var d = $dialog.dialog({
           backdrop: true,
           keyboard: true,
@@ -148,33 +171,17 @@ module Controllers {
 
 
     $http.get(overallJsonUrl).success((data : Data) => {
-      data.nodes.forEach(d => {
-        overallTexts.push(d.text);
-      });
+      overallTexts = data.nodes;
     });
   }
 
 
   function InputTextDialogController($scope, dialog, texts) {
-    texts.sort();
-    texts = unique(texts);
+    texts.sort((t1, t2) => t2.weight - t1.weight);
+    $scope.result = "";
     $scope.texts = texts;
     $scope.close = function(result) {
       dialog.close(result);
     }
-  }
-
-
-  function unique(array : any[]) : any[] {
-    var result = [];
-    if (array.length > 0) {
-      result.push(array[0]);
-      array.forEach(item => {
-        if (item != result[result.length - 1]) {
-          result.push(item);
-        }
-      });
-    }
-    return result;
   }
 }

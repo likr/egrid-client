@@ -1501,9 +1501,30 @@ var Controllers;
 
         function openInputTextDialog(callback) {
             callWithProxy(function () {
-                var texts = overallTexts.concat(egm.nodes().map(function (node) {
-                    return node.text;
-                }));
+                var textsDict = {};
+                var texts = overallTexts.map(function (d) {
+                    var obj = {
+                        text: d.text,
+                        weight: d.weight
+                    };
+                    d.participants.forEach(function (p) {
+                        if (p == participantId) {
+                            obj.weight -= 1;
+                        }
+                    });
+                    textsDict[d.text] = obj;
+                    return obj;
+                });
+                egm.nodes().forEach(function (node) {
+                    if (textsDict[node.text]) {
+                        textsDict[node.text].weight += 1;
+                    } else {
+                        texts.push({
+                            text: node.text,
+                            weight: 1
+                        });
+                    }
+                });
                 var d = $dialog.dialog({
                     backdrop: true,
                     keyboard: true,
@@ -1577,33 +1598,20 @@ var Controllers;
         });
 
         $http.get(overallJsonUrl).success(function (data) {
-            data.nodes.forEach(function (d) {
-                overallTexts.push(d.text);
-            });
+            overallTexts = data.nodes;
         });
     }
     Controllers.EgmEditController = EgmEditController;
 
     function InputTextDialogController($scope, dialog, texts) {
-        texts.sort();
-        texts = unique(texts);
+        texts.sort(function (t1, t2) {
+            return t2.weight - t1.weight;
+        });
+        $scope.result = "";
         $scope.texts = texts;
         $scope.close = function (result) {
             dialog.close(result);
         };
-    }
-
-    function unique(array) {
-        var result = [];
-        if (array.length > 0) {
-            result.push(array[0]);
-            array.forEach(function (item) {
-                if (item != result[result.length - 1]) {
-                    result.push(item);
-                }
-            });
-        }
-        return result;
     }
 })(Controllers || (Controllers = {}));
 /// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
