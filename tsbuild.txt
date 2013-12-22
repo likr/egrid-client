@@ -8,3 +8,4 @@ ts/controllers/egm_show_all.ts
 ts/controllers/participant_detail.ts
 ts/controllers/project_detail.ts
 ts/controllers/project_list.ts
+ts/controllers/sem_project_detail.ts

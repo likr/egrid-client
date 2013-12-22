@@ -73,6 +73,48 @@
       <a href="/#/projects/{{project.key}}/grid" class="btn">{{ 'ACTION.SHOW' | translate }}</a>
     </div>
 
+    <div tab heading="{{ 'EGM.ANALYSIS' | translate }}">
+      <h3>{{ 'SEM.SEM' | translate }}</h3>
+      <div tabset>
+        <div tab heading="{{ 'ACTION.LIST' | translate }}">
+          <table class="table">
+            <tr>
+              <th>#</th>
+              <th>{{ 'SEM_PROJECT.ATTRIBUTES.NAME' | translate }}</th>
+              <th>{{ 'ACTION.ACTION' | translate }}</th>
+            </tr>
+            <tr ng-repeat="semProject in semProjects">
+              <td>{{ $index + 1 }}</td>
+              <td>{{ semProject.name }}</td>
+              <td><a href="/#/sem-projects/{{semProject.key}}">{{ 'ACTION.SHOW' | translate }}</a>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>書きやすさの分析</td>
+              <td><a href="/#/sem-projects/{{projectId}}/xxx">{{ 'ACTION.SHOW' | translate }}</a>
+            </tr>
+          </table>
+        </div>
+
+        <div tab heading="{{ 'ACTION.NEW' | translate }}">
+          <form class="form-horizontal" ng-submit="createSemProject()">
+            <div class="control-group">
+              <label class="control-label" for="name">{{ 'SEM_PROJECT.ATTRIBUTES.NAME' | translate }}</label>
+              <div class="controls">
+                <input type="text" name="name" placeholder="{{ 'SEM_PROJECT.ATTRIBUTES.PLACEHOLDERS.NAME' | translate }}" ng-model="newSemProject.name"/>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="controls">
+                <input type="submit" class="btn" value="{{ 'ACTION.SUBMIT' | translate }}"/>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <div tab heading="{{ 'COLLABORATOR.COLLABORATOR' | translate }}">
       <div tabset>
         <div tab heading="{{ 'ACTION.LIST' | translate }}">

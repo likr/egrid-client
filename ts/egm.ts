@@ -114,6 +114,9 @@ module Egm {
   }
 
 
+  /**
+   * @class Egm.EgmUi
+   */
   export class EgmUi {
     private static rx : number = 20;
     private grid_ : Grid;
@@ -141,16 +144,36 @@ module Egm {
     private openAppendNodePrompt : (callback : (result : string) => void) => void;
     private openLadderUpPrompt : (callback : (result : string) => void) => void;
     private openLadderDownPrompt : (callback : (result : string) => void) => void;
+    private removeLinkButtonEnabled : boolean = false;
 
 
+    /**
+     * @class Egm.EgmUi
+     * @constructor
+     */
     constructor () {
       this.grid_ = new Grid;
       this.options_ = EgmOption.default();
+      this.removeLinkButtonEnabled;
+    }
+
+
+    /**
+     * @method grid
+     * @return {Egm.Grid}
+     */
+    grid() : Grid {
+      return this.grid_;
     }
 
 
     nodes() : Node[];
     nodes(nodes : Node[]) : EgmUi;
+    /**
+     * @method nodes
+     * @param {Egm.Node[]} [nodes] new nodes.
+     * @return {Egm.EgmUi|Egm.Node[]} Returns self if nodes is specified. Otherwise, returns current nodes.
+     */
     nodes(arg? : Node[]) : any {
       if (arg === undefined) {
         return this.grid_.nodes();
@@ -162,6 +185,11 @@ module Egm {
 
     links() : Link[];
     links(links : Link[]) : EgmUi;
+    /**
+     * @method links
+     * @param {Egm.Link[]} [links] new links.
+     * @return {Egm.EgmUi|Egm.Link} Returns self if links is specified. Otherwise, returns current links.
+     */
     links(arg? : Link[]) : any {
       if (arg === undefined) {
         return this.grid_.links();
@@ -171,6 +199,9 @@ module Egm {
     }
 
 
+    /**
+     * @method options
+     */
     options() : EgmOption;
     options(options : EgmOption) : EgmUi;
     options(arg? : EgmOption) : any {
@@ -182,6 +213,9 @@ module Egm {
     }
 
 
+    /**
+     * @method draw
+     */
     draw(f = undefined) : EgmUi {
       var spline = d3.svg.line()
         .x(d => d.x)
@@ -250,31 +284,33 @@ module Egm {
         })
         .call(selection => {
           selection.append("path");
-          selection.append("g")
-            .classed("removeLinkButton", true)
-            .attr("transform", link => {
-              return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
-            })
-            .attr("opacity", 0)
-            .on("click", (d) => {
-              this.grid_.removeLink(d.index);
-              this.draw();
-            })
-            .call(selection => {
-              selection.append("circle")
-                .attr("r", 16)
-                .attr("fill", "lightgray")
-                .attr("stroke", "none")
-                ;
-              selection.append("image")
-                .attr("x", -8)
-                .attr("y", -8)
-                .attr("width", "16px")
-                .attr("height", "16px")
-                .attr("xlink:href", "/images/glyphicons_207_remove_2.png")
-                ;
-            })
-            ;
+          if (this.removeLinkButtonEnabled) {
+            selection.append("g")
+              .classed("removeLinkButton", true)
+              .attr("transform", link => {
+                return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
+              })
+              .attr("opacity", 0)
+              .on("click", (d) => {
+                this.grid_.removeLink(d.index);
+                this.draw();
+              })
+              .call(selection => {
+                selection.append("circle")
+                  .attr("r", 16)
+                  .attr("fill", "lightgray")
+                  .attr("stroke", "none")
+                  ;
+                selection.append("image")
+                  .attr("x", -8)
+                  .attr("y", -8)
+                  .attr("width", "16px")
+                  .attr("height", "16px")
+                  .attr("xlink:href", "/images/glyphicons_207_remove_2.png")
+                  ;
+              })
+              ;
+          }
         })
         ;
 
@@ -384,6 +420,13 @@ module Egm {
     }
 
 
+    /**
+     * Generates a function to init display region.
+     * @method display
+     * @param regionWidth {number} Width of display region.
+     * @param regionHeight {number} Height of display region.
+     * @return {function}
+     */
     display(regionWidth : number = undefined, regionHeight : number = undefined)
         : (selection : D3.Selection) => void {
       return (selection) => {
@@ -442,6 +485,9 @@ module Egm {
     }
 
 
+    /**
+     * @method focusCenter
+     */
     focusCenter() : void {
       var left = d3.min(this.grid_.nodes(), node => {
         return node.left().x;
@@ -1098,6 +1144,17 @@ module Egm {
         ? d3.mouse(container)
         : d3.touches(container, d3.event.sourceEvent.changedTouches)[0];
       return new Svg.Point(xy[0], xy[1]);
+    }
+
+
+    showRemoveLinkButton() : boolean;
+    showRemoveLinkButton(flag : boolean) : EgmUi;
+    showRemoveLinkButton(arg? : boolean) : any {
+      if (arg === undefined) {
+        return this.removeLinkButtonEnabled;
+      }
+      this.removeLinkButtonEnabled = arg;
+      return this;
     }
   }
 }

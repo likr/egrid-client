@@ -2,6 +2,9 @@
 /// <reference path="svg.ts"/>
 
 module Egm {
+  /**
+  @class Egm.Node
+  */
   export class Node {
     public index : number;
     public x : number;
@@ -23,6 +26,10 @@ module Egm {
     private static nextKey = 0;
 
 
+    /**
+    @class Egm.Node
+    @constructor
+    */
     constructor(
         text : string, weight : number = undefined,
         original : boolean = undefined, participants : string [] = undefined) {
@@ -69,6 +76,9 @@ module Egm {
   }
 
 
+  /**
+  @class Egm.Link
+  */
   export class Link {
     public index : number;
     public points : Svg.Point[];
@@ -79,6 +89,10 @@ module Egm {
     private static nextKey = 0;
 
 
+    /**
+    @class Egm.Link
+    @constructor
+    */
     constructor(public source : Node, public target : Node, weight : number = undefined) {
       this.weight = weight || 1;
       this.key = Link.nextKey++;
@@ -122,6 +136,9 @@ module Egm {
   }
 
 
+  /**
+  @class Egm.Grid
+  */
   export class Grid {
     private nodes_ : Node[];
     private links_ : Link[];
@@ -132,6 +149,10 @@ module Egm {
     private transaction : CommandTransaction;
 
 
+    /**
+    @class Egm.Grid
+    @constructor
+    */
     constructor() {
       this.nodes_ = [];
       this.links_ = [];

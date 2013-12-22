@@ -16,6 +16,7 @@ module Controllers {
     var overallTexts = [];
 
     var egm = new Egm.EgmUi;
+    egm.showRemoveLinkButton(true);
     egm.options().scalingConnection = false;
     d3.select("#display")
       .call(egm.display())
@@ -158,7 +159,7 @@ module Controllers {
           .onDisable(hideNodeController)
       );
 
-    $http.get(jsonUrl).success((data : Data) => {
+    $http.get(jsonUrl).success(data => {
       var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight, d.original));
       var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
       egm

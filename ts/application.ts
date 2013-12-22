@@ -7,6 +7,7 @@
 /// <reference path="controllers/participant_detail.ts"/>
 /// <reference path="controllers/project_detail.ts"/>
 /// <reference path="controllers/project_list.ts"/>
+/// <reference path="controllers/sem_project_detail.ts"/>
 
 angular.module('collaboegm', ["ui.bootstrap", "pascalprecht.translate"])
   .directive("egmApplicationView", function() {
@@ -16,7 +17,8 @@ angular.module('collaboegm', ["ui.bootstrap", "pascalprecht.translate"])
       templateUrl: "/partials/base.html"
     };
   })
-  .directive('focusMe', function($timeout) {
+  .directive('focusMe', (...params : any[]) : ng.IDirective => {
+    var $timeout = params[0];
     return {
        link: function (scope, element, attrs, model) {
           $timeout(function () {
@@ -50,6 +52,10 @@ angular.module('collaboegm', ["ui.bootstrap", "pascalprecht.translate"])
       .when("/participants/:projectId/:participantId", {
         templateUrl : "/partials/participant-detail.html",
         controller : Controllers.ParticipantDetailController
+      })
+      .when("/sem-projects/:projectId/:semProjectId", {
+        templateUrl : "/partials/sem-project-detail.html",
+        controller : Controllers.SemProjectDetailController,
       })
       .otherwise({
         redirectTo : "/projects"

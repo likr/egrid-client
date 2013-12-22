@@ -18,7 +18,7 @@ module Controllers {
       .call(egm.display())
       ;
 
-    $http.get(jsonUrl).success((data : Data) => {
+    $http.get(jsonUrl).success(data => {
       var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight, d.original));
       var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
       egm

@@ -3,6 +3,12 @@ from google.appengine.ext import db
 from version import VERSION
 
 
+class EgridModel(db.Model):
+    created_at = db.DateTimeProperty(auto_now_add=True)
+    updated_at = db.DateTimeProperty(auto_now=True)
+    version = db.IntegerProperty(default=VERSION)
+
+
 class User(db.Model):
     location = db.StringProperty(default="ja", required=True)
     email = db.StringProperty(required=True)
@@ -81,3 +87,20 @@ class Collaborator(db.Model):
             'user': self.user.to_dict(),
             'is_manager': int(bool(self.is_manager))
         }
+
+
+class SemProject(EgridModel):
+    name = db.StringProperty(required=True)
+    project = db.ReferenceProperty(Project)
+
+    def to_dict(self):
+        return {
+            'key': str(self.key()),
+            'name': self.name,
+            'project': self.project.dump()
+        }
+
+
+class QuestionnaireAnswer(EgridModel):
+    participant_name = db.StringProperty()
+    answer = db.TextProperty()

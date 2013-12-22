@@ -1,0 +1,67 @@
+<div egm-application-view>
+  <h2>{{ semProject.name }}</h2>
+
+  <ul class="breadcrumb">
+    <li>
+      <a href="/#/projects">{{ 'PROJECT.PROJECTS' | translate }}</a> <span class="divider">/</span>
+    </li>
+    <li>
+      <a href="/#/projects/{{semProject.project.key}}">{{semProject.project.name}}</a>
+      <span class="divider">/</span>
+    </li>
+    <li class="active">
+      {{ semProject.name }}
+    </li>
+  </ul>
+
+  <div tabset>
+    <div tab heading="{{ 'SEM.QUESTIONNAIRE.DESIGN' | translate }}">
+      <div ng-controller="Controllers.SemProjectDetailDesignController">
+        <div>
+          <p>
+            <a class="btn btn-large" ng-click="fullscreen()">{{ 'ACTION.FULLSCREEN' | translate }}</a>
+            <a class="btn btn-primary btn-large">{{ 'ACTION.SAVE' | translate }}</a>
+          </p>
+        </div>
+
+        <div class="row">
+          <div class="span8">
+            <div id="sem-questionnaire-design-display">
+              <svg width="100%" height="500px"></svg>
+            </div>
+          </div>
+          <div class="span4" style="height: 500px; overflow: scroll;">
+            <table class="table">
+              <tr ng-repeat="item in items">
+                <td>
+                  <label>
+                    <input type="checkbox" ng-model="item.checked" ng-change="updateGraph()"/> {{ item.text }}
+                  </label>
+                </td>
+                <td>{{ item.weight }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <div ng-repeat="item in items | filter:checked">
+            <h3>{{ item.text }}</h3>
+            <textarea rows="3">{{item.text}}を5段階で評価してください</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div tab heading="{{ 'SEM.QUESTIONNAIRE' | translate }}">
+    </div>
+
+    <div tab heading="{{ 'SEM.ANALYSIS' | translate }}" select="drawSemAnalysis()">
+      <div ng-controller="Controllers.SemProjectDetailAnalysisController">
+        <div id="sem-analysis-display">
+          <svg width="100%" height="500px"></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
