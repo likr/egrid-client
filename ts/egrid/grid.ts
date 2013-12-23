@@ -1,9 +1,9 @@
-/// <reference path="dagre.d.ts"/>
+/// <reference path="../dagre.d.ts"/>
 /// <reference path="svg.ts"/>
 
-module Egm {
+module egrid {
   /**
-  @class Egm.Node
+  @class egrid.Node
   */
   export class Node {
     public index : number;
@@ -27,7 +27,7 @@ module Egm {
 
 
     /**
-    @class Egm.Node
+    @class egrid.Node
     @constructor
     */
     constructor(
@@ -77,7 +77,7 @@ module Egm {
 
 
   /**
-  @class Egm.Link
+  @class egrid.Link
   */
   export class Link {
     public index : number;
@@ -90,7 +90,7 @@ module Egm {
 
 
     /**
-    @class Egm.Link
+    @class egrid.Link
     @constructor
     */
     constructor(public source : Node, public target : Node, weight : number = undefined) {
@@ -137,7 +137,7 @@ module Egm {
 
 
   /**
-  @class Egm.Grid
+  @class egrid.Grid
   */
   export class Grid {
     private nodes_ : Node[];
@@ -150,7 +150,7 @@ module Egm {
 
 
     /**
-    @class Egm.Grid
+    @class egrid.Grid
     @constructor
     */
     constructor() {

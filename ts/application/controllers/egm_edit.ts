@@ -1,10 +1,11 @@
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="../egm.ts"/>
+/// <reference path="../../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../../egrid/egm.ts"/>
+/// <reference path="../../egrid/egm-ui.ts"/>
 
 module Controllers {
   interface Data {
-    nodes : Egm.Node[];
-    links : Egm.Link[];
+    nodes : egrid.Node[];
+    links : egrid.Link[];
   }
 
 
@@ -15,7 +16,8 @@ module Controllers {
     var overallJsonUrl = "/api/projects/" + projectId + "/grid";
     var overallTexts = [];
 
-    var egm = new Egm.EgmUi;
+    var egmui = egrid.egmui();
+    var egm = egmui.egm();
     egm.showRemoveLinkButton(true);
     egm.options().scalingConnection = false;
     d3.select("#display")
@@ -72,11 +74,11 @@ module Controllers {
     }
 
     d3.select("#appendNodeButton")
-      .call(egm.appendNodeButton()
+      .call(egmui.appendNodeButton()
         .onClick(openInputTextDialog)
       );
     d3.select("#undoButton")
-      .call(egm.undoButton()
+      .call(egmui.undoButton()
           .onEnable(() => {
             d3.select("#undoButtonContainer").classed("disabled", false);
           })
@@ -84,7 +86,7 @@ module Controllers {
             d3.select("#undoButtonContainer").classed("disabled", true);
           }));
     d3.select("#redoButton")
-      .call(egm.redoButton()
+      .call(egmui.redoButton()
           .onEnable(() => {
             d3.select("#redoButtonContainer").classed("disabled", false);
           })
@@ -92,7 +94,7 @@ module Controllers {
             d3.select("#redoButtonContainer").classed("disabled", true);
           }));
     d3.select("#saveButton")
-      .call(egm.saveButton()
+      .call(egmui.saveButton()
           .save(json => {
             $http({
               method : 'PUT',
@@ -131,37 +133,37 @@ module Controllers {
     }
 
     d3.select("#ladderUpButton")
-      .call(egm.radderUpButton()
+      .call(egmui.radderUpButton()
           .onClick(openInputTextDialog)
           .onEnable(showNodeController)
           .onDisable(hideNodeController)
       );
     d3.select("#ladderDownButton")
-      .call(egm.radderDownButton()
+      .call(egmui.radderDownButton()
           .onClick(openInputTextDialog)
           .onEnable(showNodeController)
           .onDisable(hideNodeController)
       );
     d3.select("#removeNodeButton")
-      .call(egm.removeNodeButton()
+      .call(egmui.removeNodeButton()
           .onEnable(showNodeController)
           .onDisable(hideNodeController)
       );
     d3.select("#mergeNodeButton")
-      .call(egm.mergeNodeButton()
+      .call(egmui.mergeNodeButton()
           .onEnable(showNodeController)
           .onDisable(hideNodeController)
       );
     d3.select("#editNodeButton")
-      .call(egm.editNodeButton()
+      .call(egmui.editNodeButton()
           .onClick(openInputTextDialog)
           .onEnable(showNodeController)
           .onDisable(hideNodeController)
       );
 
     $http.get(jsonUrl).success(data => {
-      var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight, d.original));
-      var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
+      var nodes = data.nodes.map(d => new egrid.Node(d.text, d.weight, d.original));
+      var links = data.links.map(d => new egrid.Link(nodes[d.source], nodes[d.target], d.weight));
       egm
         .nodes(nodes)
         .links(links)

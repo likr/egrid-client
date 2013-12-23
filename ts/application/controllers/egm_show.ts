@@ -1,10 +1,10 @@
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="../egm.ts"/>
+/// <reference path="../../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../../egrid/egm.ts"/>
 
 module Controllers {
   interface Data {
-    nodes : Egm.Node[];
-    links : Egm.Link[];
+    nodes : egrid.Node[];
+    links : egrid.Link[];
   }
 
 
@@ -13,14 +13,14 @@ module Controllers {
     var participantId = $scope.participantId = $routeParams.participantId;
     var jsonUrl = "/api/participants/" + projectId + "/" + participantId + "/grid";
 
-    var egm = new Egm.EgmUi;
+    var egm = new egrid.EGM;
     d3.select("#display")
       .call(egm.display())
       ;
 
     $http.get(jsonUrl).success(data => {
-      var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight, d.original));
-      var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
+      var nodes = data.nodes.map(d => new egrid.Node(d.text, d.weight, d.original));
+      var links = data.links.map(d => new egrid.Link(nodes[d.source], nodes[d.target], d.weight));
       egm
         .nodes(nodes)
         .links(links)

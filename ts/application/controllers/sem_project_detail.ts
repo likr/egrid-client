@@ -1,7 +1,7 @@
-/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="../sem.d.ts"/>
-/// <reference path="../egm.ts"/>
+/// <reference path="../../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="../../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../../sem.d.ts"/>
+/// <reference path="../../egrid/egm.ts"/>
 
 module Controllers {
   export function SemProjectDetailController($scope, $routeParams, $http, $location) {
@@ -11,8 +11,8 @@ module Controllers {
 
   export function SemProjectDetailDesignController($scope, $http) {
     var projectId = $scope.$parent.projectId;
-    var overallEgm = new Egm.EgmUi;
-    var egm = new Egm.EgmUi;
+    var overallEgm = new egrid.EGM;
+    var egm = new egrid.EGM;
 
     $scope.semProject = {
       name: '書きやすさの分析',
@@ -40,7 +40,7 @@ module Controllers {
       var links = [];
       overallEgm.nodes().forEach(node => {
         if (itemDict[node.text]) {
-          var newNode = new Egm.Node(node.text);
+          var newNode = new egrid.Node(node.text);
           newNode.index = node.index;
           nodes.push(newNode);
         }
@@ -48,7 +48,7 @@ module Controllers {
       nodes.forEach(node1 => {
         nodes.forEach(node2 => {
           if (node1.index != node2.index && overallEgm.grid().hasPath(node1.index, node2.index)) {
-            links.push(new Egm.Link(node1, node2));
+            links.push(new egrid.Link(node1, node2));
           }
         });
       });
@@ -76,8 +76,8 @@ module Controllers {
         .call(egm.display(width, height))
         ;
 
-      var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight, d.original));
-      var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
+      var nodes = data.nodes.map(d => new egrid.Node(d.text, d.weight, d.original));
+      var links = data.links.map(d => new egrid.Link(nodes[d.source], nodes[d.target], d.weight));
       overallEgm
         .nodes(nodes)
         .links(links)
@@ -87,7 +87,7 @@ module Controllers {
 
 
   export function SemProjectDetailAnalysisController($scope, $http) {
-    var egm = new Egm.EgmUi;
+    var egm = new egrid.EGM;
     var nodes = [
       '総合評価',
       '使いたさ',
@@ -140,8 +140,8 @@ module Controllers {
       console.log(result);
     }));
 
-    var egmNodes = nodes.map(d => new Egm.Node(d));
-    var egmLinks = links.map(d => new Egm.Link(egmNodes[d.target], egmNodes[d.source]));
+    var egmNodes = nodes.map(d => new egrid.Node(d));
+    var egmLinks = links.map(d => new egrid.Link(egmNodes[d.target], egmNodes[d.source]));
     egm
       .nodes(egmNodes)
       .links(egmLinks)

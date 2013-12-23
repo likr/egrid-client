@@ -123,16 +123,16 @@ var Svg;
     })();
     Svg.ViewBox = ViewBox;
 })(Svg || (Svg = {}));
-/// <reference path="dagre.d.ts"/>
+/// <reference path="../dagre.d.ts"/>
 /// <reference path="svg.ts"/>
-var Egm;
-(function (Egm) {
+var egrid;
+(function (egrid) {
     /**
-    @class Egm.Node
+    @class egrid.Node
     */
     var Node = (function () {
         /**
-        @class Egm.Node
+        @class egrid.Node
         @constructor
         */
         function Node(text, weight, original, participants) {
@@ -175,14 +175,14 @@ var Egm;
         Node.nextKey = 0;
         return Node;
     })();
-    Egm.Node = Node;
+    egrid.Node = Node;
 
     /**
-    @class Egm.Link
+    @class egrid.Link
     */
     var Link = (function () {
         /**
-        @class Egm.Link
+        @class egrid.Link
         @constructor
         */
         function Link(source, target, weight) {
@@ -198,7 +198,7 @@ var Egm;
         Link.nextKey = 0;
         return Link;
     })();
-    Egm.Link = Link;
+    egrid.Link = Link;
 
     var CommandTransaction = (function () {
         function CommandTransaction() {
@@ -224,11 +224,11 @@ var Egm;
     })();
 
     /**
-    @class Egm.Grid
+    @class egrid.Grid
     */
     var Grid = (function () {
         /**
-        @class Egm.Grid
+        @class egrid.Grid
         @constructor
         */
         function Grid() {
@@ -645,25 +645,25 @@ var Egm;
         };
         return Grid;
     })();
-    Egm.Grid = Grid;
-})(Egm || (Egm = {}));
-/// <reference path="ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
-/// <reference path="ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+    egrid.Grid = Grid;
+})(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
 /// <reference path="svg.ts"/>
 /// <reference path="grid.ts"/>
-var Egm;
-(function (Egm) {
+var egrid;
+(function (egrid) {
     (function (ViewMode) {
         ViewMode[ViewMode["Normal"] = 0] = "Normal";
         ViewMode[ViewMode["Edge"] = 1] = "Edge";
-    })(Egm.ViewMode || (Egm.ViewMode = {}));
-    var ViewMode = Egm.ViewMode;
+    })(egrid.ViewMode || (egrid.ViewMode = {}));
+    var ViewMode = egrid.ViewMode;
 
     (function (InactiveNode) {
         InactiveNode[InactiveNode["Hidden"] = 0] = "Hidden";
         InactiveNode[InactiveNode["Transparent"] = 1] = "Transparent";
-    })(Egm.InactiveNode || (Egm.InactiveNode = {}));
-    var InactiveNode = Egm.InactiveNode;
+    })(egrid.InactiveNode || (egrid.InactiveNode = {}));
+    var InactiveNode = egrid.InactiveNode;
 
     var EgmOption = (function () {
         function EgmOption() {
@@ -677,25 +677,25 @@ var Egm;
         };
         return EgmOption;
     })();
-    Egm.EgmOption = EgmOption;
+    egrid.EgmOption = EgmOption;
 
     (function (Raddering) {
         Raddering[Raddering["RadderUp"] = 0] = "RadderUp";
         Raddering[Raddering["RadderDown"] = 1] = "RadderDown";
-    })(Egm.Raddering || (Egm.Raddering = {}));
-    var Raddering = Egm.Raddering;
+    })(egrid.Raddering || (egrid.Raddering = {}));
+    var Raddering = egrid.Raddering;
 
     /**
-    * @class Egm.EgmUi
+    * @class egrid.EGM
     */
-    var EgmUi = (function () {
+    var EGM = (function () {
         /**
-        * @class Egm.EgmUi
+        * @class egrid.EGM
         * @constructor
         */
-        function EgmUi() {
+        function EGM() {
             this.removeLinkButtonEnabled = false;
-            this.grid_ = new Egm.Grid;
+            this.grid_ = new egrid.Grid;
             this.options_ = EgmOption.default();
             this.removeLinkButtonEnabled;
         }
@@ -703,16 +703,16 @@ var Egm;
         * @method grid
         * @return {Egm.Grid}
         */
-        EgmUi.prototype.grid = function () {
+        EGM.prototype.grid = function () {
             return this.grid_;
         };
 
         /**
         * @method nodes
         * @param {Egm.Node[]} [nodes] new nodes.
-        * @return {Egm.EgmUi|Egm.Node[]} Returns self if nodes is specified. Otherwise, returns current nodes.
+        * @return {egrid.EGM|egrid.Node[]} Returns self if nodes is specified. Otherwise, returns current nodes.
         */
-        EgmUi.prototype.nodes = function (arg) {
+        EGM.prototype.nodes = function (arg) {
             if (arg === undefined) {
                 return this.grid_.nodes();
             }
@@ -723,9 +723,9 @@ var Egm;
         /**
         * @method links
         * @param {Egm.Link[]} [links] new links.
-        * @return {Egm.EgmUi|Egm.Link} Returns self if links is specified. Otherwise, returns current links.
+        * @return {egrid.EGM|egrid.Link} Returns self if links is specified. Otherwise, returns current links.
         */
-        EgmUi.prototype.links = function (arg) {
+        EGM.prototype.links = function (arg) {
             if (arg === undefined) {
                 return this.grid_.links();
             }
@@ -733,7 +733,7 @@ var Egm;
             return this;
         };
 
-        EgmUi.prototype.options = function (arg) {
+        EGM.prototype.options = function (arg) {
             if (arg === undefined) {
                 return this.options_;
             }
@@ -744,7 +744,7 @@ var Egm;
         /**
         * @method draw
         */
-        EgmUi.prototype.draw = function (f) {
+        EGM.prototype.draw = function (f) {
             if (typeof f === "undefined") { f = undefined; }
             var _this = this;
             var spline = d3.svg.line().x(function (d) {
@@ -782,16 +782,16 @@ var Egm;
             nodesSelection.selectAll("text").text(function (d) {
                 return d.text;
             }).attr("x", function (d) {
-                return EgmUi.rx - d.baseWidth / 2;
+                return EGM.rx - d.baseWidth / 2;
             }).attr("y", function (d) {
-                return EgmUi.rx;
+                return EGM.rx;
             });
             nodesSelection.selectAll("rect").attr("x", function (d) {
                 return -d.baseWidth / 2;
             }).attr("y", function (d) {
                 return -d.baseHeight / 2;
             }).attr("rx", function (d) {
-                return (d.original || d.isTop || d.isBottom) ? 0 : EgmUi.rx;
+                return (d.original || d.isTop || d.isBottom) ? 0 : EGM.rx;
             }).attr("width", function (d) {
                 return d.baseWidth;
             }).attr("height", function (d) {
@@ -881,25 +881,7 @@ var Egm;
             ]);
             this.contentsZoomBehavior.scaleExtent([s, 1]);
 
-            this.resetUndoButton();
-            this.resetRedoButton();
             return this;
-        };
-
-        EgmUi.prototype.resetUndoButton = function () {
-            if (this.grid_.canUndo()) {
-                this.enableUndoButton();
-            } else {
-                this.disableUndoButton();
-            }
-        };
-
-        EgmUi.prototype.resetRedoButton = function () {
-            if (this.grid_.canRedo()) {
-                this.enableRedoButton();
-            } else {
-                this.disableRedoButton();
-            }
         };
 
         /**
@@ -909,7 +891,7 @@ var Egm;
         * @param regionHeight {number} Height of display region.
         * @return {function}
         */
-        EgmUi.prototype.display = function (regionWidth, regionHeight) {
+        EGM.prototype.display = function (regionWidth, regionHeight) {
             if (typeof regionWidth === "undefined") { regionWidth = undefined; }
             if (typeof regionHeight === "undefined") { regionHeight = undefined; }
             var _this = this;
@@ -932,18 +914,22 @@ var Egm;
                     var scale = new Svg.Transform.Scale(d3.event.scale);
                     _this.contentsSelection.attr("transform", translate.toString() + scale.toString());
 
-                    _this.enableRemoveNodeButton(d3.select(".selected"));
+                    _this.notify();
                 });
                 selection.call(_this.contentsZoomBehavior);
             };
         };
 
-        EgmUi.prototype.createNode = function (text) {
-            var node = new Egm.Node(text);
+        EGM.prototype.createNode = function (text) {
+            var node = new egrid.Node(text);
             return node;
         };
 
-        EgmUi.prototype.focusNode = function (node) {
+        /**
+        * @method focusNode
+        * @param node {egrid.Node}
+        */
+        EGM.prototype.focusNode = function (node) {
             var s = this.contentsZoomBehavior.scale() || 1;
             var translate = new Svg.Transform.Translate(this.displayWidth / 2 - node.center().x * s, this.displayHeight / 2 - node.center().y * s);
             var scale = new Svg.Transform.Scale(s);
@@ -954,7 +940,7 @@ var Egm;
         /**
         * @method focusCenter
         */
-        EgmUi.prototype.focusCenter = function () {
+        EGM.prototype.focusCenter = function () {
             var left = d3.min(this.grid_.nodes(), function (node) {
                 return node.left().x;
             });
@@ -979,256 +965,47 @@ var Egm;
             this.contentsSelection.transition().attr("transform", translate.toString() + scale.toString());
         };
 
-        EgmUi.prototype.appendNodeButton = function () {
-            var egm = this;
-            var onClickPrompt;
-            var f = function (selection) {
-                selection.on("click", function () {
-                    onClickPrompt && onClickPrompt(function (text) {
-                        if (text) {
-                            var node;
-                            if (node = egm.grid_.findNode(text)) {
-                                // node already exists
-                            } else {
-                                // create new node
-                                node = egm.createNode(text);
-                                node.original = true;
-                                egm.grid_.appendNode(node);
-                                egm.disableNodeButtons();
-                                egm.draw(function () {
-                                    egm.enableNodeButtons();
-                                });
-                            }
-                            var addedElement = egm.contentsSelection.selectAll(".element").filter(function (node) {
-                                return node.text == text;
-                            });
-                            egm.selectElement(addedElement);
-                            egm.focusNode(addedElement.datum());
-                        }
-                    });
-                });
-                return this;
-            };
-            f.onClick = function (f) {
-                onClickPrompt = f;
-                return this;
-            };
-            return f;
-        };
-
-        EgmUi.prototype.removeNodeButton = function () {
-            var egm = this;
-            var f = function (selection) {
-                selection.on("click", function () {
-                    var node = egm.rootSelection.select(".selected").datum();
-                    egm.unselectElement();
-                    egm.grid_.removeNode(node.index);
-                    egm.draw();
-                });
-                return this;
-            };
-            f.onEnable = function (f) {
-                egm.onEnableRemoveNodeButton = f;
-                return this;
-            };
-            f.onDisable = function (f) {
-                egm.onDisableRemoveNodeButton = f;
-                return this;
-            };
-            return f;
-        };
-
-        EgmUi.prototype.mergeNodeButton = function () {
-            var egm = this;
-            var f = function (selection) {
-                selection.call(egm.dragNode().isDroppable(function (fromNode, toNode) {
-                    return !egm.grid_.hasPath(toNode.index, fromNode.index);
-                }).dragToNode(function (fromNode, toNode) {
-                    egm.grid_.mergeNode(fromNode.index, toNode.index);
-                    egm.draw();
-                    egm.unselectElement();
-                    egm.focusNode(toNode);
-                }));
-                return this;
-            };
-            f.onEnable = function (f) {
-                egm.onEnableMergeNodeButton = f;
-                return this;
-            };
-            f.onDisable = function (f) {
-                egm.onDisableMergeNodeButton = f;
-                return this;
-            };
-            return f;
-        };
-
-        EgmUi.prototype.editNodeButton = function () {
-            var egm = this;
-            var onClickPrompt;
-            var f = function (selection) {
-                selection.on("click", function () {
-                    onClickPrompt && onClickPrompt(function (text) {
-                        var node = egm.rootSelection.select(".selected").datum();
-                        if (text && node) {
-                            egm.grid_.updateNodeText(node.index, text);
-                            egm.draw();
-                        }
-                    });
-                });
-                return this;
-            };
-            f.onClick = function (f) {
-                onClickPrompt = f;
-                return this;
-            };
-            f.onEnable = function (f) {
-                egm.onEnableEditNodeButton = f;
-                return this;
-            };
-            f.onDisable = function (f) {
-                egm.onDisableEditNodeButton = f;
-                return this;
-            };
-            return f;
-        };
-
-        EgmUi.prototype.radderUpButton = function () {
-            var _this = this;
-            var grid = this;
-            var f = function (selection) {
-                _this.raddering(selection, 0 /* RadderUp */);
-            };
-            f.onClick = function (f) {
-                grid.openLadderUpPrompt = f;
-                return this;
-            };
-            f.onEnable = function (f) {
-                grid.onEnableRadderUpButton = f;
-                return this;
-            };
-            f.onDisable = function (f) {
-                grid.onDisableRadderUpButton = f;
-                return this;
-            };
-            return f;
-        };
-
-        EgmUi.prototype.radderDownButton = function () {
-            var grid = this;
-            var f = function (selection) {
-                grid.raddering(selection, 1 /* RadderDown */);
-                return this;
-            };
-            f.onClick = function (f) {
-                grid.openLadderDownPrompt = f;
-                return this;
-            };
-            f.onEnable = function (f) {
-                grid.onEnableRadderDownButton = f;
-                return this;
-            };
-            f.onDisable = function (f) {
-                grid.onDisableRadderDownButton = f;
-                return this;
-            };
-            return f;
-        };
-
-        EgmUi.prototype.save = function () {
-            if (this.onClickSaveButton) {
-                this.onClickSaveButton(this.grid_.toJSON());
-            }
-        };
-
-        EgmUi.prototype.saveButton = function () {
-            var egm = this;
-            var f = function (selection) {
-                selection.on("click", function () {
-                    egm.save();
-                });
-                return this;
-            };
-            f.save = function (f) {
-                egm.onClickSaveButton = f;
-                return this;
-            };
-            return f;
-        };
-
-        EgmUi.prototype.undo = function () {
+        /**
+        * @method undo
+        */
+        EGM.prototype.undo = function () {
             this.grid_.undo();
             this.draw();
-            this.disableNodeButtons();
+            this.notify();
         };
 
-        EgmUi.prototype.undoButton = function () {
-            var egm = this;
-            var f = function (selection) {
-                selection.on("click", function () {
-                    egm.undo();
-                });
-                egm.resetUndoButton();
-                return this;
-            };
-            f.onEnable = function (f) {
-                egm.onEnableUndoButton = f;
-                return this;
-            };
-            f.onDisable = function (f) {
-                egm.onDisableUndoButton = f;
-                return this;
-            };
-            return f;
-        };
-
-        EgmUi.prototype.redo = function () {
+        /**
+        * @method redo
+        */
+        EGM.prototype.redo = function () {
             this.grid_.redo();
             this.draw();
-            this.disableNodeButtons();
+            this.notify();
         };
 
-        EgmUi.prototype.redoButton = function () {
-            var egm = this;
-            var f = function (selection) {
-                selection.on("click", function () {
-                    egm.redo();
-                });
-                egm.resetRedoButton();
-                return this;
-            };
-            f.onEnable = function (f) {
-                egm.onEnableRedoButton = f;
-                return this;
-            };
-            f.onDisable = function (f) {
-                egm.onDisableRedoButton = f;
-                return this;
-            };
-            return f;
-        };
-
-        EgmUi.prototype.getTextBBox = function (text) {
+        EGM.prototype.getTextBBox = function (text) {
             return this.rootSelection.select(".measure").text(text).node().getBBox();
         };
 
-        EgmUi.prototype.calcRect = function (text) {
+        EGM.prototype.calcRect = function (text) {
             var bbox = this.getTextBBox(text);
-            return new Svg.Rect(bbox.x, bbox.y, bbox.width + EgmUi.rx * 2, bbox.height + EgmUi.rx * 2);
+            return new Svg.Rect(bbox.x, bbox.y, bbox.width + EGM.rx * 2, bbox.height + EGM.rx * 2);
         };
 
-        EgmUi.prototype.appendElement = function () {
+        EGM.prototype.appendElement = function () {
             var _this = this;
             return function (selection) {
-                var self = _this;
+                var egm = _this;
                 var onElementClick = function () {
                     var selection = d3.select(this);
                     if (selection.classed("selected")) {
-                        self.unselectElement();
+                        egm.unselectElement();
                         d3.event.stopPropagation();
                     } else {
-                        self.selectElement(selection);
+                        egm.selectElement(selection);
                         d3.event.stopPropagation();
                     }
+                    egm.notify();
                 };
                 selection.classed("element", true).on("click", onElementClick).on("touchstart", onElementClick);
 
@@ -1237,19 +1014,26 @@ var Egm;
             };
         };
 
-        EgmUi.prototype.selectElement = function (selection) {
+        /**
+        * @method selectElement
+        * @param selection {D3.Selection}
+        */
+        EGM.prototype.selectElement = function (selection) {
             this.rootSelection.selectAll(".selected").classed("selected", false);
             selection.classed("selected", true);
-            this.enableNodeButtons();
             this.drawNodeConnection();
         };
 
-        EgmUi.prototype.selectedNode = function () {
+        /**
+        * @method selectedNode
+        * @return {egrid.Node}
+        */
+        EGM.prototype.selectedNode = function () {
             var selection = this.rootSelection.select(".selected");
             return selection.empty() ? null : selection.datum();
         };
 
-        EgmUi.prototype.drawNodeConnection = function () {
+        EGM.prototype.drawNodeConnection = function () {
             var _this = this;
             var d = this.selectedNode();
             this.rootSelection.selectAll(".connected").classed("connected", false);
@@ -1266,115 +1050,16 @@ var Egm;
             }
         };
 
-        EgmUi.prototype.enableNodeButtons = function () {
-            var selection = d3.select(".selected");
-            this.enableRemoveNodeButton(selection);
-            this.enableMergeNodeButton(selection);
-            this.enableEditNodeButton(selection);
-            this.enableRadderUpButton(selection);
-            this.enableRadderDownButton(selection);
-        };
-
-        EgmUi.prototype.disableNodeButtons = function () {
-            this.disableRemoveNodeButton();
-            this.disableMergeNodeButton();
-            this.disableEditNodeButton();
-            this.disableRadderUpButton();
-            this.disableRadderDownButton();
-        };
-
-        EgmUi.prototype.unselectElement = function () {
+        /**
+        * @method unselectElement
+        */
+        EGM.prototype.unselectElement = function () {
             this.rootSelection.selectAll(".selected").classed("selected", false);
             this.rootSelection.selectAll(".connected").classed("connected", false);
             this.rootSelection.selectAll(".link .removeLinkButton").attr("opacity", 0);
-            this.disableNodeButtons();
         };
 
-        EgmUi.prototype.enableRadderUpButton = function (selection) {
-            if (this.onEnableRadderUpButton) {
-                this.onEnableRadderUpButton(selection);
-            }
-        };
-
-        EgmUi.prototype.disableRadderUpButton = function () {
-            if (this.onDisableRadderUpButton) {
-                this.onDisableRadderUpButton();
-            }
-        };
-
-        EgmUi.prototype.enableRadderDownButton = function (selection) {
-            if (this.onEnableRadderDownButton) {
-                this.onEnableRadderDownButton(selection);
-            }
-        };
-
-        EgmUi.prototype.disableRadderDownButton = function () {
-            if (this.onDisableRadderDownButton) {
-                this.onDisableRadderDownButton();
-            }
-        };
-
-        EgmUi.prototype.enableRemoveNodeButton = function (selection) {
-            if (this.onEnableRemoveNodeButton) {
-                this.onEnableRemoveNodeButton(selection);
-            }
-        };
-
-        EgmUi.prototype.disableRemoveNodeButton = function () {
-            if (this.onDisableRemoveNodeButton) {
-                this.onDisableRemoveNodeButton();
-            }
-        };
-
-        EgmUi.prototype.enableMergeNodeButton = function (selection) {
-            if (this.onEnableMergeNodeButton) {
-                this.onEnableMergeNodeButton(selection);
-            }
-        };
-
-        EgmUi.prototype.disableMergeNodeButton = function () {
-            if (this.onDisableMergeNodeButton) {
-                this.onDisableMergeNodeButton();
-            }
-        };
-
-        EgmUi.prototype.enableEditNodeButton = function (selection) {
-            if (this.onEnableEditNodeButton) {
-                this.onEnableEditNodeButton(selection);
-            }
-        };
-
-        EgmUi.prototype.disableEditNodeButton = function () {
-            if (this.onDisableEditNodeButton) {
-                this.onDisableEditNodeButton();
-            }
-        };
-
-        EgmUi.prototype.enableUndoButton = function () {
-            if (this.onEnableUndoButton) {
-                this.onEnableUndoButton();
-            }
-        };
-
-        EgmUi.prototype.disableUndoButton = function () {
-            if (this.onDisableUndoButton) {
-                this.onDisableUndoButton();
-            }
-        };
-
-        EgmUi.prototype.enableRedoButton = function () {
-            if (this.onEnableRedoButton) {
-                this.onEnableRedoButton();
-            }
-        };
-
-        EgmUi.prototype.disableRedoButton = function () {
-            if (this.onDisableRedoButton) {
-                this.onDisableRedoButton();
-            }
-        };
-
-        EgmUi.prototype.dragNode = function () {
+        EGM.prototype.dragNode = function () {
             var egm = this;
             var isDroppable_;
             var dragToNode_;
@@ -1449,7 +1134,7 @@ var Egm;
             return f;
         };
 
-        EgmUi.prototype.raddering = function (selection, type) {
+        EGM.prototype.raddering = function (selection, type) {
             var _this = this;
             var dragToNode = function (fromNode, toNode) {
                 switch (type) {
@@ -1460,12 +1145,9 @@ var Egm;
                             _this.draw();
                         } else {
                             _this.grid_.radderUp(fromNode.index, toNode.index);
-                            _this.draw(function () {
-                                _this.enableNodeButtons();
-                            });
+                            _this.draw();
                             _this.drawNodeConnection();
                             _this.focusNode(toNode);
-                            _this.disableNodeButtons();
                         }
                         break;
                     case 1 /* RadderDown */:
@@ -1475,15 +1157,13 @@ var Egm;
                             _this.draw();
                         } else {
                             _this.grid_.radderDown(fromNode.index, toNode.index);
-                            _this.draw(function () {
-                                _this.enableNodeButtons();
-                            });
+                            _this.draw();
                             _this.drawNodeConnection();
                             _this.focusNode(toNode);
-                            _this.disableNodeButtons();
                         }
                         break;
                 }
+                _this.notify();
             };
 
             selection.call(this.dragNode().isDroppable(function (fromNode, toNode) {
@@ -1514,36 +1194,482 @@ var Egm;
                                     _this.grid_.radderDownAppend(fromNode.index, node);
                                     break;
                             }
-                            _this.draw(function () {
-                                _this.enableNodeButtons();
-                            });
+                            _this.draw();
                             _this.drawNodeConnection();
                             _this.focusNode(node);
+                            _this.notify();
                         }
                     }
                 });
             }));
         };
 
-        EgmUi.prototype.getPos = function (container) {
+        EGM.prototype.getPos = function (container) {
             var xy = d3.event.sourceEvent instanceof MouseEvent ? d3.mouse(container) : d3.touches(container, d3.event.sourceEvent.changedTouches)[0];
             return new Svg.Point(xy[0], xy[1]);
         };
 
-        EgmUi.prototype.showRemoveLinkButton = function (arg) {
+        EGM.prototype.showRemoveLinkButton = function (arg) {
             if (arg === undefined) {
                 return this.removeLinkButtonEnabled;
             }
             this.removeLinkButtonEnabled = arg;
             return this;
         };
-        EgmUi.rx = 20;
-        return EgmUi;
+
+        /**
+        * @method registerUiCallback;
+        */
+        EGM.prototype.registerUiCallback = function (callback) {
+            this.uiCallback = callback;
+            return this;
+        };
+
+        EGM.prototype.notify = function () {
+            if (this.uiCallback) {
+                this.uiCallback();
+            }
+        };
+
+        /**
+        * @method appendNode
+        * @return {egrid.EGM}
+        */
+        EGM.prototype.appendNode = function (text) {
+            var _this = this;
+            if (text) {
+                var node;
+                if (node = this.grid_.findNode(text)) {
+                    // node already exists
+                } else {
+                    // create new node
+                    node = this.createNode(text);
+                    node.original = true;
+                    this.grid_.appendNode(node);
+                    this.draw(function () {
+                        _this.notify();
+                    });
+                }
+                var addedElement = this.contentsSelection.selectAll(".element").filter(function (node) {
+                    return node.text == text;
+                });
+                this.selectElement(addedElement);
+                this.focusNode(addedElement.datum());
+                this.notify();
+            }
+            return this;
+        };
+
+        /**
+        * @method removeSelectedNode
+        * @return {egrid.EGM}
+        */
+        EGM.prototype.removeSelectedNode = function () {
+            return this.removeNode(this.selectedNode());
+        };
+
+        /**
+        * @method removeNode
+        * @return {egrid.EGM}
+        */
+        EGM.prototype.removeNode = function (node) {
+            if (node) {
+                this.unselectElement();
+                this.grid_.removeNode(node.index);
+                this.draw();
+                this.notify();
+            }
+            return this;
+        };
+
+        /**
+        * @method mergeNode
+        * @return {egrid.EGM}
+        */
+        EGM.prototype.mergeNode = function (fromNode, toNode) {
+            if (fromNode && toNode) {
+                this.grid_.mergeNode(fromNode.index, toNode.index);
+                this.draw();
+                this.unselectElement();
+                this.focusNode(toNode);
+                this.notify();
+            }
+            return this;
+        };
+
+        /**
+        * @method editSelectedNode
+        * @return {egrid.EGM}
+        */
+        EGM.prototype.editSelectedNode = function (text) {
+            return this.editNode(this.selectedNode(), text);
+        };
+
+        /**
+        * @method editNode
+        * @return {egrid.EGM}
+        */
+        EGM.prototype.editNode = function (node, text) {
+            if (node && text) {
+                this.grid_.updateNodeText(node.index, text);
+                this.draw();
+                this.notify();
+            }
+            return this;
+        };
+        EGM.rx = 20;
+        return EGM;
     })();
-    Egm.EgmUi = EgmUi;
-})(Egm || (Egm = {}));
+    egrid.EGM = EGM;
+})(egrid || (egrid = {}));
 /// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="../egm.ts"/>
+/// <reference path="egm.ts"/>
+var egrid;
+(function (egrid) {
+    /**
+    * @class egrid.EGMUi
+    */
+    var EGMUi = (function () {
+        /**
+        * @class egrid.EGMUi
+        * @constructor
+        */
+        function EGMUi() {
+            var _this = this;
+            this.egm_ = new egrid.EGM();
+            this.egm_.registerUiCallback(function () {
+                _this.updateNodeButtons();
+                _this.updateUndoButton();
+                _this.updateRedoButton();
+            });
+        }
+        EGMUi.prototype.egm = function () {
+            return this.egm_;
+        };
+
+        EGMUi.prototype.appendNodeButton = function () {
+            var onClickPrompt;
+            var f = function (selection) {
+                var _this = this;
+                selection.on("click", function () {
+                    onClickPrompt && onClickPrompt(function (text) {
+                        _this.egm().appendNode(text);
+                    });
+                });
+                return this;
+            };
+            f.onClick = function (f) {
+                onClickPrompt = f;
+                return this;
+            };
+            return f;
+        };
+
+        EGMUi.prototype.removeNodeButton = function () {
+            var egmui = this;
+            var f = function (selection) {
+                selection.on("click", function () {
+                    egmui.egm().removeSelectedNode();
+                });
+                return this;
+            };
+            f.onEnable = function (f) {
+                egmui.onEnableRemoveNodeButton = f;
+                return this;
+            };
+            f.onDisable = function (f) {
+                egmui.onDisableRemoveNodeButton = f;
+                return this;
+            };
+            return f;
+        };
+
+        EGMUi.prototype.mergeNodeButton = function () {
+            var egmui = this;
+            var f = function (selection) {
+                selection.call(egmui.egm().dragNode().isDroppable(function (fromNode, toNode) {
+                    return !egmui.egm().grid().hasPath(toNode.index, fromNode.index);
+                }).dragToNode(function (fromNode, toNode) {
+                    egmui.egm().mergeNode(fromNode, toNode);
+                }));
+                return this;
+            };
+            f.onEnable = function (f) {
+                egmui.onEnableMergeNodeButton = f;
+                return this;
+            };
+            f.onDisable = function (f) {
+                egmui.onDisableMergeNodeButton = f;
+                return this;
+            };
+            return f;
+        };
+
+        EGMUi.prototype.editNodeButton = function () {
+            var egmui = this;
+            var onClickPrompt;
+            var f = function (selection) {
+                selection.on("click", function () {
+                    onClickPrompt && onClickPrompt(function (text) {
+                        egmui.egm().editSelectedNode(text);
+                    });
+                });
+                return this;
+            };
+            f.onClick = function (f) {
+                onClickPrompt = f;
+                return this;
+            };
+            f.onEnable = function (f) {
+                egmui.onEnableEditNodeButton = f;
+                return this;
+            };
+            f.onDisable = function (f) {
+                egmui.onDisableEditNodeButton = f;
+                return this;
+            };
+            return f;
+        };
+
+        EGMUi.prototype.radderUpButton = function () {
+            var egmui = this;
+            var f = function (selection) {
+                egmui.egm().raddering(selection, 0 /* RadderUp */);
+            };
+            f.onClick = function (f) {
+                egmui.egm().openLadderUpPrompt = f;
+                return this;
+            };
+            f.onEnable = function (f) {
+                egmui.onEnableRadderUpButton = f;
+                return this;
+            };
+            f.onDisable = function (f) {
+                egmui.onDisableRadderUpButton = f;
+                return this;
+            };
+            return f;
+        };
+
+        EGMUi.prototype.radderDownButton = function () {
+            var egmui = this;
+            var f = function (selection) {
+                egmui.egm().raddering(selection, 1 /* RadderDown */);
+                return this;
+            };
+            f.onClick = function (f) {
+                egmui.egm().openLadderDownPrompt = f;
+                return this;
+            };
+            f.onEnable = function (f) {
+                egmui.onEnableRadderDownButton = f;
+                return this;
+            };
+            f.onDisable = function (f) {
+                egmui.onDisableRadderDownButton = f;
+                return this;
+            };
+            return f;
+        };
+
+        EGMUi.prototype.saveButton = function () {
+            var egmui = this;
+            var f = function (selection) {
+                selection.on("click", function () {
+                    if (egmui.onClickSaveButton) {
+                        egmui.onClickSaveButton(egmui.egm().grid().toJSON());
+                    }
+                });
+                return this;
+            };
+            f.save = function (f) {
+                egmui.onClickSaveButton = f;
+                return this;
+            };
+            return f;
+        };
+
+        EGMUi.prototype.undoButton = function () {
+            var egmui = this;
+            var egm = this.egm();
+            var f = function (selection) {
+                selection.on("click", function () {
+                    egm.undo();
+                });
+                return this;
+            };
+            f.onEnable = function (f) {
+                egmui.onEnableUndoButton = f;
+                return this;
+            };
+            f.onDisable = function (f) {
+                egmui.onDisableUndoButton = f;
+                return this;
+            };
+            return f;
+        };
+
+        EGMUi.prototype.redoButton = function () {
+            var egmui = this;
+            var egm = this.egm();
+            var f = function (selection) {
+                selection.on("click", function () {
+                    egm.redo();
+                });
+                return this;
+            };
+            f.onEnable = function (f) {
+                egmui.onEnableRedoButton = f;
+                return this;
+            };
+            f.onDisable = function (f) {
+                egmui.onDisableRedoButton = f;
+                return this;
+            };
+            return f;
+        };
+
+        EGMUi.prototype.updateNodeButtons = function () {
+            var egm = this.egm();
+            var selectedNode = egm.selectedNode();
+            if (selectedNode) {
+                this.enableNodeButtons();
+            } else {
+                this.disableNodeButtons();
+            }
+        };
+
+        EGMUi.prototype.enableNodeButtons = function () {
+            var selection = d3.select(".selected");
+            this.enableRemoveNodeButton(selection);
+            this.enableMergeNodeButton(selection);
+            this.enableEditNodeButton(selection);
+            this.enableRadderUpButton(selection);
+            this.enableRadderDownButton(selection);
+        };
+
+        EGMUi.prototype.disableNodeButtons = function () {
+            this.disableRemoveNodeButton();
+            this.disableMergeNodeButton();
+            this.disableEditNodeButton();
+            this.disableRadderUpButton();
+            this.disableRadderDownButton();
+        };
+
+        EGMUi.prototype.enableRadderUpButton = function (selection) {
+            if (this.onEnableRadderUpButton) {
+                this.onEnableRadderUpButton(selection);
+            }
+        };
+
+        EGMUi.prototype.disableRadderUpButton = function () {
+            if (this.onDisableRadderUpButton) {
+                this.onDisableRadderUpButton();
+            }
+        };
+
+        EGMUi.prototype.enableRadderDownButton = function (selection) {
+            if (this.onEnableRadderDownButton) {
+                this.onEnableRadderDownButton(selection);
+            }
+        };
+
+        EGMUi.prototype.disableRadderDownButton = function () {
+            if (this.onDisableRadderDownButton) {
+                this.onDisableRadderDownButton();
+            }
+        };
+
+        EGMUi.prototype.enableRemoveNodeButton = function (selection) {
+            if (this.onEnableRemoveNodeButton) {
+                this.onEnableRemoveNodeButton(selection);
+            }
+        };
+
+        EGMUi.prototype.disableRemoveNodeButton = function () {
+            if (this.onDisableRemoveNodeButton) {
+                this.onDisableRemoveNodeButton();
+            }
+        };
+
+        EGMUi.prototype.enableMergeNodeButton = function (selection) {
+            if (this.onEnableMergeNodeButton) {
+                this.onEnableMergeNodeButton(selection);
+            }
+        };
+
+        EGMUi.prototype.disableMergeNodeButton = function () {
+            if (this.onDisableMergeNodeButton) {
+                this.onDisableMergeNodeButton();
+            }
+        };
+
+        EGMUi.prototype.enableEditNodeButton = function (selection) {
+            if (this.onEnableEditNodeButton) {
+                this.onEnableEditNodeButton(selection);
+            }
+        };
+
+        EGMUi.prototype.disableEditNodeButton = function () {
+            if (this.onDisableEditNodeButton) {
+                this.onDisableEditNodeButton();
+            }
+        };
+
+        EGMUi.prototype.enableUndoButton = function () {
+            if (this.onEnableUndoButton) {
+                this.onEnableUndoButton();
+            }
+        };
+
+        EGMUi.prototype.disableUndoButton = function () {
+            if (this.onDisableUndoButton) {
+                this.onDisableUndoButton();
+            }
+        };
+
+        EGMUi.prototype.enableRedoButton = function () {
+            if (this.onEnableRedoButton) {
+                this.onEnableRedoButton();
+            }
+        };
+
+        EGMUi.prototype.disableRedoButton = function () {
+            if (this.onDisableRedoButton) {
+                this.onDisableRedoButton();
+            }
+        };
+
+        EGMUi.prototype.updateUndoButton = function () {
+            if (this.egm().grid().canUndo()) {
+                this.enableUndoButton();
+            } else {
+                this.disableUndoButton();
+            }
+        };
+
+        EGMUi.prototype.updateRedoButton = function () {
+            if (this.egm().grid().canRedo()) {
+                this.enableRedoButton();
+            } else {
+                this.disableRedoButton();
+            }
+        };
+        return EGMUi;
+    })();
+    egrid.EGMUi = EGMUi;
+
+    /**
+    * @return {egrid.EGMUi}
+    */
+    function egmui() {
+        return new EGMUi;
+    }
+    egrid.egmui = egmui;
+})(egrid || (egrid = {}));
+/// <reference path="../../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../../egrid/egm.ts"/>
+/// <reference path="../../egrid/egm-ui.ts"/>
 var Controllers;
 (function (Controllers) {
     function EgmEditController($scope, $routeParams, $http, $location, $dialog) {
@@ -1553,7 +1679,8 @@ var Controllers;
         var overallJsonUrl = "/api/projects/" + projectId + "/grid";
         var overallTexts = [];
 
-        var egm = new Egm.EgmUi;
+        var egmui = egrid.egmui();
+        var egm = egmui.egm();
         egm.showRemoveLinkButton(true);
         egm.options().scalingConnection = false;
         d3.select("#display").call(egm.display());
@@ -1609,18 +1736,18 @@ var Controllers;
             });
         }
 
-        d3.select("#appendNodeButton").call(egm.appendNodeButton().onClick(openInputTextDialog));
-        d3.select("#undoButton").call(egm.undoButton().onEnable(function () {
+        d3.select("#appendNodeButton").call(egmui.appendNodeButton().onClick(openInputTextDialog));
+        d3.select("#undoButton").call(egmui.undoButton().onEnable(function () {
             d3.select("#undoButtonContainer").classed("disabled", false);
         }).onDisable(function () {
             d3.select("#undoButtonContainer").classed("disabled", true);
         }));
-        d3.select("#redoButton").call(egm.redoButton().onEnable(function () {
+        d3.select("#redoButton").call(egmui.redoButton().onEnable(function () {
             d3.select("#redoButtonContainer").classed("disabled", false);
         }).onDisable(function () {
             d3.select("#redoButtonContainer").classed("disabled", true);
         }));
-        d3.select("#saveButton").call(egm.saveButton().save(function (json) {
+        d3.select("#saveButton").call(egmui.saveButton().save(function (json) {
             $http({
                 method: 'PUT',
                 url: jsonUrl,
@@ -1649,18 +1776,18 @@ var Controllers;
             d3.select("#nodeController").style("top", nodeRect.top + nodeRect.height + 10 + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
         }
 
-        d3.select("#ladderUpButton").call(egm.radderUpButton().onClick(openInputTextDialog).onEnable(showNodeController).onDisable(hideNodeController));
-        d3.select("#ladderDownButton").call(egm.radderDownButton().onClick(openInputTextDialog).onEnable(showNodeController).onDisable(hideNodeController));
-        d3.select("#removeNodeButton").call(egm.removeNodeButton().onEnable(showNodeController).onDisable(hideNodeController));
-        d3.select("#mergeNodeButton").call(egm.mergeNodeButton().onEnable(showNodeController).onDisable(hideNodeController));
-        d3.select("#editNodeButton").call(egm.editNodeButton().onClick(openInputTextDialog).onEnable(showNodeController).onDisable(hideNodeController));
+        d3.select("#ladderUpButton").call(egmui.radderUpButton().onClick(openInputTextDialog).onEnable(showNodeController).onDisable(hideNodeController));
+        d3.select("#ladderDownButton").call(egmui.radderDownButton().onClick(openInputTextDialog).onEnable(showNodeController).onDisable(hideNodeController));
+        d3.select("#removeNodeButton").call(egmui.removeNodeButton().onEnable(showNodeController).onDisable(hideNodeController));
+        d3.select("#mergeNodeButton").call(egmui.mergeNodeButton().onEnable(showNodeController).onDisable(hideNodeController));
+        d3.select("#editNodeButton").call(egmui.editNodeButton().onClick(openInputTextDialog).onEnable(showNodeController).onDisable(hideNodeController));
 
         $http.get(jsonUrl).success(function (data) {
             var nodes = data.nodes.map(function (d) {
-                return new Egm.Node(d.text, d.weight, d.original);
+                return new egrid.Node(d.text, d.weight, d.original);
             });
             var links = data.links.map(function (d) {
-                return new Egm.Link(nodes[d.source], nodes[d.target], d.weight);
+                return new egrid.Link(nodes[d.source], nodes[d.target], d.weight);
             });
             egm.nodes(nodes).links(links).draw().focusCenter();
         });
@@ -1682,8 +1809,8 @@ var Controllers;
         };
     }
 })(Controllers || (Controllers = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="../egm.ts"/>
+/// <reference path="../../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../../egrid/egm.ts"/>
 var Controllers;
 (function (Controllers) {
     function EgmShowController($scope, $routeParams, $http, $location) {
@@ -1691,24 +1818,25 @@ var Controllers;
         var participantId = $scope.participantId = $routeParams.participantId;
         var jsonUrl = "/api/participants/" + projectId + "/" + participantId + "/grid";
 
-        var egm = new Egm.EgmUi;
+        var egm = new egrid.EGM;
         d3.select("#display").call(egm.display());
 
         $http.get(jsonUrl).success(function (data) {
             var nodes = data.nodes.map(function (d) {
-                return new Egm.Node(d.text, d.weight, d.original);
+                return new egrid.Node(d.text, d.weight, d.original);
             });
             var links = data.links.map(function (d) {
-                return new Egm.Link(nodes[d.source], nodes[d.target], d.weight);
+                return new egrid.Link(nodes[d.source], nodes[d.target], d.weight);
             });
             egm.nodes(nodes).links(links).draw().focusCenter();
         });
     }
     Controllers.EgmShowController = EgmShowController;
 })(Controllers || (Controllers = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="../egm.ts"/>
+/// <reference path="../../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+/// <reference path="../../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../../egrid/egm.ts"/>
+/// <reference path="../../egrid/egm-ui.ts"/>
 var Controllers;
 (function (Controllers) {
     function EgmShowAllController($scope, $routeParams, $http, $location, $dialog) {
@@ -1728,7 +1856,8 @@ var Controllers;
             $("#ngClickProxy").trigger("click");
         }
 
-        var egm = new Egm.EgmUi;
+        var egmui = egrid.egmui();
+        var egm = egmui.egm();
         d3.select("#display").call(egm.display());
 
         function showNodeController(selection) {
@@ -1743,8 +1872,8 @@ var Controllers;
             d3.select("#nodeController").classed("invisible", true);
         }
 
-        d3.select("#removeNodeButton").call(egm.removeNodeButton().onEnable(showNodeController).onDisable(hideNodeController));
-        d3.select("#mergeNodeButton").call(egm.mergeNodeButton().onEnable(showNodeController).onDisable(hideNodeController));
+        d3.select("#removeNodeButton").call(egmui.removeNodeButton().onEnable(showNodeController).onDisable(hideNodeController));
+        d3.select("#mergeNodeButton").call(egmui.mergeNodeButton().onEnable(showNodeController).onDisable(hideNodeController));
 
         d3.select("#filterButton").on("click", function () {
             callWithProxy(function () {
@@ -1800,13 +1929,24 @@ var Controllers;
             });
         });
 
+        d3.select("#undoButton").call(egmui.undoButton().onEnable(function () {
+            d3.select("#undoButtonContainer").classed("disabled", false);
+        }).onDisable(function () {
+            d3.select("#undoButtonContainer").classed("disabled", true);
+        }));
+        d3.select("#redoButton").call(egmui.redoButton().onEnable(function () {
+            d3.select("#redoButtonContainer").classed("disabled", false);
+        }).onDisable(function () {
+            d3.select("#redoButtonContainer").classed("disabled", true);
+        }));
+
         $http.get(jsonUrl).success(function (data_) {
             data = data_;
             var nodes = data.nodes.map(function (d) {
-                return new Egm.Node(d.text, d.weight, d.original, d.participants);
+                return new egrid.Node(d.text, d.weight, d.original, d.participants);
             });
             var links = data.links.map(function (d) {
-                return new Egm.Link(nodes[d.source], nodes[d.target], d.weight);
+                return new egrid.Link(nodes[d.source], nodes[d.target], d.weight);
             });
             egm.nodes(nodes).links(links).draw().focusCenter();
         });
@@ -1831,15 +1971,15 @@ var Controllers;
 
     function SettingDialogController($scope, dialog, options) {
         $scope.options = options;
-        $scope.ViewMode = Egm.ViewMode;
-        $scope.InactiveNode = Egm.InactiveNode;
+        $scope.ViewMode = egrid.ViewMode;
+        $scope.InactiveNode = egrid.InactiveNode;
         $scope.close = function () {
             dialog.close();
         };
     }
 })(Controllers || (Controllers = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="../egm.ts"/>
+/// <reference path="../../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../../egrid/egm.ts"/>
 var Controllers;
 (function (Controllers) {
     function ParticipantDetailController($scope, $routeParams, $http) {
@@ -1856,16 +1996,16 @@ var Controllers;
             if (!gridTabInitialized) {
                 var width = 960 / 12 * 10;
                 var height = 500;
-                var egm = new Egm.EgmUi;
+                var egm = new egrid.EGM;
 
                 d3.select("#display").attr("width", width).attr("height", height).style("display", "block").style("border", "solid").call(egm.display(width, height));
 
                 $http.get(jsonUrl).success(function (data) {
                     var nodes = data.nodes.map(function (d) {
-                        return new Egm.Node(d.text, d.weight, d.original);
+                        return new egrid.Node(d.text, d.weight, d.original);
                     });
                     var links = data.links.map(function (d) {
-                        return new Egm.Link(nodes[d.source], nodes[d.target], d.weight);
+                        return new egrid.Link(nodes[d.source], nodes[d.target], d.weight);
                     });
                     egm.nodes(nodes).links(links).draw().focusCenter();
                 });
@@ -1936,10 +2076,10 @@ var Controllers;
     }
     Controllers.ProjectListController = ProjectListController;
 })(Controllers || (Controllers = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="../sem.d.ts"/>
-/// <reference path="../egm.ts"/>
+/// <reference path="../../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="../../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../../sem.d.ts"/>
+/// <reference path="../../egrid/egm.ts"/>
 var Controllers;
 (function (Controllers) {
     function SemProjectDetailController($scope, $routeParams, $http, $location) {
@@ -1949,8 +2089,8 @@ var Controllers;
 
     function SemProjectDetailDesignController($scope, $http) {
         var projectId = $scope.$parent.projectId;
-        var overallEgm = new Egm.EgmUi;
-        var egm = new Egm.EgmUi;
+        var overallEgm = new egrid.EGM;
+        var egm = new egrid.EGM;
 
         $scope.semProject = {
             name: '書きやすさの分析',
@@ -1978,7 +2118,7 @@ var Controllers;
             var links = [];
             overallEgm.nodes().forEach(function (node) {
                 if (itemDict[node.text]) {
-                    var newNode = new Egm.Node(node.text);
+                    var newNode = new egrid.Node(node.text);
                     newNode.index = node.index;
                     nodes.push(newNode);
                 }
@@ -1986,7 +2126,7 @@ var Controllers;
             nodes.forEach(function (node1) {
                 nodes.forEach(function (node2) {
                     if (node1.index != node2.index && overallEgm.grid().hasPath(node1.index, node2.index)) {
-                        links.push(new Egm.Link(node1, node2));
+                        links.push(new egrid.Link(node1, node2));
                     }
                 });
             });
@@ -2010,10 +2150,10 @@ var Controllers;
             d3.select("#sem-questionnaire-design-display svg").call(egm.display(width, height));
 
             var nodes = data.nodes.map(function (d) {
-                return new Egm.Node(d.text, d.weight, d.original);
+                return new egrid.Node(d.text, d.weight, d.original);
             });
             var links = data.links.map(function (d) {
-                return new Egm.Link(nodes[d.source], nodes[d.target], d.weight);
+                return new egrid.Link(nodes[d.source], nodes[d.target], d.weight);
             });
             overallEgm.nodes(nodes).links(links);
         });
@@ -2021,7 +2161,7 @@ var Controllers;
     Controllers.SemProjectDetailDesignController = SemProjectDetailDesignController;
 
     function SemProjectDetailAnalysisController($scope, $http) {
-        var egm = new Egm.EgmUi;
+        var egm = new egrid.EGM;
         var nodes = [
             '総合評価',
             '使いたさ',
@@ -2079,10 +2219,10 @@ var Controllers;
         }));
 
         var egmNodes = nodes.map(function (d) {
-            return new Egm.Node(d);
+            return new egrid.Node(d);
         });
         var egmLinks = links.map(function (d) {
-            return new Egm.Link(egmNodes[d.target], egmNodes[d.source]);
+            return new egrid.Link(egmNodes[d.target], egmNodes[d.source]);
         });
         egm.nodes(egmNodes).links(egmLinks);
 
@@ -2096,9 +2236,9 @@ var Controllers;
     }
     Controllers.SemProjectDetailAnalysisController = SemProjectDetailAnalysisController;
 })(Controllers || (Controllers = {}));
-/// <reference path="ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
-/// <reference path="ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="egm.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../egrid/egm.ts"/>
 /// <reference path="controllers/egm_edit.ts"/>
 /// <reference path="controllers/egm_show.ts"/>
 /// <reference path="controllers/egm_show_all.ts"/>

@@ -1,5 +1,5 @@
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="../egm.ts"/>
+/// <reference path="../../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../../egrid/egm.ts"/>
 
 module Controllers {
   export function ParticipantDetailController($scope, $routeParams, $http) {
@@ -16,7 +16,7 @@ module Controllers {
       if (!gridTabInitialized) {
         var width = 960 / 12 * 10;
         var height = 500;
-        var egm = new Egm.EgmUi;
+        var egm = new egrid.EGM;
 
         d3.select("#display")
           .attr("width", width)
@@ -27,8 +27,8 @@ module Controllers {
           ;
 
         $http.get(jsonUrl).success(data => {
-          var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight, d.original));
-          var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
+          var nodes = data.nodes.map(d => new egrid.Node(d.text, d.weight, d.original));
+          var links = data.links.map(d => new egrid.Link(nodes[d.source], nodes[d.target], d.weight));
           egm
             .nodes(nodes)
             .links(links)

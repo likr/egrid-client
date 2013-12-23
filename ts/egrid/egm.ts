@@ -1,9 +1,9 @@
-/// <reference path="ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
-/// <reference path="ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
 /// <reference path="svg.ts"/>
 /// <reference path="grid.ts"/>
 
-module Egm {
+module egrid {
   export enum ViewMode {
     Normal,
     Edge
@@ -31,71 +31,7 @@ module Egm {
   }
 
 
-  export interface AppendNodeButton {
-    (selection : D3.Selection) : AppendNodeButton;
-    onClick(f : (callback : (result : string) => void) => void) : AppendNodeButton;
-  }
-
-
-  export interface RemoveNodeButton {
-    (selection : D3.Selection) : RemoveNodeButton;
-    onEnable(f : (selection : D3.Selection) => void) : RemoveNodeButton;
-    onDisable(f : () => void) : RemoveNodeButton;
-  }
-
-
-  export interface MergeNodeButton {
-    (selection : D3.Selection) : MergeNodeButton;
-    onEnable(f : (selection : D3.Selection) => void) : MergeNodeButton;
-    onDisable(f : () => void) : MergeNodeButton;
-  }
-
-
-  export interface EditNodeButton {
-    (selection : D3.Selection) : EditNodeButton;
-    onClick(f : (callback : (result : string) => void) => void) : EditNodeButton;
-    onEnable(f : (selection : D3.Selection) => void) : EditNodeButton;
-    onDisable(f : () => void) : EditNodeButton;
-  }
-
-
-  export interface RadderUpButton {
-    (selection : D3.Selection) : RadderUpButton;
-    onClick(f : (callback : (result : string) => void) => void) : RadderUpButton;
-    onEnable(f : (selection : D3.Selection) => void) : RadderUpButton;
-    onDisable(f : () => void) : RadderUpButton;
-  }
-
-
-  export interface RadderDownButton {
-    (selection : D3.Selection) : RadderDownButton;
-    onClick(f : (callback : (result : string) => void) => void) : RadderDownButton;
-    onEnable(f : (selection : D3.Selection) => void) : RadderDownButton;
-    onDisable(f : () => void) : RadderDownButton;
-  }
-
-
-  export interface UndoButton {
-    (selection : D3.Selection) : UndoButton;
-    onEnable(f : () => void) : UndoButton;
-    onDisable(f : () => void) : UndoButton;
-  }
-
-
-  export interface RedoButton {
-    (selection : D3.Selection) : RedoButton;
-    onEnable(f : () => void) : RedoButton;
-    onDisable(f : () => void) : RedoButton;
-  }
-
-
-  export interface SaveButton {
-    (selection : D3.Selection) : SaveButton;
-    save(f : (jsonString : string) => void) : SaveButton;
-  }
-
-
-  interface DragNode {
+  export interface DragNode {
     (selection : D3.Selection) : DragNode;
     isDroppable(f : (from : Node, to : Node) => boolean) : DragNode;
     dragToNode(f : (from : Node, to : Node) => void) : DragNode;
@@ -115,9 +51,9 @@ module Egm {
 
 
   /**
-   * @class Egm.EgmUi
+   * @class egrid.EGM
    */
-  export class EgmUi {
+  export class EGM {
     private static rx : number = 20;
     private grid_ : Grid;
     private options_ : EgmOption;
@@ -126,29 +62,14 @@ module Egm {
     private rootSelection : D3.Selection;
     private contentsSelection : D3.Selection;
     private contentsZoomBehavior : D3.Behavior.Zoom;
-    private onEnableRemoveNodeButton : (selection : D3.Selection) => void;
-    private onDisableRemoveNodeButton : () => void;
-    private onEnableMergeNodeButton : (selection : D3.Selection) => void;
-    private onDisableMergeNodeButton : () => void;
-    private onEnableEditNodeButton : (selection : D3.Selection) => void;
-    private onDisableEditNodeButton : () => void;
-    private onEnableRadderUpButton : (selection : D3.Selection) => void;
-    private onDisableRadderUpButton : () => void;
-    private onEnableRadderDownButton : (selection : D3.Selection) => void;
-    private onDisableRadderDownButton : () => void;
-    private onEnableUndoButton : () => void;
-    private onDisableUndoButton : () => void;
-    private onEnableRedoButton : () => void;
-    private onDisableRedoButton : () => void;
-    private onClickSaveButton : (json : Object) => void;
-    private openAppendNodePrompt : (callback : (result : string) => void) => void;
-    private openLadderUpPrompt : (callback : (result : string) => void) => void;
-    private openLadderDownPrompt : (callback : (result : string) => void) => void;
+    public openLadderUpPrompt : (callback : (result : string) => void) => void;
+    public openLadderDownPrompt : (callback : (result : string) => void) => void;
     private removeLinkButtonEnabled : boolean = false;
+    private uiCallback : () => void;
 
 
     /**
-     * @class Egm.EgmUi
+     * @class egrid.EGM
      * @constructor
      */
     constructor () {
@@ -168,11 +89,11 @@ module Egm {
 
 
     nodes() : Node[];
-    nodes(nodes : Node[]) : EgmUi;
+    nodes(nodes : Node[]) : EGM;
     /**
      * @method nodes
      * @param {Egm.Node[]} [nodes] new nodes.
-     * @return {Egm.EgmUi|Egm.Node[]} Returns self if nodes is specified. Otherwise, returns current nodes.
+     * @return {egrid.EGM|egrid.Node[]} Returns self if nodes is specified. Otherwise, returns current nodes.
      */
     nodes(arg? : Node[]) : any {
       if (arg === undefined) {
@@ -184,11 +105,11 @@ module Egm {
 
 
     links() : Link[];
-    links(links : Link[]) : EgmUi;
+    links(links : Link[]) : EGM;
     /**
      * @method links
      * @param {Egm.Link[]} [links] new links.
-     * @return {Egm.EgmUi|Egm.Link} Returns self if links is specified. Otherwise, returns current links.
+     * @return {egrid.EGM|egrid.Link} Returns self if links is specified. Otherwise, returns current links.
      */
     links(arg? : Link[]) : any {
       if (arg === undefined) {
@@ -203,7 +124,7 @@ module Egm {
      * @method options
      */
     options() : EgmOption;
-    options(options : EgmOption) : EgmUi;
+    options(options : EgmOption) : EGM;
     options(arg? : EgmOption) : any {
       if (arg === undefined) {
         return this.options_;
@@ -216,7 +137,7 @@ module Egm {
     /**
      * @method draw
      */
-    draw(f = undefined) : EgmUi {
+    draw(f = undefined) : EGM {
       var spline = d3.svg.line()
         .x(d => d.x)
         .y(d => d.y)
@@ -259,13 +180,13 @@ module Egm {
       });
       nodesSelection.selectAll("text")
         .text(d => d.text)
-        .attr("x", d => EgmUi.rx - d.baseWidth / 2)
-        .attr("y", d => EgmUi.rx)
+        .attr("x", d => EGM.rx - d.baseWidth / 2)
+        .attr("y", d => EGM.rx)
         ;
       nodesSelection.selectAll("rect")
         .attr("x", d => - d.baseWidth / 2)
         .attr("y", d => - d.baseHeight / 2)
-        .attr("rx", d => (d.original || d.isTop || d.isBottom) ? 0 : EgmUi.rx)
+        .attr("rx", d => (d.original || d.isTop || d.isBottom) ? 0 : EGM.rx)
         .attr("width", d => d.baseWidth)
         .attr("height", d => d.baseHeight)
         ;
@@ -344,14 +265,14 @@ module Egm {
         .attr("opacity", node => {
           return node.active ? 1 : 0.3;
         })
-        .attr("transform", (node : Egm.Node) : string => {
+        .attr("transform", (node : egrid.Node) : string => {
           return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString()
             + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString()
             + (new Svg.Transform.Scale(nodeSizeScale(this.grid_.numConnectedNodes(node.index, true)))).toString();
         })
         ;
       transition.selectAll(".link path")
-        .attr("d", (link : Egm.Link) : string => {
+        .attr("d", (link : egrid.Link) : string => {
           return spline(link.points);
         })
         .attr("opacity", link => {
@@ -396,27 +317,7 @@ module Egm {
         .scaleExtent([s, 1])
         ;
 
-      this.resetUndoButton();
-      this.resetRedoButton();
       return this;
-    }
-
-
-    private resetUndoButton() : void {
-      if (this.grid_.canUndo()) {
-        this.enableUndoButton();
-      } else {
-        this.disableUndoButton();
-      }
-    }
-
-
-    private resetRedoButton() : void {
-      if (this.grid_.canRedo()) {
-        this.enableRedoButton();
-      } else {
-        this.disableRedoButton();
-      }
     }
 
 
@@ -454,10 +355,9 @@ module Egm {
               var translate = new Svg.Transform.Translate(
                 d3.event.translate[0], d3.event.translate[1]);
               var scale = new Svg.Transform.Scale(d3.event.scale);
-              this.contentsSelection.attr(
-                "transform", translate.toString() + scale.toString());
+              this.contentsSelection.attr("transform", translate.toString() + scale.toString());
 
-              this.enableRemoveNodeButton(d3.select(".selected"));
+              this.notify();
           })
           ;
         selection.call(this.contentsZoomBehavior);
@@ -466,12 +366,16 @@ module Egm {
 
 
     private createNode(text : string) : Node {
-      var node = new Egm.Node(text);
+      var node = new egrid.Node(text);
       return node;
     }
 
 
-    private focusNode(node : Node) : void {
+    /**
+     * @method focusNode
+     * @param node {egrid.Node}
+     */
+    focusNode(node : Node) : void {
       var s = this.contentsZoomBehavior.scale() || 1;
       var translate = new Svg.Transform.Translate(
         this.displayWidth / 2 - node.center().x * s,
@@ -518,244 +422,23 @@ module Egm {
     }
 
 
-    appendNodeButton() : AppendNodeButton {
-      var egm = this;
-      var onClickPrompt;
-      var f : any = function(selection : D3.Selection) : AppendNodeButton {
-        selection.on("click", () => {
-          onClickPrompt && onClickPrompt((text : string) : void => {
-            if (text) {
-              var node;
-              if (node = egm.grid_.findNode(text)) {
-                // node already exists
-              } else {
-                // create new node
-                node = egm.createNode(text);
-                node.original = true;
-                egm.grid_.appendNode(node);
-                egm.disableNodeButtons();
-                egm.draw(() => {
-                  egm.enableNodeButtons();
-                });
-              }
-              var addedElement = egm.contentsSelection
-                  .selectAll(".element")
-                  .filter(node => node.text == text);
-              egm.selectElement(addedElement);
-              egm.focusNode(addedElement.datum());
-            }
-          });
-        });
-        return this;
-      };
-      f.onClick = function(f : (callback : (result : string) => void) => void) : AppendNodeButton {
-        onClickPrompt = f;
-        return this;
-      }
-      return f;
-    }
-
-
-    removeNodeButton() : RemoveNodeButton {
-      var egm = this;
-      var f : any = function(selection : D3.Selection) : RemoveNodeButton {
-        selection.on("click", () => {
-          var node = egm.rootSelection.select(".selected").datum();
-          egm.unselectElement();
-          egm.grid_.removeNode(node.index);
-          egm.draw();
-        });
-        return this;
-      };
-      f.onEnable = function(f : (selection : D3.Selection) => void) : RemoveNodeButton {
-        egm.onEnableRemoveNodeButton = f;
-        return this;
-      };
-      f.onDisable = function(f : () => void) : RemoveNodeButton {
-        egm.onDisableRemoveNodeButton = f;
-        return this;
-      };
-      return f;
-    }
-
-
-    mergeNodeButton() : MergeNodeButton {
-      var egm = this;
-      var f : any = function(selection : D3.Selection) : MergeNodeButton {
-        selection.call(egm.dragNode()
-            .isDroppable((fromNode : Node, toNode : Node) : boolean => {
-              return !egm.grid_.hasPath(toNode.index, fromNode.index)
-            })
-            .dragToNode((fromNode : Node, toNode : Node) : void => {
-              egm.grid_.mergeNode(fromNode.index, toNode.index);
-              egm.draw();
-              egm.unselectElement();
-              egm.focusNode(toNode);
-            }));
-        return this;
-      }
-      f.onEnable = function(f : (selection : D3.Selection) => void) : MergeNodeButton {
-        egm.onEnableMergeNodeButton = f;
-        return this;
-      };
-      f.onDisable = function(f : () => void) : MergeNodeButton {
-        egm.onDisableMergeNodeButton = f;
-        return this;
-      };
-      return f;
-    }
-
-
-    editNodeButton() : EditNodeButton {
-      var egm = this;
-      var onClickPrompt;
-      var f : any = function(selection : D3.Selection) : EditNodeButton {
-        selection.on("click", () => {
-          onClickPrompt && onClickPrompt((text : string) : void => {
-            var node = egm.rootSelection.select(".selected").datum();
-            if (text && node) {
-              egm.grid_.updateNodeText(node.index, text);
-              egm.draw();
-            }
-          });
-        })
-        return this;
-      };
-      f.onClick = function(f : (callback : (result : string) => void) => void) : EditNodeButton {
-        onClickPrompt = f;
-        return this;
-      };
-      f.onEnable = function(f : (selection : D3.Selection) => void) : EditNodeButton {
-        egm.onEnableEditNodeButton = f;
-        return this;
-      };
-      f.onDisable = function(f : () => void) : EditNodeButton {
-        egm.onDisableEditNodeButton = f;
-        return this;
-      };
-      return f;
-    }
-
-
-    radderUpButton() : RadderUpButton {
-      var grid = this;
-      var f : any = (selection : D3.Selection) : void => {
-        this.raddering(selection, Raddering.RadderUp);
-      }
-      f.onClick = function(f : (callback : (result : string) => void) => void) : RadderUpButton {
-        grid.openLadderUpPrompt = f;
-        return this;
-      };
-      f.onEnable = function(f : (selection : D3.Selection) => void) : RadderUpButton {
-        grid.onEnableRadderUpButton = f;
-        return this;
-      };
-      f.onDisable = function(f : () => void) : RadderUpButton {
-        grid.onDisableRadderUpButton = f;
-        return this;
-      };
-      return f;
-    }
-
-
-    radderDownButton() : RadderDownButton {
-      var grid = this;
-      var f : any = function(selection : D3.Selection) : RadderDownButton {
-        grid.raddering(selection, Raddering.RadderDown);
-        return this;
-      }
-      f.onClick = function(f : (callback : (result : string) => void) => void) : RadderDownButton {
-        grid.openLadderDownPrompt = f;
-        return this;
-      };
-      f.onEnable = function(f : (selection : D3.Selection) => void) : RadderDownButton {
-        grid.onEnableRadderDownButton = f;
-        return this;
-      }
-      f.onDisable = function(f : () => void) : RadderDownButton {
-        grid.onDisableRadderDownButton = f;
-        return this;
-      }
-      return f;
-    }
-
-
-    private save() : void {
-      if (this.onClickSaveButton) {
-        this.onClickSaveButton(this.grid_.toJSON());
-      }
-    }
-
-
-    saveButton() : SaveButton {
-      var egm = this;
-      var f : any = function(selection : D3.Selection) : SaveButton {
-        selection.on("click", () => {
-          egm.save();
-        });
-        return this;
-      }
-      f.save = function(f : (jsonString : string) => void) : SaveButton {
-        egm.onClickSaveButton = f;
-        return this;
-      }
-      return f;
-    }
-
-
-    private undo() : void {
+    /**
+     * @method undo
+     */
+    undo() : void {
       this.grid_.undo();
       this.draw();
-      this.disableNodeButtons();
+      this.notify();
     }
 
 
-    undoButton() : UndoButton {
-      var egm = this;
-      var f : any = function(selection : D3.Selection) : UndoButton {
-        selection.on("click", () => {
-          egm.undo();
-        });
-        egm.resetUndoButton();
-        return this;
-      }
-      f.onEnable = function(f : () => void) : UndoButton {
-        egm.onEnableUndoButton = f;
-        return this;
-      }
-      f.onDisable = function(f : () => void) : UndoButton {
-        egm.onDisableUndoButton = f;
-        return this;
-      }
-      return f;
-    }
-
-
-    private redo() : void {
+    /**
+     * @method redo
+     */
+    redo() : void {
       this.grid_.redo();
       this.draw();
-      this.disableNodeButtons();
-    }
-
-
-    redoButton() : RedoButton {
-      var egm = this;
-      var f : any = function(selection : D3.Selection) : RedoButton {
-        selection.on("click", () => {
-          egm.redo();
-        });
-        egm.resetRedoButton();
-        return this;
-      }
-      f.onEnable = function(f : () => void) : RedoButton {
-        egm.onEnableRedoButton = f;
-        return this;
-      }
-      f.onDisable = function(f : () => void) : RedoButton {
-        egm.onDisableRedoButton = f;
-        return this;
-      }
-      return f;
+      this.notify();
     }
 
 
@@ -769,23 +452,24 @@ module Egm {
       return new Svg.Rect(
           bbox.x,
           bbox.y,
-          bbox.width + EgmUi.rx * 2,
-          bbox.height + EgmUi.rx * 2);
+          bbox.width + EGM.rx * 2,
+          bbox.height + EGM.rx * 2);
     }
 
 
     private appendElement() : (selection : D3.Selection) => void {
       return (selection) => {
-        var self = this;
+        var egm = this;
         var onElementClick = function() {
           var selection = d3.select(this);
           if (selection.classed("selected")) {
-            self.unselectElement();
+            egm.unselectElement();
             d3.event.stopPropagation();
           } else {
-            self.selectElement(selection);
+            egm.selectElement(selection);
             d3.event.stopPropagation();
           }
+          egm.notify();
         };
         selection
           .classed("element", true)
@@ -799,15 +483,22 @@ module Egm {
     }
 
 
-    private selectElement(selection : D3.Selection) : void {
+    /**
+     * @method selectElement
+     * @param selection {D3.Selection}
+     */
+    selectElement(selection : D3.Selection) : void {
       this.rootSelection.selectAll(".selected").classed("selected", false);
       selection.classed("selected", true);
-      this.enableNodeButtons();
       this.drawNodeConnection();
     }
 
 
-    public selectedNode() : Node {
+    /**
+     * @method selectedNode
+     * @return {egrid.Node}
+     */
+    selectedNode() : Node {
       var selection = this.rootSelection.select(".selected");
       return selection.empty() ? null : selection.datum();
     }
@@ -841,134 +532,19 @@ module Egm {
     }
 
 
-    private enableNodeButtons() {
-      var selection = d3.select(".selected");
-      this.enableRemoveNodeButton(selection);
-      this.enableMergeNodeButton(selection);
-      this.enableEditNodeButton(selection);
-      this.enableRadderUpButton(selection);
-      this.enableRadderDownButton(selection);
-    }
-
-
-    private disableNodeButtons() {
-      this.disableRemoveNodeButton();
-      this.disableMergeNodeButton();
-      this.disableEditNodeButton();
-      this.disableRadderUpButton();
-      this.disableRadderDownButton();
-    }
-
-
-    private unselectElement() {
+    /**
+     * @method unselectElement
+     */
+    unselectElement() {
       this.rootSelection.selectAll(".selected").classed("selected", false);
       this.rootSelection.selectAll(".connected").classed("connected", false);
       this.rootSelection.selectAll(".link .removeLinkButton")
         .attr("opacity", 0)
         ;
-      this.disableNodeButtons();
     }
 
 
-    private enableRadderUpButton(selection : D3.Selection) : void {
-      if (this.onEnableRadderUpButton) {
-        this.onEnableRadderUpButton(selection);
-      }
-    }
-
-
-    private disableRadderUpButton() : void {
-      if (this.onDisableRadderUpButton) {
-        this.onDisableRadderUpButton();
-      }
-    }
-
-
-    private enableRadderDownButton(selection : D3.Selection) : void {
-      if (this.onEnableRadderDownButton) {
-        this.onEnableRadderDownButton(selection);
-      }
-    }
-
-
-    private disableRadderDownButton() : void {
-      if (this.onDisableRadderDownButton) {
-        this.onDisableRadderDownButton();
-      }
-    }
-
-
-    private enableRemoveNodeButton(selection : D3.Selection) : void {
-      if (this.onEnableRemoveNodeButton) {
-        this.onEnableRemoveNodeButton(selection);
-      }
-    }
-
-
-    private disableRemoveNodeButton() : void {
-      if (this.onDisableRemoveNodeButton) {
-        this.onDisableRemoveNodeButton();
-      }
-    }
-
-
-    private enableMergeNodeButton(selection : D3.Selection) : void {
-      if (this.onEnableMergeNodeButton) {
-        this.onEnableMergeNodeButton(selection);
-      }
-    }
-
-
-    private disableMergeNodeButton() : void {
-      if (this.onDisableMergeNodeButton) {
-        this.onDisableMergeNodeButton();
-      }
-    }
-
-
-    private enableEditNodeButton(selection : D3.Selection) : void {
-      if (this.onEnableEditNodeButton) {
-        this.onEnableEditNodeButton(selection);
-      }
-    }
-
-
-    private disableEditNodeButton() : void {
-      if (this.onDisableEditNodeButton) {
-        this.onDisableEditNodeButton();
-      }
-    }
-
-
-    private enableUndoButton() : void {
-      if (this.onEnableUndoButton) {
-        this.onEnableUndoButton();
-      }
-    }
-
-
-    private disableUndoButton() : void {
-      if (this.onDisableUndoButton) {
-        this.onDisableUndoButton();
-      }
-    }
-
-
-    private enableRedoButton() : void {
-      if (this.onEnableRedoButton) {
-        this.onEnableRedoButton();
-      }
-    }
-
-
-    private disableRedoButton() : void {
-      if (this.onDisableRedoButton) {
-        this.onDisableRedoButton();
-      }
-    }
-
-
-    private dragNode() : DragNode {
+    dragNode() : DragNode {
       var egm = this;
       var isDroppable_;
       var dragToNode_;
@@ -1059,7 +635,7 @@ module Egm {
     }
 
 
-    private raddering(selection : D3.Selection, type : Raddering) : void {
+    raddering(selection : D3.Selection, type : Raddering) : void {
       var dragToNode = (fromNode : Node, toNode : Node) : void => {
         switch (type) {
         case Raddering.RadderUp:
@@ -1069,12 +645,9 @@ module Egm {
             this.draw();
           } else {
             this.grid_.radderUp(fromNode.index, toNode.index);
-            this.draw(() => {
-              this.enableNodeButtons();
-            });
+            this.draw();
             this.drawNodeConnection();
             this.focusNode(toNode);
-            this.disableNodeButtons();
           }
           break;
         case Raddering.RadderDown:
@@ -1084,15 +657,13 @@ module Egm {
             this.draw();
           } else {
             this.grid_.radderDown(fromNode.index, toNode.index);
-            this.draw(() => {
-              this.enableNodeButtons();
-            });
+            this.draw();
             this.drawNodeConnection();
             this.focusNode(toNode);
-            this.disableNodeButtons();
           }
           break;
         }
+        this.notify();
       };
 
       selection.call(this.dragNode()
@@ -1127,11 +698,10 @@ module Egm {
                     this.grid_.radderDownAppend(fromNode.index, node);
                     break;
                   }
-                  this.draw(() => {
-                    this.enableNodeButtons();
-                  });
+                  this.draw();
                   this.drawNodeConnection();
                   this.focusNode(node);
+                  this.notify();
                 }
               }
             })
@@ -1148,12 +718,120 @@ module Egm {
 
 
     showRemoveLinkButton() : boolean;
-    showRemoveLinkButton(flag : boolean) : EgmUi;
+    showRemoveLinkButton(flag : boolean) : EGM;
     showRemoveLinkButton(arg? : boolean) : any {
       if (arg === undefined) {
         return this.removeLinkButtonEnabled;
       }
       this.removeLinkButtonEnabled = arg;
+      return this;
+    }
+
+
+    /**
+     * @method registerUiCallback;
+     */
+    registerUiCallback(callback : () => void) : EGM {
+      this.uiCallback = callback;
+      return this;
+    }
+
+
+    private notify() : void {
+      if (this.uiCallback) {
+        this.uiCallback();
+      }
+    }
+
+
+    /**
+     * @method appendNode
+     * @return {egrid.EGM}
+     */
+    appendNode(text : string) : EGM {
+      if (text) {
+        var node;
+        if (node = this.grid_.findNode(text)) {
+          // node already exists
+        } else {
+          // create new node
+          node = this.createNode(text);
+          node.original = true;
+          this.grid_.appendNode(node);
+          this.draw(() => {
+            this.notify();
+          });
+        }
+        var addedElement = this.contentsSelection
+            .selectAll(".element")
+            .filter(node => node.text == text);
+        this.selectElement(addedElement);
+        this.focusNode(addedElement.datum());
+        this.notify();
+      }
+      return this;
+    }
+
+
+    /**
+     * @method removeSelectedNode
+     * @return {egrid.EGM}
+     */
+    removeSelectedNode() : EGM {
+      return this.removeNode(this.selectedNode());
+    }
+
+
+    /**
+     * @method removeNode
+     * @return {egrid.EGM}
+     */
+    removeNode(node : Node) : EGM {
+      if (node) {
+        this.unselectElement();
+        this.grid_.removeNode(node.index);
+        this.draw();
+        this.notify();
+      }
+      return this;
+    }
+
+
+    /**
+     * @method mergeNode
+     * @return {egrid.EGM}
+     */
+    mergeNode(fromNode : Node, toNode : Node) : EGM {
+      if (fromNode && toNode) {
+        this.grid_.mergeNode(fromNode.index, toNode.index);
+        this.draw();
+        this.unselectElement();
+        this.focusNode(toNode);
+        this.notify()
+      }
+      return this;
+    }
+
+
+    /**
+     * @method editSelectedNode
+     * @return {egrid.EGM}
+     */
+    editSelectedNode(text : string) : EGM {
+      return this.editNode(this.selectedNode(), text);
+    }
+
+
+    /**
+     * @method editNode
+     * @return {egrid.EGM}
+     */
+    editNode(node : Node, text : string) : EGM {
+      if (node && text) {
+        this.grid_.updateNodeText(node.index, text);
+        this.draw();
+        this.notify();
+      }
       return this;
     }
   }

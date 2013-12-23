@@ -1,6 +1,6 @@
-/// <reference path="ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
-/// <reference path="ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="egm.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../egrid/egm.ts"/>
 /// <reference path="controllers/egm_edit.ts"/>
 /// <reference path="controllers/egm_show.ts"/>
 /// <reference path="controllers/egm_show_all.ts"/>

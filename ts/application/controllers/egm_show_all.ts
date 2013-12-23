@@ -1,11 +1,12 @@
-/// <reference path="../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="../egm.ts"/>
+/// <reference path="../../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+/// <reference path="../../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../../egrid/egm.ts"/>
+/// <reference path="../../egrid/egm-ui.ts"/>
 
 module Controllers {
   interface Data {
-    nodes : Egm.Node[];
-    links : Egm.Link[];
+    nodes : egrid.Node[];
+    links : egrid.Link[];
   }
 
 
@@ -26,7 +27,8 @@ module Controllers {
       $("#ngClickProxy").trigger("click");
     }
 
-    var egm = new Egm.EgmUi;
+    var egmui = egrid.egmui();
+    var egm = egmui.egm();
     d3.select("#display")
       .call(egm.display())
       ;
@@ -49,12 +51,12 @@ module Controllers {
     }
 
     d3.select("#removeNodeButton")
-      .call(egm.removeNodeButton()
+      .call(egmui.removeNodeButton()
           .onEnable(showNodeController)
           .onDisable(hideNodeController)
       );
     d3.select("#mergeNodeButton")
-      .call(egm.mergeNodeButton()
+      .call(egmui.mergeNodeButton()
           .onEnable(showNodeController)
           .onDisable(hideNodeController)
       );
@@ -110,10 +112,28 @@ module Controllers {
         });
       });
 
+    d3.select("#undoButton")
+      .call(egmui.undoButton()
+          .onEnable(() => {
+            d3.select("#undoButtonContainer").classed("disabled", false);
+          })
+          .onDisable(() => {
+            d3.select("#undoButtonContainer").classed("disabled", true);
+
+          }));
+    d3.select("#redoButton")
+      .call(egmui.redoButton()
+          .onEnable(() => {
+            d3.select("#redoButtonContainer").classed("disabled", false);
+          })
+          .onDisable(() => {
+            d3.select("#redoButtonContainer").classed("disabled", true);
+          }));
+
     $http.get(jsonUrl).success((data_ : Data) => {
       data = data_
-      var nodes = data.nodes.map(d => new Egm.Node(d.text, d.weight, d.original, d.participants));
-      var links = data.links.map(d => new Egm.Link(nodes[d.source], nodes[d.target], d.weight));
+      var nodes = data.nodes.map(d => new egrid.Node(d.text, d.weight, d.original, d.participants));
+      var links = data.links.map(d => new egrid.Link(nodes[d.source], nodes[d.target], d.weight));
       egm
         .nodes(nodes)
         .links(links)
@@ -143,8 +163,8 @@ module Controllers {
 
   function SettingDialogController($scope, dialog, options) {
     $scope.options = options;
-    $scope.ViewMode = Egm.ViewMode;
-    $scope.InactiveNode = Egm.InactiveNode;
+    $scope.ViewMode = egrid.ViewMode;
+    $scope.InactiveNode = egrid.InactiveNode;
     $scope.close = () => {
       dialog.close();
     }
