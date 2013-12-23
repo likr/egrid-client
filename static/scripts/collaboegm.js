@@ -647,10 +647,135 @@ var egrid;
     })();
     egrid.Grid = Grid;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="grid.ts"/>
+var egrid;
+(function (egrid) {
+    var DAG = (function () {
+        /**
+        * @class egrid.DAG
+        * @constructor
+        */
+        function DAG() {
+            this.grid_ = new egrid.Grid;
+        }
+        /**
+        * @method grid
+        * @return {egrid.Grid}
+        */
+        DAG.prototype.grid = function () {
+            return this.grid_;
+        };
+
+        /**
+        * @method nodes
+        * @param {Egm.Node[]} [nodes] new nodes.
+        * @return {egrid.DAG|egrid.Node[]} Returns self if nodes is specified. Otherwise, returns current nodes.
+        */
+        DAG.prototype.nodes = function (arg) {
+            if (arg === undefined) {
+                return this.grid_.nodes();
+            }
+            this.grid_.nodes(arg);
+            return this;
+        };
+
+        /**
+        * @method links
+        * @param {Egm.Link[]} [links] new links.
+        * @return {egrid.DAG|egrid.Link} Returns self if links is specified. Otherwise, returns current links.
+        */
+        DAG.prototype.links = function (arg) {
+            if (arg === undefined) {
+                return this.grid_.links();
+            }
+            this.grid_.links(arg);
+            return this;
+        };
+
+        /**
+        * @method notify
+        */
+        DAG.prototype.notify = function () {
+            if (this.uiCallback) {
+                this.uiCallback();
+            }
+            return this;
+        };
+
+        /**
+        * @method registerUiCallback;
+        */
+        DAG.prototype.registerUiCallback = function (callback) {
+            this.uiCallback = callback;
+            return this;
+        };
+
+        /**
+        * @method undo
+        */
+        DAG.prototype.undo = function () {
+            if (this.grid().canUndo()) {
+                this.grid().undo();
+                this.draw();
+                this.notify();
+            }
+            return this;
+        };
+
+        /**
+        * @method redo
+        */
+        DAG.prototype.redo = function () {
+            if (this.grid().canRedo()) {
+                this.grid().redo();
+                this.draw();
+                this.notify();
+            }
+            return this;
+        };
+
+        /**
+        * @method draw
+        */
+        DAG.prototype.draw = function () {
+            return this;
+        };
+
+        /**
+        * @method focusCenter
+        */
+        DAG.prototype.focusCenter = function () {
+            return this;
+        };
+
+        /**
+        * Generates a function to init display region.
+        * @method display
+        * @param regionWidth {number} Width of display region.
+        * @param regionHeight {number} Height of display region.
+        * @return {function}
+        */
+        DAG.prototype.display = function (regionWidth, regionHeight) {
+            if (typeof regionWidth === "undefined") { regionWidth = undefined; }
+            if (typeof regionHeight === "undefined") { regionHeight = undefined; }
+            return function (selection) {
+            };
+        };
+        return DAG;
+    })();
+    egrid.DAG = DAG;
+})(egrid || (egrid = {}));
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
 /// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
 /// <reference path="svg.ts"/>
-/// <reference path="grid.ts"/>
+/// <reference path="dag.ts"/>
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 var egrid;
 (function (egrid) {
     (function (ViewMode) {
@@ -688,51 +813,17 @@ var egrid;
     /**
     * @class egrid.EGM
     */
-    var EGM = (function () {
+    var EGM = (function (_super) {
+        __extends(EGM, _super);
         /**
         * @class egrid.EGM
         * @constructor
         */
         function EGM() {
+            _super.call(this);
             this.removeLinkButtonEnabled = false;
-            this.grid_ = new egrid.Grid;
             this.options_ = EgmOption.default();
-            this.removeLinkButtonEnabled;
         }
-        /**
-        * @method grid
-        * @return {Egm.Grid}
-        */
-        EGM.prototype.grid = function () {
-            return this.grid_;
-        };
-
-        /**
-        * @method nodes
-        * @param {Egm.Node[]} [nodes] new nodes.
-        * @return {egrid.EGM|egrid.Node[]} Returns self if nodes is specified. Otherwise, returns current nodes.
-        */
-        EGM.prototype.nodes = function (arg) {
-            if (arg === undefined) {
-                return this.grid_.nodes();
-            }
-            this.grid_.nodes(arg);
-            return this;
-        };
-
-        /**
-        * @method links
-        * @param {Egm.Link[]} [links] new links.
-        * @return {egrid.EGM|egrid.Link} Returns self if links is specified. Otherwise, returns current links.
-        */
-        EGM.prototype.links = function (arg) {
-            if (arg === undefined) {
-                return this.grid_.links();
-            }
-            this.grid_.links(arg);
-            return this;
-        };
-
         EGM.prototype.options = function (arg) {
             if (arg === undefined) {
                 return this.options_;
@@ -744,8 +835,7 @@ var egrid;
         /**
         * @method draw
         */
-        EGM.prototype.draw = function (f) {
-            if (typeof f === "undefined") { f = undefined; }
+        EGM.prototype.draw = function () {
             var _this = this;
             var spline = d3.svg.line().x(function (d) {
                 return d.x;
@@ -753,8 +843,8 @@ var egrid;
                 return d.y;
             }).interpolate("basis");
 
-            var nodes = this.grid_.nodes();
-            var links = this.grid_.links();
+            var nodes = this.nodes();
+            var links = this.links();
             if (this.options_.inactiveNode == 0 /* Hidden */) {
                 nodes = nodes.filter(function (d) {
                     return d.active;
@@ -768,12 +858,10 @@ var egrid;
             nodesSelection.exit().remove();
             nodesSelection.enter().append("g").call(this.appendElement());
 
-            var nodeSizeScale = d3.scale.linear().domain(d3.extent(this.grid_.nodes(), function (node) {
-                return _this.grid_.numConnectedNodes(node.index, true);
-            })).range([1, this.options_.scalingConnection ? 3 : 1]);
+            var nodeSizeScale = this.nodeSizeScale();
             nodesSelection.each(function (node) {
                 var rect = _this.calcRect(node.text);
-                var n = _this.grid_.numConnectedNodes(node.index, true);
+                var n = _this.grid().numConnectedNodes(node.index, true);
                 node.baseWidth = rect.width;
                 node.baseHeight = rect.height;
                 node.width = node.baseWidth * nodeSizeScale(n);
@@ -805,19 +893,11 @@ var egrid;
             }).call(function (selection) {
                 selection.append("path");
                 if (_this.removeLinkButtonEnabled) {
-                    selection.append("g").classed("removeLinkButton", true).attr("transform", function (link) {
-                        return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
-                    }).attr("opacity", 0).on("click", function (d) {
-                        _this.grid_.removeLink(d.index);
-                        _this.draw();
-                    }).call(function (selection) {
-                        selection.append("circle").attr("r", 16).attr("fill", "lightgray").attr("stroke", "none");
-                        selection.append("image").attr("x", -8).attr("y", -8).attr("width", "16px").attr("height", "16px").attr("xlink:href", "/images/glyphicons_207_remove_2.png");
-                    });
+                    selection.call(_this.appendRemoveLinkButton());
                 }
             });
 
-            this.grid_.layout(this.options_.inactiveNode == 0 /* Hidden */);
+            this.grid().layout(this.options_.inactiveNode == 0 /* Hidden */);
 
             this.rootSelection.selectAll(".contents .links .link path").filter(function (link) {
                 return link.previousPoints.length != link.points.length;
@@ -832,16 +912,13 @@ var egrid;
                 return spline(link.previousPoints);
             });
 
-            var linkWidthScale = d3.scale.linear().domain(d3.extent(this.grid_.links(), function (link) {
-                return link.weight;
-            })).range([5, 15]);
-
+            var linkWidthScale = this.linkWidthScale();
             var selectedNode = this.selectedNode();
             var transition = this.rootSelection.transition();
             transition.selectAll(".element").attr("opacity", function (node) {
                 return node.active ? 1 : 0.3;
             }).attr("transform", function (node) {
-                return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString() + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString() + (new Svg.Transform.Scale(nodeSizeScale(_this.grid_.numConnectedNodes(node.index, true)))).toString();
+                return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString() + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString() + (new Svg.Transform.Scale(nodeSizeScale(_this.grid().numConnectedNodes(node.index, true)))).toString();
             });
             transition.selectAll(".link path").attr("d", function (link) {
                 return spline(link.points);
@@ -855,11 +932,95 @@ var egrid;
             }).attr("opacity", function (link) {
                 return link.source == selectedNode || link.target == selectedNode ? 1 : 0;
             });
-            transition.each("end", f);
+            transition.each("end", function () {
+                _this.notify();
+            });
 
-            var filterdNodes = this.options_.inactiveNode == 0 /* Hidden */ ? this.grid_.nodes().filter(function (node) {
+            this.rescale();
+
+            return this;
+        };
+
+        EGM.prototype.drawNodeConnection = function () {
+            var _this = this;
+            var d = this.selectedNode();
+            this.rootSelection.selectAll(".connected").classed("connected", false);
+            if (d) {
+                d3.selectAll(".element").filter(function (d2) {
+                    return _this.grid().hasPath(d.index, d2.index) || _this.grid().hasPath(d2.index, d.index);
+                }).classed("connected", true);
+                d3.selectAll(".link").filter(function (link) {
+                    return (_this.grid().hasPath(d.index, link.source.index) && _this.grid().hasPath(d.index, link.target.index)) || (_this.grid().hasPath(link.source.index, d.index) && _this.grid().hasPath(link.target.index, d.index));
+                }).classed("connected", true);
+                d3.selectAll(".link .removeLinkButton").attr("opacity", function (link) {
+                    return link.source == d || link.target == d ? 1 : 0;
+                });
+            }
+        };
+
+        EGM.prototype.getTextBBox = function (text) {
+            return this.rootSelection.select(".measure").text(text).node().getBBox();
+        };
+
+        EGM.prototype.calcRect = function (text) {
+            var bbox = this.getTextBBox(text);
+            return new Svg.Rect(bbox.x, bbox.y, bbox.width + EGM.rx * 2, bbox.height + EGM.rx * 2);
+        };
+
+        EGM.prototype.appendElement = function () {
+            var _this = this;
+            return function (selection) {
+                var egm = _this;
+                var onElementClick = function () {
+                    var selection = d3.select(this);
+                    if (selection.classed("selected")) {
+                        egm.unselectElement();
+                        d3.event.stopPropagation();
+                    } else {
+                        egm.selectElement(selection);
+                        d3.event.stopPropagation();
+                    }
+                    egm.notify();
+                };
+                selection.classed("element", true).on("click", onElementClick).on("touchstart", onElementClick);
+
+                selection.append("rect");
+                selection.append("text");
+            };
+        };
+
+        EGM.prototype.appendRemoveLinkButton = function () {
+            var _this = this;
+            return function (selection) {
+                selection.append("g").classed("removeLinkButton", true).attr("transform", function (link) {
+                    return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
+                }).attr("opacity", 0).on("click", function (d) {
+                    _this.grid().removeLink(d.index);
+                    _this.draw();
+                }).call(function (selection) {
+                    selection.append("circle").attr("r", 16).attr("fill", "lightgray").attr("stroke", "none");
+                    selection.append("image").attr("x", -8).attr("y", -8).attr("width", "16px").attr("height", "16px").attr("xlink:href", "/images/glyphicons_207_remove_2.png");
+                });
+            };
+        };
+
+        EGM.prototype.nodeSizeScale = function () {
+            var _this = this;
+            return d3.scale.linear().domain(d3.extent(this.nodes(), function (node) {
+                return _this.grid().numConnectedNodes(node.index, true);
+            })).range([1, this.options_.scalingConnection ? 3 : 1]);
+        };
+
+        EGM.prototype.linkWidthScale = function () {
+            return d3.scale.linear().domain(d3.extent(this.links(), function (link) {
+                return link.weight;
+            })).range([5, 15]);
+        };
+
+        EGM.prototype.rescale = function () {
+            var filterdNodes = this.options_.inactiveNode == 0 /* Hidden */ ? this.nodes().filter(function (node) {
                 return node.active;
-            }) : this.grid_.nodes();
+            }) : this.nodes();
             var left = d3.min(filterdNodes, function (node) {
                 return node.left().x;
             });
@@ -880,8 +1041,6 @@ var egrid;
                     this.displayHeight / (bottom - top)]) || 1
             ]);
             this.contentsZoomBehavior.scaleExtent([s, 1]);
-
-            return this;
         };
 
         /**
@@ -941,16 +1100,16 @@ var egrid;
         * @method focusCenter
         */
         EGM.prototype.focusCenter = function () {
-            var left = d3.min(this.grid_.nodes(), function (node) {
+            var left = d3.min(this.nodes(), function (node) {
                 return node.left().x;
             });
-            var right = d3.max(this.grid_.nodes(), function (node) {
+            var right = d3.max(this.nodes(), function (node) {
                 return node.right().x;
             });
-            var top = d3.min(this.grid_.nodes(), function (node) {
+            var top = d3.min(this.nodes(), function (node) {
                 return node.top().y;
             });
-            var bottom = d3.max(this.grid_.nodes(), function (node) {
+            var bottom = d3.max(this.nodes(), function (node) {
                 return node.bottom().y;
             });
 
@@ -963,55 +1122,7 @@ var egrid;
             this.contentsZoomBehavior.translate([translate.x, translate.y]);
             this.contentsZoomBehavior.scale(scale.sx);
             this.contentsSelection.transition().attr("transform", translate.toString() + scale.toString());
-        };
-
-        /**
-        * @method undo
-        */
-        EGM.prototype.undo = function () {
-            this.grid_.undo();
-            this.draw();
-            this.notify();
-        };
-
-        /**
-        * @method redo
-        */
-        EGM.prototype.redo = function () {
-            this.grid_.redo();
-            this.draw();
-            this.notify();
-        };
-
-        EGM.prototype.getTextBBox = function (text) {
-            return this.rootSelection.select(".measure").text(text).node().getBBox();
-        };
-
-        EGM.prototype.calcRect = function (text) {
-            var bbox = this.getTextBBox(text);
-            return new Svg.Rect(bbox.x, bbox.y, bbox.width + EGM.rx * 2, bbox.height + EGM.rx * 2);
-        };
-
-        EGM.prototype.appendElement = function () {
-            var _this = this;
-            return function (selection) {
-                var egm = _this;
-                var onElementClick = function () {
-                    var selection = d3.select(this);
-                    if (selection.classed("selected")) {
-                        egm.unselectElement();
-                        d3.event.stopPropagation();
-                    } else {
-                        egm.selectElement(selection);
-                        d3.event.stopPropagation();
-                    }
-                    egm.notify();
-                };
-                selection.classed("element", true).on("click", onElementClick).on("touchstart", onElementClick);
-
-                selection.append("rect");
-                selection.append("text");
-            };
+            return this;
         };
 
         /**
@@ -1031,23 +1142,6 @@ var egrid;
         EGM.prototype.selectedNode = function () {
             var selection = this.rootSelection.select(".selected");
             return selection.empty() ? null : selection.datum();
-        };
-
-        EGM.prototype.drawNodeConnection = function () {
-            var _this = this;
-            var d = this.selectedNode();
-            this.rootSelection.selectAll(".connected").classed("connected", false);
-            if (d) {
-                d3.selectAll(".element").filter(function (d2) {
-                    return _this.grid_.hasPath(d.index, d2.index) || _this.grid_.hasPath(d2.index, d.index);
-                }).classed("connected", true);
-                d3.selectAll(".link").filter(function (link) {
-                    return (_this.grid_.hasPath(d.index, link.source.index) && _this.grid_.hasPath(d.index, link.target.index)) || (_this.grid_.hasPath(link.source.index, d.index) && _this.grid_.hasPath(link.target.index, d.index));
-                }).classed("connected", true);
-                d3.selectAll(".link .removeLinkButton").attr("opacity", function (link) {
-                    return link.source == d || link.target == d ? 1 : 0;
-                });
-            }
         };
 
         /**
@@ -1139,24 +1233,24 @@ var egrid;
             var dragToNode = function (fromNode, toNode) {
                 switch (type) {
                     case 0 /* RadderUp */:
-                        if (_this.grid_.hasLink(toNode.index, fromNode.index)) {
-                            var link = _this.grid_.link(toNode.index, fromNode.index);
-                            _this.grid_.incrementLinkWeight(link.index);
+                        if (_this.grid().hasLink(toNode.index, fromNode.index)) {
+                            var link = _this.grid().link(toNode.index, fromNode.index);
+                            _this.grid().incrementLinkWeight(link.index);
                             _this.draw();
                         } else {
-                            _this.grid_.radderUp(fromNode.index, toNode.index);
+                            _this.grid().radderUp(fromNode.index, toNode.index);
                             _this.draw();
                             _this.drawNodeConnection();
                             _this.focusNode(toNode);
                         }
                         break;
                     case 1 /* RadderDown */:
-                        if (_this.grid_.hasLink(fromNode.index, toNode.index)) {
-                            var link = _this.grid_.link(fromNode.index, toNode.index);
-                            _this.grid_.incrementLinkWeight(link.index);
+                        if (_this.grid().hasLink(fromNode.index, toNode.index)) {
+                            var link = _this.grid().link(fromNode.index, toNode.index);
+                            _this.grid().incrementLinkWeight(link.index);
                             _this.draw();
                         } else {
-                            _this.grid_.radderDown(fromNode.index, toNode.index);
+                            _this.grid().radderDown(fromNode.index, toNode.index);
                             _this.draw();
                             _this.drawNodeConnection();
                             _this.focusNode(toNode);
@@ -1167,7 +1261,7 @@ var egrid;
             };
 
             selection.call(this.dragNode().isDroppable(function (fromNode, toNode) {
-                return !((type == 0 /* RadderUp */ && _this.grid_.hasPath(fromNode.index, toNode.index)) || (type == 1 /* RadderDown */ && _this.grid_.hasPath(toNode.index, fromNode.index)));
+                return !((type == 0 /* RadderUp */ && _this.grid().hasPath(fromNode.index, toNode.index)) || (type == 1 /* RadderDown */ && _this.grid().hasPath(toNode.index, fromNode.index)));
             }).dragToNode(dragToNode).dragToOther(function (fromNode) {
                 var openPrompt;
                 switch (type) {
@@ -1182,16 +1276,16 @@ var egrid;
                 openPrompt && openPrompt(function (text) {
                     if (text) {
                         var node;
-                        if (node = _this.grid_.findNode(text)) {
+                        if (node = _this.grid().findNode(text)) {
                             dragToNode(fromNode, node);
                         } else {
                             node = _this.createNode(text);
                             switch (type) {
                                 case 0 /* RadderUp */:
-                                    _this.grid_.radderUpAppend(fromNode.index, node);
+                                    _this.grid().radderUpAppend(fromNode.index, node);
                                     break;
                                 case 1 /* RadderDown */:
-                                    _this.grid_.radderDownAppend(fromNode.index, node);
+                                    _this.grid().radderDownAppend(fromNode.index, node);
                                     break;
                             }
                             _this.draw();
@@ -1218,37 +1312,20 @@ var egrid;
         };
 
         /**
-        * @method registerUiCallback;
-        */
-        EGM.prototype.registerUiCallback = function (callback) {
-            this.uiCallback = callback;
-            return this;
-        };
-
-        EGM.prototype.notify = function () {
-            if (this.uiCallback) {
-                this.uiCallback();
-            }
-        };
-
-        /**
         * @method appendNode
         * @return {egrid.EGM}
         */
         EGM.prototype.appendNode = function (text) {
-            var _this = this;
             if (text) {
                 var node;
-                if (node = this.grid_.findNode(text)) {
+                if (node = this.grid().findNode(text)) {
                     // node already exists
                 } else {
                     // create new node
                     node = this.createNode(text);
                     node.original = true;
-                    this.grid_.appendNode(node);
-                    this.draw(function () {
-                        _this.notify();
-                    });
+                    this.grid().appendNode(node);
+                    this.draw();
                 }
                 var addedElement = this.contentsSelection.selectAll(".element").filter(function (node) {
                     return node.text == text;
@@ -1275,7 +1352,7 @@ var egrid;
         EGM.prototype.removeNode = function (node) {
             if (node) {
                 this.unselectElement();
-                this.grid_.removeNode(node.index);
+                this.grid().removeNode(node.index);
                 this.draw();
                 this.notify();
             }
@@ -1288,7 +1365,7 @@ var egrid;
         */
         EGM.prototype.mergeNode = function (fromNode, toNode) {
             if (fromNode && toNode) {
-                this.grid_.mergeNode(fromNode.index, toNode.index);
+                this.grid().mergeNode(fromNode.index, toNode.index);
                 this.draw();
                 this.unselectElement();
                 this.focusNode(toNode);
@@ -1311,7 +1388,7 @@ var egrid;
         */
         EGM.prototype.editNode = function (node, text) {
             if (node && text) {
-                this.grid_.updateNodeText(node.index, text);
+                this.grid().updateNodeText(node.index, text);
                 this.draw();
                 this.notify();
             }
@@ -1319,7 +1396,7 @@ var egrid;
         };
         EGM.rx = 20;
         return EGM;
-    })();
+    })(egrid.DAG);
     egrid.EGM = EGM;
 })(egrid || (egrid = {}));
 /// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
@@ -1666,6 +1743,288 @@ var egrid;
         return new EGMUi;
     }
     egrid.egmui = egmui;
+})(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="dag.ts"/>
+var egrid;
+(function (egrid) {
+    /**
+    * @class egrid.SEM
+    */
+    var SEM = (function (_super) {
+        __extends(SEM, _super);
+        function SEM() {
+            _super.apply(this, arguments);
+            this.removeLinkButtonEnabled = true;
+        }
+        /**
+        * @method draw
+        * @return {egrid.SEM}
+        */
+        SEM.prototype.draw = function () {
+            var _this = this;
+            var spline = d3.svg.line().x(function (d) {
+                return d.x;
+            }).y(function (d) {
+                return d.y;
+            }).interpolate("basis");
+
+            var nodes = this.nodes();
+            var links = this.links();
+
+            var nodesSelection = this.contentsSelection.select(".nodes").selectAll(".element").data(nodes, Object);
+            nodesSelection.exit().remove();
+            nodesSelection.enter().append("g").call(this.appendElement());
+
+            var nodeSizeScale = this.nodeSizeScale();
+            nodesSelection.each(function (node) {
+                var rect = _this.calcRect(node.text);
+                var n = _this.grid().numConnectedNodes(node.index, true);
+                node.baseWidth = rect.width;
+                node.baseHeight = rect.height;
+                node.width = node.baseWidth * nodeSizeScale(n);
+                node.height = node.baseHeight * nodeSizeScale(n);
+            });
+            nodesSelection.selectAll("text").text(function (d) {
+                return d.text;
+            }).attr("x", function (d) {
+                return SEM.rx - d.baseWidth / 2;
+            }).attr("y", function (d) {
+                return SEM.rx;
+            });
+            nodesSelection.selectAll("rect").attr("x", function (d) {
+                return -d.baseWidth / 2;
+            }).attr("y", function (d) {
+                return -d.baseHeight / 2;
+            }).attr("rx", function (d) {
+                return (d.original || d.isTop || d.isBottom) ? 0 : SEM.rx;
+            }).attr("width", function (d) {
+                return d.baseWidth;
+            }).attr("height", function (d) {
+                return d.baseHeight;
+            });
+            nodesSelection.selectAll(".removeNodeButton").attr("transform", function (d) {
+                return "translate(" + (-d.baseWidth / 2) + "," + (-d.baseHeight / 2) + ")";
+            });
+
+            var linksSelection = this.contentsSelection.select(".links").selectAll(".link").data(links, Object);
+            linksSelection.exit().remove();
+            linksSelection.enter().append("g").classed("link", true).each(function (link) {
+                link.points = [link.source.right(), link.target.left()];
+            }).call(function (selection) {
+                selection.append("path");
+                if (_this.removeLinkButtonEnabled) {
+                    selection.call(_this.appendRemoveLinkButton());
+                }
+                selection.append("text").style("font-size", "2em").attr("stroke", "gray").attr("fill", "gray").attr("x", 20).attr("y", 30);
+            });
+
+            this.grid().layout();
+
+            this.rootSelection.selectAll(".contents .links .link path").filter(function (link) {
+                return link.previousPoints.length != link.points.length;
+            }).attr("d", function (link) {
+                if (link.points.length > link.previousPoints.length) {
+                    while (link.points.length != link.previousPoints.length) {
+                        link.previousPoints.unshift(link.previousPoints[0]);
+                    }
+                } else {
+                    link.previousPoints.splice(1, link.previousPoints.length - link.points.length);
+                }
+                return spline(link.previousPoints);
+            });
+
+            var linkWidthScale = this.linkWidthScale();
+            var transition = this.rootSelection.transition();
+            transition.selectAll(".element").attr("opacity", function (node) {
+                return node.active ? 1 : 0.3;
+            }).attr("transform", function (node) {
+                return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString() + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString() + (new Svg.Transform.Scale(nodeSizeScale(_this.grid().numConnectedNodes(node.index, true)))).toString();
+            });
+            transition.selectAll(".link path").attr("d", function (link) {
+                return spline(link.points);
+            }).attr("opacity", function (link) {
+                return link.source.active && link.target.active ? 1 : 0.3;
+            }).attr("stroke-width", function (d) {
+                return linkWidthScale(d.coef);
+            }).attr("stroke", function (d) {
+                return d.coef >= 0 ? "blue" : "red";
+            });
+            var coefFormat = d3.format(".3f");
+            transition.selectAll(".link text").attr("transform", function (link) {
+                return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
+            }).text(function (d) {
+                return coefFormat(d.coef);
+            });
+            transition.selectAll(".link .removeLinkButton").attr("transform", function (link) {
+                return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
+            });
+            transition.each("end", function () {
+                //this.notify();
+            });
+
+            this.rescale();
+
+            return this;
+        };
+
+        SEM.prototype.getTextBBox = function (text) {
+            return this.rootSelection.select(".measure").text(text).node().getBBox();
+        };
+
+        SEM.prototype.calcRect = function (text) {
+            var bbox = this.getTextBBox(text);
+            return new Svg.Rect(bbox.x, bbox.y, bbox.width + SEM.rx * 2, bbox.height + SEM.rx * 2);
+        };
+
+        SEM.prototype.appendElement = function () {
+            var _this = this;
+            return function (selection) {
+                selection.classed("element", true);
+                selection.append("rect");
+                selection.append("text");
+                selection.append("g").classed("removeNodeButton", true).on("click", function (d) {
+                    _this.grid().removeNode(d.index);
+                    _this.draw();
+                    _this.notify();
+                }).call(function (selection) {
+                    selection.append("circle").attr("r", 16).attr("fill", "lightgray").attr("stroke", "none");
+                    selection.append("image").attr("x", -8).attr("y", -8).attr("width", "16px").attr("height", "16px").attr("xlink:href", "/images/glyphicons_207_remove_2.png");
+                });
+            };
+        };
+
+        SEM.prototype.appendRemoveLinkButton = function () {
+            var _this = this;
+            return function (selection) {
+                selection.append("g").classed("removeLinkButton", true).attr("transform", function (link) {
+                    return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
+                }).on("click", function (d) {
+                    _this.grid().removeLink(d.index);
+                    _this.draw();
+                    _this.notify();
+                }).call(function (selection) {
+                    selection.append("circle").attr("r", 16).attr("fill", "lightgray").attr("stroke", "none");
+                    selection.append("image").attr("x", -8).attr("y", -8).attr("width", "16px").attr("height", "16px").attr("xlink:href", "/images/glyphicons_207_remove_2.png");
+                });
+            };
+        };
+
+        SEM.prototype.nodeSizeScale = function () {
+            var _this = this;
+            return d3.scale.linear().domain(d3.extent(this.nodes(), function (node) {
+                return _this.grid().numConnectedNodes(node.index, true);
+            })).range([1, 1]);
+        };
+
+        SEM.prototype.linkWidthScale = function () {
+            return d3.scale.linear().domain(d3.extent(this.links(), function (link) {
+                return link.coef;
+            })).range([5, 15]);
+        };
+
+        SEM.prototype.rescale = function () {
+            var filterdNodes = this.nodes().filter(function (node) {
+                return node.active;
+            });
+            var left = d3.min(filterdNodes, function (node) {
+                return node.left().x;
+            });
+            var right = d3.max(filterdNodes, function (node) {
+                return node.right().x;
+            });
+            var top = d3.min(filterdNodes, function (node) {
+                return node.top().y;
+            });
+            var bottom = d3.max(filterdNodes, function (node) {
+                return node.bottom().y;
+            });
+
+            var s = d3.min([
+                1,
+                0.9 * d3.min([
+                    this.displayWidth / (right - left),
+                    this.displayHeight / (bottom - top)]) || 1
+            ]);
+            this.contentsZoomBehavior.scaleExtent([s, 1]);
+        };
+
+        /**
+        * Generates a function to init display region.
+        * @method display
+        * @param regionWidth {number} Width of display region.
+        * @param regionHeight {number} Height of display region.
+        * @return {function}
+        */
+        SEM.prototype.display = function (regionWidth, regionHeight) {
+            if (typeof regionWidth === "undefined") { regionWidth = undefined; }
+            if (typeof regionHeight === "undefined") { regionHeight = undefined; }
+            var _this = this;
+            return function (selection) {
+                _this.rootSelection = selection;
+
+                _this.displayWidth = regionWidth || $(window).width();
+                _this.displayHeight = regionHeight || $(window).height();
+                selection.attr("viewBox", (new Svg.ViewBox(0, 0, _this.displayWidth, _this.displayHeight)).toString());
+                selection.append("text").classed("measure", true);
+
+                selection.append("rect").attr("fill", "#fff").attr("width", _this.displayWidth).attr("height", _this.displayHeight);
+
+                _this.contentsSelection = selection.append("g").classed("contents", true);
+                _this.contentsSelection.append("g").classed("links", true);
+                _this.contentsSelection.append("g").classed("nodes", true);
+
+                _this.contentsZoomBehavior = d3.behavior.zoom().on("zoom", function () {
+                    var translate = new Svg.Transform.Translate(d3.event.translate[0], d3.event.translate[1]);
+                    var scale = new Svg.Transform.Scale(d3.event.scale);
+                    _this.contentsSelection.attr("transform", translate.toString() + scale.toString());
+                    //this.notify();
+                });
+                selection.call(_this.contentsZoomBehavior);
+            };
+        };
+
+        /**
+        * @method focusCenter
+        */
+        SEM.prototype.focusCenter = function () {
+            var left = d3.min(this.nodes(), function (node) {
+                return node.left().x;
+            });
+            var right = d3.max(this.nodes(), function (node) {
+                return node.right().x;
+            });
+            var top = d3.min(this.nodes(), function (node) {
+                return node.top().y;
+            });
+            var bottom = d3.max(this.nodes(), function (node) {
+                return node.bottom().y;
+            });
+
+            var s = d3.min([
+                1, 0.9 * d3.min([
+                    this.displayWidth / (right - left),
+                    this.displayHeight / (bottom - top)]) || 1]);
+            var translate = new Svg.Transform.Translate((this.displayWidth - (right - left) * s) / 2, (this.displayHeight - (bottom - top) * s) / 2);
+            var scale = new Svg.Transform.Scale(s);
+            this.contentsZoomBehavior.translate([translate.x, translate.y]);
+            this.contentsZoomBehavior.scale(scale.sx);
+            this.contentsSelection.transition().attr("transform", translate.toString() + scale.toString());
+            return this;
+        };
+        SEM.rx = 20;
+        return SEM;
+    })(egrid.DAG);
+    egrid.SEM = SEM;
+
+    /**
+    * @return {egrid.SEM}
+    */
+    function sem() {
+        return new SEM;
+    }
+    egrid.sem = sem;
 })(egrid || (egrid = {}));
 /// <reference path="../../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
 /// <reference path="../../egrid/egm.ts"/>
@@ -2080,6 +2439,7 @@ var Controllers;
 /// <reference path="../../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
 /// <reference path="../../sem.d.ts"/>
 /// <reference path="../../egrid/egm.ts"/>
+/// <reference path="../../egrid/sem.ts"/>
 var Controllers;
 (function (Controllers) {
     function SemProjectDetailController($scope, $routeParams, $http, $location) {
@@ -2161,7 +2521,6 @@ var Controllers;
     Controllers.SemProjectDetailDesignController = SemProjectDetailDesignController;
 
     function SemProjectDetailAnalysisController($scope, $http) {
-        var egm = new egrid.EGM;
         var nodes = [
             '総合評価',
             '使いたさ',
@@ -2206,6 +2565,52 @@ var Controllers;
             [-0.231097561, -0.132926829, -0.179268293, -0.104268293, -0.237804878, 0.030487805, 0.093292683, -0.308536585, -0.179268293, 1.051219512, 0.509146341],
             [-0.170731707, -0.02195122, -0.369512195, -0.219512195, -0.133536585, 0.128658537, -0.087804878, -0.58902439, -0.369512195, 0.509146341, 1.256097561]
         ];
+        var SDict = {};
+        nodes.forEach(function (node) {
+            SDict[node] = {};
+        });
+        nodes.forEach(function (node1, i) {
+            nodes.forEach(function (node2, j) {
+                SDict[node1][node2] = S[i][j];
+            });
+        });
+
+        var egmNodes = nodes.map(function (d) {
+            return new egrid.Node(d);
+        });
+        var egmLinks = links.map(function (d) {
+            return new egrid.Link(egmNodes[d.target], egmNodes[d.source]);
+        });
+
+        var dag = egrid.sem().nodes(egmNodes).links(egmLinks).registerUiCallback(function () {
+            var n = dag.nodes().length;
+            var alpha = dag.links().map(function (link) {
+                return [link.target.index, link.source.index];
+            });
+            var sigma = dag.nodes().map(function (_, i) {
+                return [i, i];
+            });
+            var S = dag.nodes().map(function (node1) {
+                return dag.nodes().map(function (node2) {
+                    return SDict[node1.text][node2.text];
+                });
+            });
+            sem(n, alpha, sigma, S, (function (result) {
+                console.log(result);
+                var A = dag.nodes().map(function (_) {
+                    return dag.nodes().map(function (_) {
+                        return 0;
+                    });
+                });
+                result.alpha.forEach(function (r) {
+                    A[r[0]][r[1]] = r[2];
+                });
+                dag.links().forEach(function (link) {
+                    link.coef = A[link.target.index][link.source.index];
+                });
+                dag.draw();
+            }));
+        });
 
         var n = nodes.length;
         var alpha = links.map(function (d) {
@@ -2215,23 +2620,25 @@ var Controllers;
             return [i, i];
         });
         sem(n, alpha, sigma, S, (function (result) {
-            console.log(result);
+            var A = dag.nodes().map(function (_) {
+                return dag.nodes().map(function (_) {
+                    return 0;
+                });
+            });
+            result.alpha.forEach(function (r) {
+                A[r[0]][r[1]] = r[2];
+            });
+            dag.links().forEach(function (link) {
+                link.coef = A[link.source.index][link.target.index];
+            });
         }));
-
-        var egmNodes = nodes.map(function (d) {
-            return new egrid.Node(d);
-        });
-        var egmLinks = links.map(function (d) {
-            return new egrid.Link(egmNodes[d.target], egmNodes[d.source]);
-        });
-        egm.nodes(egmNodes).links(egmLinks);
 
         $scope.$parent.drawSemAnalysis = function () {
             var width = $("#sem-analysis-display").width();
             var height = $("#sem-analysis-display").height();
-            d3.select("#sem-analysis-display svg").call(egm.display(width, height));
+            d3.select("#sem-analysis-display svg").call(dag.display(width, height));
 
-            egm.draw().focusCenter();
+            dag.draw().focusCenter();
         };
     }
     Controllers.SemProjectDetailAnalysisController = SemProjectDetailAnalysisController;

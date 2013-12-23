@@ -2,6 +2,7 @@
 /// <reference path="../../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
 /// <reference path="../../sem.d.ts"/>
 /// <reference path="../../egrid/egm.ts"/>
+/// <reference path="../../egrid/sem.ts"/>
 
 module Controllers {
   export function SemProjectDetailController($scope, $routeParams, $http, $location) {
@@ -87,7 +88,6 @@ module Controllers {
 
 
   export function SemProjectDetailAnalysisController($scope, $http) {
-    var egm = new egrid.EGM;
     var nodes = [
       '総合評価',
       '使いたさ',
@@ -132,29 +132,76 @@ module Controllers {
       [-0.231097561, -0.132926829, -0.179268293, -0.104268293, -0.237804878, 0.030487805, 0.093292683, -0.308536585, -0.179268293, 1.051219512, 0.509146341],
       [-0.170731707, -0.02195122, -0.369512195, -0.219512195, -0.133536585, 0.128658537, -0.087804878, -0.58902439, -0.369512195, 0.509146341, 1.256097561],
     ];
+    var SDict = {};
+    nodes.forEach(node => {
+      SDict[node] = {};
+    });
+    nodes.forEach((node1, i) => {
+      nodes.forEach((node2, j) => {
+        SDict[node1][node2] = S[i][j];
+      });
+    });
+
+    var egmNodes = nodes.map(d => new egrid.Node(d));
+    var egmLinks = links.map(d => new egrid.Link(egmNodes[d.target], egmNodes[d.source]));
+
+    var dag = egrid
+      .sem()
+      .nodes(egmNodes)
+      .links(egmLinks)
+      .registerUiCallback(() => {
+        var n = dag.nodes().length;
+        var alpha = dag.links().map(link => {
+          return [link.target.index, link.source.index];
+        });
+        var sigma = dag.nodes().map((_, i) => {
+          return [i, i];
+        });
+        var S = dag.nodes().map(node1 => {
+          return dag.nodes().map(node2 => {
+            return SDict[node1.text][node2.text];
+          });
+        });
+        sem(n, alpha, sigma, S, (result => {
+          console.log(result);
+          var A = dag.nodes().map(_ => {
+            return dag.nodes().map(_ => 0);
+          });
+          result.alpha.forEach(r => {
+            A[r[0]][r[1]] = r[2];
+          });
+          dag.links().forEach(link => {
+            link.coef = A[link.target.index][link.source.index];
+          });
+          dag.draw();
+        }));
+      })
+      ;
 
     var n = nodes.length;
     var alpha = links.map(d => [d.target, d.source]);
     var sigma = nodes.map((_, i) => [i, i]);
     sem(n, alpha, sigma, S, (result => {
-      console.log(result);
+      var A = dag.nodes().map(_ => {
+        return dag.nodes().map(_ => 0);
+      });
+      result.alpha.forEach(r => {
+        A[r[0]][r[1]] = r[2];
+      });
+      dag.links().forEach((link : any) => {
+        link.coef = A[link.source.index][link.target.index];
+      });
     }));
-
-    var egmNodes = nodes.map(d => new egrid.Node(d));
-    var egmLinks = links.map(d => new egrid.Link(egmNodes[d.target], egmNodes[d.source]));
-    egm
-      .nodes(egmNodes)
-      .links(egmLinks)
-      ;
 
     $scope.$parent.drawSemAnalysis = function() {
       var width = $("#sem-analysis-display").width();
       var height = $("#sem-analysis-display").height();
       d3.select("#sem-analysis-display svg")
-        .call(egm.display(width, height))
+        .call(dag.display(width, height))
         ;
 
-      egm.draw()
+      dag
+        .draw()
         .focusCenter();
     }
   }

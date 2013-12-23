@@ -1,7 +1,7 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
 /// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
 /// <reference path="svg.ts"/>
-/// <reference path="grid.ts"/>
+/// <reference path="dag.ts"/>
 
 module egrid {
   export enum ViewMode {
@@ -39,11 +39,6 @@ module egrid {
   }
 
 
-  interface ConnectNodeBehavior {
-    (selection : D3.Selection) : ConnectNodeBehavior;
-  }
-
-
   export enum Raddering {
     RadderUp,
     RadderDown
@@ -53,9 +48,8 @@ module egrid {
   /**
    * @class egrid.EGM
    */
-  export class EGM {
+  export class EGM extends DAG {
     private static rx : number = 20;
-    private grid_ : Grid;
     private options_ : EgmOption;
     private displayWidth : number;
     private displayHeight : number;
@@ -65,7 +59,6 @@ module egrid {
     public openLadderUpPrompt : (callback : (result : string) => void) => void;
     public openLadderDownPrompt : (callback : (result : string) => void) => void;
     private removeLinkButtonEnabled : boolean = false;
-    private uiCallback : () => void;
 
 
     /**
@@ -73,50 +66,8 @@ module egrid {
      * @constructor
      */
     constructor () {
-      this.grid_ = new Grid;
+      super();
       this.options_ = EgmOption.default();
-      this.removeLinkButtonEnabled;
-    }
-
-
-    /**
-     * @method grid
-     * @return {Egm.Grid}
-     */
-    grid() : Grid {
-      return this.grid_;
-    }
-
-
-    nodes() : Node[];
-    nodes(nodes : Node[]) : EGM;
-    /**
-     * @method nodes
-     * @param {Egm.Node[]} [nodes] new nodes.
-     * @return {egrid.EGM|egrid.Node[]} Returns self if nodes is specified. Otherwise, returns current nodes.
-     */
-    nodes(arg? : Node[]) : any {
-      if (arg === undefined) {
-        return this.grid_.nodes();
-      }
-      this.grid_.nodes(arg);
-      return this;
-    }
-
-
-    links() : Link[];
-    links(links : Link[]) : EGM;
-    /**
-     * @method links
-     * @param {Egm.Link[]} [links] new links.
-     * @return {egrid.EGM|egrid.Link} Returns self if links is specified. Otherwise, returns current links.
-     */
-    links(arg? : Link[]) : any {
-      if (arg === undefined) {
-        return this.grid_.links();
-      }
-      this.grid_.links(arg);
-      return this;
     }
 
 
@@ -137,15 +88,15 @@ module egrid {
     /**
      * @method draw
      */
-    draw(f = undefined) : EGM {
+    draw() : EGM {
       var spline = d3.svg.line()
         .x(d => d.x)
         .y(d => d.y)
         .interpolate("basis")
         ;
 
-      var nodes = this.grid_.nodes();
-      var links = this.grid_.links();
+      var nodes = this.nodes();
+      var links = this.links();
       if (this.options_.inactiveNode == InactiveNode.Hidden) {
         nodes = nodes.filter(d => d.active);
         links = links.filter(d => d.source.active && d.target.active);
@@ -156,23 +107,20 @@ module egrid {
         .selectAll(".element")
         .data(nodes, Object)
         ;
-      nodesSelection.exit().remove();
+      nodesSelection
+        .exit()
+        .remove()
+        ;
       nodesSelection
         .enter()
         .append("g")
         .call(this.appendElement())
         ;
 
-      var nodeSizeScale = d3.scale
-          .linear()
-          .domain(d3.extent(this.grid_.nodes(), node => {
-            return this.grid_.numConnectedNodes(node.index, true);
-          }))
-          .range([1, this.options_.scalingConnection ? 3 : 1])
-          ;
+      var nodeSizeScale = this.nodeSizeScale();
       nodesSelection.each(node => {
         var rect = this.calcRect(node.text);
-        var n = this.grid_.numConnectedNodes(node.index, true);
+        var n = this.grid().numConnectedNodes(node.index, true);
         node.baseWidth = rect.width;
         node.baseHeight = rect.height;
         node.width = node.baseWidth * nodeSizeScale(n);
@@ -196,8 +144,12 @@ module egrid {
         .selectAll(".link")
         .data(links, Object)
         ;
-      linksSelection.exit().remove();
-      linksSelection.enter()
+      linksSelection
+        .exit()
+        .remove()
+        ;
+      linksSelection
+        .enter()
         .append("g")
         .classed("link", true)
         .each(link => {
@@ -206,36 +158,12 @@ module egrid {
         .call(selection => {
           selection.append("path");
           if (this.removeLinkButtonEnabled) {
-            selection.append("g")
-              .classed("removeLinkButton", true)
-              .attr("transform", link => {
-                return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
-              })
-              .attr("opacity", 0)
-              .on("click", (d) => {
-                this.grid_.removeLink(d.index);
-                this.draw();
-              })
-              .call(selection => {
-                selection.append("circle")
-                  .attr("r", 16)
-                  .attr("fill", "lightgray")
-                  .attr("stroke", "none")
-                  ;
-                selection.append("image")
-                  .attr("x", -8)
-                  .attr("y", -8)
-                  .attr("width", "16px")
-                  .attr("height", "16px")
-                  .attr("xlink:href", "/images/glyphicons_207_remove_2.png")
-                  ;
-              })
-              ;
+            selection.call(this.appendRemoveLinkButton());
           }
         })
         ;
 
-      this.grid_.layout(this.options_.inactiveNode == InactiveNode.Hidden);
+      this.grid().layout(this.options_.inactiveNode == InactiveNode.Hidden);
 
       this.rootSelection.selectAll(".contents .links .link path")
         .filter(link => link.previousPoints.length != link.points.length)
@@ -251,14 +179,7 @@ module egrid {
         })
         ;
 
-      var linkWidthScale = d3.scale
-        .linear()
-        .domain(d3.extent(this.grid_.links(), (link) => {
-          return link.weight;
-        }))
-        .range([5, 15])
-        ;
-
+      var linkWidthScale = this.linkWidthScale();
       var selectedNode = this.selectedNode();
       var transition = this.rootSelection.transition();
       transition.selectAll(".element")
@@ -268,7 +189,7 @@ module egrid {
         .attr("transform", (node : egrid.Node) : string => {
           return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString()
             + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString()
-            + (new Svg.Transform.Scale(nodeSizeScale(this.grid_.numConnectedNodes(node.index, true)))).toString();
+            + (new Svg.Transform.Scale(nodeSizeScale(this.grid().numConnectedNodes(node.index, true)))).toString();
         })
         ;
       transition.selectAll(".link path")
@@ -288,12 +209,142 @@ module egrid {
           return link.source == selectedNode || link.target == selectedNode ? 1 : 0;
         })
         ;
-      transition.each("end", f);
+      transition.each("end", () => {
+        this.notify();
+      });
+
+      this.rescale();
+
+      return this;
+    }
 
 
+    private drawNodeConnection() : void {
+      var d = this.selectedNode();
+      this.rootSelection.selectAll(".connected").classed("connected", false);
+      if (d) {
+        d3.selectAll(".element")
+          .filter((d2 : Node) : boolean => {
+            return this.grid().hasPath(d.index, d2.index) || this.grid().hasPath(d2.index, d.index);
+          })
+          .classed("connected", true)
+          ;
+        d3.selectAll(".link")
+          .filter((link : Link) : boolean => {
+            return (this.grid().hasPath(d.index, link.source.index)
+                && this.grid().hasPath(d.index, link.target.index))
+              || (this.grid().hasPath(link.source.index, d.index)
+                && this.grid().hasPath(link.target.index, d.index));
+          })
+          .classed("connected", true)
+          ;
+       d3.selectAll(".link .removeLinkButton")
+          .attr("opacity", link => {
+            return link.source == d || link.target == d ? 1 : 0;
+          })
+          ;
+      }
+    }
+
+
+    private getTextBBox(text : string) : SVGRect {
+      return this.rootSelection.select(".measure").text(text).node().getBBox();
+    }
+
+
+    private calcRect(text : string) : Svg.Rect {
+      var bbox = this.getTextBBox(text);
+      return new Svg.Rect(
+          bbox.x,
+          bbox.y,
+          bbox.width + EGM.rx * 2,
+          bbox.height + EGM.rx * 2);
+    }
+
+
+    private appendElement() : (selection : D3.Selection) => void {
+      return (selection) => {
+        var egm = this;
+        var onElementClick = function() {
+          var selection = d3.select(this);
+          if (selection.classed("selected")) {
+            egm.unselectElement();
+            d3.event.stopPropagation();
+          } else {
+            egm.selectElement(selection);
+            d3.event.stopPropagation();
+          }
+          egm.notify();
+        };
+        selection
+          .classed("element", true)
+          .on("click", onElementClick)
+          .on("touchstart", onElementClick)
+          ;
+
+        selection.append("rect");
+        selection.append("text");
+      };
+    }
+
+
+    private appendRemoveLinkButton() : (selection : D3.Selection) => void {
+      return (selection) => {
+        selection.append("g")
+          .classed("removeLinkButton", true)
+          .attr("transform", link => {
+            return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
+          })
+          .attr("opacity", 0)
+          .on("click", (d) => {
+            this.grid().removeLink(d.index);
+            this.draw();
+          })
+          .call(selection => {
+            selection.append("circle")
+              .attr("r", 16)
+              .attr("fill", "lightgray")
+              .attr("stroke", "none")
+              ;
+            selection.append("image")
+              .attr("x", -8)
+              .attr("y", -8)
+              .attr("width", "16px")
+              .attr("height", "16px")
+              .attr("xlink:href", "/images/glyphicons_207_remove_2.png")
+              ;
+          })
+          ;
+      };
+    }
+
+
+    private nodeSizeScale() : D3.Scale.Scale {
+      return d3.scale
+        .linear()
+        .domain(d3.extent(this.nodes(), node => {
+          return this.grid().numConnectedNodes(node.index, true);
+        }))
+        .range([1, this.options_.scalingConnection ? 3 : 1])
+        ;
+    }
+
+
+    private linkWidthScale() : D3.Scale.Scale {
+      return d3.scale
+        .linear()
+        .domain(d3.extent(this.links(), (link) => {
+          return link.weight;
+        }))
+        .range([5, 15])
+        ;
+    }
+
+
+    private rescale() : void {
       var filterdNodes = this.options_.inactiveNode == InactiveNode.Hidden
-        ? this.grid_.nodes().filter(node => node.active)
-        : this.grid_.nodes()
+        ? this.nodes().filter(node => node.active)
+        : this.nodes()
       var left = d3.min(filterdNodes, node => {
         return node.left().x;
       });
@@ -316,8 +367,6 @@ module egrid {
       this.contentsZoomBehavior
         .scaleExtent([s, 1])
         ;
-
-      return this;
     }
 
 
@@ -392,17 +441,17 @@ module egrid {
     /**
      * @method focusCenter
      */
-    focusCenter() : void {
-      var left = d3.min(this.grid_.nodes(), node => {
+    focusCenter() : EGM {
+      var left = d3.min(this.nodes(), node => {
         return node.left().x;
       });
-      var right = d3.max(this.grid_.nodes(), node => {
+      var right = d3.max(this.nodes(), node => {
         return node.right().x;
       });
-      var top = d3.min(this.grid_.nodes(), node => {
+      var top = d3.min(this.nodes(), node => {
         return node.top().y;
       });
-      var bottom = d3.max(this.grid_.nodes(), node => {
+      var bottom = d3.max(this.nodes(), node => {
         return node.bottom().y;
       });
 
@@ -419,67 +468,7 @@ module egrid {
       this.contentsSelection
         .transition()
         .attr("transform", translate.toString() + scale.toString());
-    }
-
-
-    /**
-     * @method undo
-     */
-    undo() : void {
-      this.grid_.undo();
-      this.draw();
-      this.notify();
-    }
-
-
-    /**
-     * @method redo
-     */
-    redo() : void {
-      this.grid_.redo();
-      this.draw();
-      this.notify();
-    }
-
-
-    private getTextBBox(text : string) : SVGRect {
-      return this.rootSelection.select(".measure").text(text).node().getBBox();
-    }
-
-
-    private calcRect(text : string) : Svg.Rect {
-      var bbox = this.getTextBBox(text);
-      return new Svg.Rect(
-          bbox.x,
-          bbox.y,
-          bbox.width + EGM.rx * 2,
-          bbox.height + EGM.rx * 2);
-    }
-
-
-    private appendElement() : (selection : D3.Selection) => void {
-      return (selection) => {
-        var egm = this;
-        var onElementClick = function() {
-          var selection = d3.select(this);
-          if (selection.classed("selected")) {
-            egm.unselectElement();
-            d3.event.stopPropagation();
-          } else {
-            egm.selectElement(selection);
-            d3.event.stopPropagation();
-          }
-          egm.notify();
-        };
-        selection
-          .classed("element", true)
-          .on("click", onElementClick)
-          .on("touchstart", onElementClick)
-          ;
-
-        selection.append("rect");
-        selection.append("text");
-      }
+      return this;
     }
 
 
@@ -501,34 +490,6 @@ module egrid {
     selectedNode() : Node {
       var selection = this.rootSelection.select(".selected");
       return selection.empty() ? null : selection.datum();
-    }
-
-
-    private drawNodeConnection() : void {
-      var d = this.selectedNode();
-      this.rootSelection.selectAll(".connected").classed("connected", false);
-      if (d) {
-        d3.selectAll(".element")
-          .filter((d2 : Node) : boolean => {
-            return this.grid_.hasPath(d.index, d2.index) || this.grid_.hasPath(d2.index, d.index);
-          })
-          .classed("connected", true)
-          ;
-        d3.selectAll(".link")
-          .filter((link : Link) : boolean => {
-            return (this.grid_.hasPath(d.index, link.source.index)
-                && this.grid_.hasPath(d.index, link.target.index))
-              || (this.grid_.hasPath(link.source.index, d.index)
-                && this.grid_.hasPath(link.target.index, d.index));
-          })
-          .classed("connected", true)
-          ;
-       d3.selectAll(".link .removeLinkButton")
-          .attr("opacity", link => {
-            return link.source == d || link.target == d ? 1 : 0;
-          })
-          ;
-      }
     }
 
 
@@ -639,24 +600,24 @@ module egrid {
       var dragToNode = (fromNode : Node, toNode : Node) : void => {
         switch (type) {
         case Raddering.RadderUp:
-          if (this.grid_.hasLink(toNode.index, fromNode.index)) {
-            var link = this.grid_.link(toNode.index, fromNode.index);
-            this.grid_.incrementLinkWeight(link.index);
+          if (this.grid().hasLink(toNode.index, fromNode.index)) {
+            var link = this.grid().link(toNode.index, fromNode.index);
+            this.grid().incrementLinkWeight(link.index);
             this.draw();
           } else {
-            this.grid_.radderUp(fromNode.index, toNode.index);
+            this.grid().radderUp(fromNode.index, toNode.index);
             this.draw();
             this.drawNodeConnection();
             this.focusNode(toNode);
           }
           break;
         case Raddering.RadderDown:
-          if (this.grid_.hasLink(fromNode.index, toNode.index)) {
-            var link = this.grid_.link(fromNode.index, toNode.index);
-            this.grid_.incrementLinkWeight(link.index);
+          if (this.grid().hasLink(fromNode.index, toNode.index)) {
+            var link = this.grid().link(fromNode.index, toNode.index);
+            this.grid().incrementLinkWeight(link.index);
             this.draw();
           } else {
-            this.grid_.radderDown(fromNode.index, toNode.index);
+            this.grid().radderDown(fromNode.index, toNode.index);
             this.draw();
             this.drawNodeConnection();
             this.focusNode(toNode);
@@ -668,8 +629,8 @@ module egrid {
 
       selection.call(this.dragNode()
           .isDroppable((fromNode : Node, toNode : Node) : boolean => {
-            return !((type == Raddering.RadderUp && this.grid_.hasPath(fromNode.index, toNode.index))
-              || (type == Raddering.RadderDown && this.grid_.hasPath(toNode.index, fromNode.index)))
+            return !((type == Raddering.RadderUp && this.grid().hasPath(fromNode.index, toNode.index))
+              || (type == Raddering.RadderDown && this.grid().hasPath(toNode.index, fromNode.index)))
           })
           .dragToNode(dragToNode)
           .dragToOther((fromNode : Node) : void => {
@@ -686,16 +647,16 @@ module egrid {
             openPrompt && openPrompt(text => {
               if (text) {
                 var node;
-                if (node = this.grid_.findNode(text)) {
+                if (node = this.grid().findNode(text)) {
                   dragToNode(fromNode, node);
                 } else {
                   node = this.createNode(text);
                   switch (type) {
                   case Raddering.RadderUp:
-                    this.grid_.radderUpAppend(fromNode.index, node);
+                    this.grid().radderUpAppend(fromNode.index, node);
                     break;
                   case Raddering.RadderDown:
-                    this.grid_.radderDownAppend(fromNode.index, node);
+                    this.grid().radderDownAppend(fromNode.index, node);
                     break;
                   }
                   this.draw();
@@ -729,38 +690,20 @@ module egrid {
 
 
     /**
-     * @method registerUiCallback;
-     */
-    registerUiCallback(callback : () => void) : EGM {
-      this.uiCallback = callback;
-      return this;
-    }
-
-
-    private notify() : void {
-      if (this.uiCallback) {
-        this.uiCallback();
-      }
-    }
-
-
-    /**
      * @method appendNode
      * @return {egrid.EGM}
      */
     appendNode(text : string) : EGM {
       if (text) {
         var node;
-        if (node = this.grid_.findNode(text)) {
+        if (node = this.grid().findNode(text)) {
           // node already exists
         } else {
           // create new node
           node = this.createNode(text);
           node.original = true;
-          this.grid_.appendNode(node);
-          this.draw(() => {
-            this.notify();
-          });
+          this.grid().appendNode(node);
+          this.draw();
         }
         var addedElement = this.contentsSelection
             .selectAll(".element")
@@ -789,7 +732,7 @@ module egrid {
     removeNode(node : Node) : EGM {
       if (node) {
         this.unselectElement();
-        this.grid_.removeNode(node.index);
+        this.grid().removeNode(node.index);
         this.draw();
         this.notify();
       }
@@ -803,7 +746,7 @@ module egrid {
      */
     mergeNode(fromNode : Node, toNode : Node) : EGM {
       if (fromNode && toNode) {
-        this.grid_.mergeNode(fromNode.index, toNode.index);
+        this.grid().mergeNode(fromNode.index, toNode.index);
         this.draw();
         this.unselectElement();
         this.focusNode(toNode);
@@ -828,7 +771,7 @@ module egrid {
      */
     editNode(node : Node, text : string) : EGM {
       if (node && text) {
-        this.grid_.updateNodeText(node.index, text);
+        this.grid().updateNodeText(node.index, text);
         this.draw();
         this.notify();
       }
