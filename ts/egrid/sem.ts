@@ -3,6 +3,14 @@
 /// <reference path="dag.ts"/>
 
 module egrid {
+  interface DragNode {
+    (selection : D3.Selection) : DragNode;
+    isDroppable(f : (from : Node, to : Node) => boolean) : DragNode;
+    dragToNode(f : (from : Node, to : Node) => void) : DragNode;
+    dragToOther(f : (from : Node) => void) : DragNode;
+  }
+
+
   /**
    * @class egrid.SEM
    */
@@ -27,8 +35,8 @@ module egrid {
         .interpolate("basis")
         ;
 
-      var nodes = this.nodes();
-      var links = this.links();
+      var nodes = this.activeNodes();
+      var links = this.activeLinks();
 
       var nodesSelection = this.contentsSelection
         .select(".nodes")
@@ -101,7 +109,7 @@ module egrid {
         })
         ;
 
-      this.grid().layout();
+      this.grid().layout(true);
 
       this.rootSelection.selectAll(".contents .links .link path")
         .filter(link => link.previousPoints.length != link.points.length)
@@ -136,7 +144,7 @@ module egrid {
         .attr("opacity", link => {
           return link.source.active && link.target.active ? 1 : 0.3;
         })
-        .attr("stroke-width", d => linkWidthScale(d.coef))
+        .attr("stroke-width", d => linkWidthScale(Math.abs(d.coef)))
         .attr("stroke", d => d.coef >= 0 ? "blue" : "red")
         ;
       var coefFormat = d3.format(".3f");
@@ -190,7 +198,7 @@ module egrid {
         selection.append("g")
           .classed("removeNodeButton", true)
           .on("click", (d) => {
-            this.grid().removeNode(d.index);
+            d.active = false;
             this.draw();
             this.notify();
           })
@@ -208,6 +216,17 @@ module egrid {
               .attr("xlink:href", "/images/glyphicons_207_remove_2.png")
               ;
           })
+          ;
+        selection.call(this.dragNode()
+          .isDroppable((fromNode : Node, toNode : Node) : boolean => {
+            return fromNode != toNode;
+          })
+          .dragToNode((fromNode : Node, toNode : Node) : void => {
+            var link : any = this.grid().radderUp(fromNode.index, toNode.index);
+            link.coef = 0;
+            this.draw();
+            this.notify();
+          }))
           ;
       };
     }
@@ -258,9 +277,9 @@ module egrid {
     private linkWidthScale() : D3.Scale.Scale {
       return d3.scale
         .linear()
-        .domain(d3.extent(this.links(), (link : any) => {
-          return link.coef;
-        }))
+        .domain([0, d3.max(this.activeLinks(), (link : any) => {
+          return Math.abs(link.coef);
+        })])
         .range([5, 15])
         ;
     }
@@ -368,6 +387,113 @@ module egrid {
         .transition()
         .attr("transform", translate.toString() + scale.toString());
       return this;
+    }
+
+
+    activeNodes() {
+      return this.nodes().filter(d => d.active);
+    }
+
+
+    activeLinks() {
+      return this.links().filter(d => d.source.active && d.target.active);
+    }
+
+
+    private dragNode() : DragNode {
+      var egm = this;
+      var isDroppable_;
+      var dragToNode_;
+      var dragToOther_;
+      var f : any = function(selection : D3.Selection) : DragNode {
+        var from;
+        selection.call(d3.behavior.drag()
+            .on("dragstart", () => {
+              from = d3.select(document.elementFromPoint(d3.event.sourceEvent.x, d3.event.sourceEvent.y));
+              from.classed("dragSource", true);
+              var pos = [from.datum().center().x, from.datum().center().y];
+              egm.rootSelection.select(".contents")
+                .append("line")
+                .classed("dragLine", true)
+                .attr("x1", pos[0])
+                .attr("y1", pos[1])
+                .attr("x2", pos[0])
+                .attr("y2", pos[1])
+                ;
+              d3.event.sourceEvent.stopPropagation();
+            })
+            .on("drag", () => {
+              var dragLineSelection = egm.rootSelection.select(".dragLine");
+              var x1 = Number(dragLineSelection.attr("x1"));
+              var y1 = Number(dragLineSelection.attr("y1"));
+              var p2 = egm.getPos(egm.rootSelection.select(".contents").node());
+              var x2 = p2.x;
+              var y2 = p2.y;
+              var theta = Math.atan2(y2 - y1, x2 - x1);
+              var r = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1)) - 10;
+              dragLineSelection
+                .attr("x2", x1 + r * Math.cos(theta))
+                .attr("y2", y1 + r * Math.sin(theta))
+                ;
+              var to = d3.select(document.elementFromPoint(d3.event.sourceEvent.x, d3.event.sourceEvent.y).parentNode);
+              var fromNode : Node = from.datum();
+              var toNode : Node = to.datum();
+              if (to.classed("element") && !to.classed("selected")) {
+                if (isDroppable_ && isDroppable_(fromNode, toNode)) {
+                  to.classed("droppable", true);
+                } else {
+                  to.classed("undroppable", true);
+                }
+              } else {
+                egm.rootSelection.selectAll(".droppable, .undroppable")
+                  .classed("droppable", false)
+                  .classed("undroppable", false)
+                  ;
+              }
+            })
+            .on("dragend", () => {
+              var to = d3.select(document.elementFromPoint(d3.event.sourceEvent.x, d3.event.sourceEvent.y).parentNode);
+              var fromNode : Node = from.datum();
+              var toNode : Node = to.datum();
+              if (toNode && fromNode != toNode) {
+                if (dragToNode_ && (!isDroppable_ || isDroppable_(fromNode, toNode))) {
+                  dragToNode_(fromNode, toNode);
+                }
+              } else {
+                if (dragToOther_) {
+                  dragToOther_(fromNode);
+                }
+              }
+              to.classed("droppable", false);
+              to.classed("undroppable", false);
+              from.classed("dragSource", false);
+              egm.rootSelection.selectAll(".dragLine").remove();
+            }))
+            ;
+        return this;
+      }
+      f.isDroppable_ = (from : Node, to : Node) : boolean => true;
+      f.isDroppable = function(f : (from : Node, to : Node) => boolean) : DragNode {
+        isDroppable_ = f;
+        return this;
+      }
+      f.dragToNode = function(f : (from : Node, to : Node) => void) : DragNode {
+        dragToNode_ = f;
+        return this;
+      }
+      f.dragToOther = function(f : (from : Node) => void) : DragNode {
+        dragToOther_ = f;
+        return this;
+      }
+      return f;
+    }
+
+
+    private getPos(container) : Svg.Point {
+      var xy = d3.event.sourceEvent instanceof MouseEvent
+        ? d3.mouse(container)
+        : d3.touches(container, d3.event.sourceEvent.changedTouches)[0];
+      return new Svg.Point(xy[0], xy[1]);
     }
   }
 

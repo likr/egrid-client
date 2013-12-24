@@ -145,36 +145,47 @@ module Controllers {
     var egmNodes = nodes.map(d => new egrid.Node(d));
     var egmLinks = links.map(d => new egrid.Link(egmNodes[d.target], egmNodes[d.source]));
 
-    var dag = egrid
-      .sem()
+    var dag = egrid.sem();
+
+    function calcPath() {
+      var nodes = dag.activeNodes();
+      var links = dag.activeLinks();
+      var nodesDict = {};
+      nodes.forEach((node, i) => {
+        nodesDict[node.text] = i;
+      });
+      var n = nodes.length;
+      var alpha = links.map(link => {
+        return [nodesDict[link.target.text], nodesDict[link.source.text]];
+      });
+      var sigma = nodes.map((_, i) => {
+        return [i, i];
+      });
+      var S : any = nodes.map(node1 => {
+        return nodes.map(node2 => {
+          return SDict[node1.text][node2.text];
+        });
+      });
+      sem(n, alpha, sigma, S, (result => {
+        var A = nodes.map(_ => {
+          return nodes.map(_ => 0);
+        });
+        result.alpha.forEach(r => {
+          A[r[0]][r[1]] = r[2];
+        });
+        links.forEach((link : any) => {
+          link.coef = A[nodesDict[link.target.text]][nodesDict[link.source.text]];
+        });
+        dag.draw();
+      }));
+    }
+
+    dag
       .nodes(egmNodes)
       .links(egmLinks)
       .registerUiCallback(() => {
-        var n = dag.nodes().length;
-        var alpha = dag.links().map(link => {
-          return [link.target.index, link.source.index];
-        });
-        var sigma = dag.nodes().map((_, i) => {
-          return [i, i];
-        });
-        var S = dag.nodes().map(node1 => {
-          return dag.nodes().map(node2 => {
-            return SDict[node1.text][node2.text];
-          });
-        });
-        sem(n, alpha, sigma, S, (result => {
-          console.log(result);
-          var A = dag.nodes().map(_ => {
-            return dag.nodes().map(_ => 0);
-          });
-          result.alpha.forEach(r => {
-            A[r[0]][r[1]] = r[2];
-          });
-          dag.links().forEach(link => {
-            link.coef = A[link.target.index][link.source.index];
-          });
-          dag.draw();
-        }));
+        $scope.$apply();
+        calcPath();
       })
       ;
 
@@ -204,5 +215,12 @@ module Controllers {
         .draw()
         .focusCenter();
     }
+
+    $scope.items = dag.nodes();
+
+    $scope.removeNode = () => {
+      dag.draw();
+      calcPath();
+    };
   }
 }

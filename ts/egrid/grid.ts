@@ -177,7 +177,7 @@ module egrid {
     }
 
 
-    appendLink(sourceIndex : number, targetIndex : number) : void {
+    appendLink(sourceIndex : number, targetIndex : number) : Link {
       var sourceNode = this.nodes_[sourceIndex];
       var targetNode = this.nodes_[targetIndex];
       var link = new Link(sourceNode, targetNode);
@@ -193,6 +193,7 @@ module egrid {
           this.updateConnections();
         }
       });
+      return link;
     }
 
 
@@ -319,8 +320,8 @@ module egrid {
     }
 
 
-    radderUp(fromIndex : number, toIndex : number) : void {
-      this.appendLink(toIndex, fromIndex);
+    radderUp(fromIndex : number, toIndex : number) : Link {
+      return this.appendLink(toIndex, fromIndex);
     }
 
 
@@ -332,8 +333,8 @@ module egrid {
     }
 
 
-    radderDown(fromIndex : number, toIndex : number) : void {
-      this.appendLink(fromIndex, toIndex);
+    radderDown(fromIndex : number, toIndex : number) : Link {
+      return this.appendLink(fromIndex, toIndex);
     }
 
 

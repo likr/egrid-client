@@ -270,6 +270,7 @@ var egrid;
                     _this.updateConnections();
                 }
             });
+            return link;
         };
 
         Grid.prototype.removeNode = function (removeNodeIndex) {
@@ -389,7 +390,7 @@ var egrid;
         };
 
         Grid.prototype.radderUp = function (fromIndex, toIndex) {
-            this.appendLink(toIndex, fromIndex);
+            return this.appendLink(toIndex, fromIndex);
         };
 
         Grid.prototype.radderDownAppend = function (fromIndex, newNode) {
@@ -401,7 +402,7 @@ var egrid;
         };
 
         Grid.prototype.radderDown = function (fromIndex, toIndex) {
-            this.appendLink(fromIndex, toIndex);
+            return this.appendLink(fromIndex, toIndex);
         };
 
         Grid.prototype.canUndo = function () {
@@ -1770,8 +1771,8 @@ var egrid;
                 return d.y;
             }).interpolate("basis");
 
-            var nodes = this.nodes();
-            var links = this.links();
+            var nodes = this.activeNodes();
+            var links = this.activeLinks();
 
             var nodesSelection = this.contentsSelection.select(".nodes").selectAll(".element").data(nodes, Object);
             nodesSelection.exit().remove();
@@ -1820,7 +1821,7 @@ var egrid;
                 selection.append("text").style("font-size", "2em").attr("stroke", "gray").attr("fill", "gray").attr("x", 20).attr("y", 30);
             });
 
-            this.grid().layout();
+            this.grid().layout(true);
 
             this.rootSelection.selectAll(".contents .links .link path").filter(function (link) {
                 return link.previousPoints.length != link.points.length;
@@ -1847,7 +1848,7 @@ var egrid;
             }).attr("opacity", function (link) {
                 return link.source.active && link.target.active ? 1 : 0.3;
             }).attr("stroke-width", function (d) {
-                return linkWidthScale(d.coef);
+                return linkWidthScale(Math.abs(d.coef));
             }).attr("stroke", function (d) {
                 return d.coef >= 0 ? "blue" : "red";
             });
@@ -1885,13 +1886,21 @@ var egrid;
                 selection.append("rect");
                 selection.append("text");
                 selection.append("g").classed("removeNodeButton", true).on("click", function (d) {
-                    _this.grid().removeNode(d.index);
+                    d.active = false;
                     _this.draw();
                     _this.notify();
                 }).call(function (selection) {
                     selection.append("circle").attr("r", 16).attr("fill", "lightgray").attr("stroke", "none");
                     selection.append("image").attr("x", -8).attr("y", -8).attr("width", "16px").attr("height", "16px").attr("xlink:href", "/images/glyphicons_207_remove_2.png");
                 });
+                selection.call(_this.dragNode().isDroppable(function (fromNode, toNode) {
+                    return fromNode != toNode;
+                }).dragToNode(function (fromNode, toNode) {
+                    var link = _this.grid().radderUp(fromNode.index, toNode.index);
+                    link.coef = 0;
+                    _this.draw();
+                    _this.notify();
+                }));
             };
         };
 
@@ -1919,9 +1928,10 @@ var egrid;
         };
 
         SEM.prototype.linkWidthScale = function () {
-            return d3.scale.linear().domain(d3.extent(this.links(), function (link) {
-                return link.coef;
-            })).range([5, 15]);
+            return d3.scale.linear().domain([
+                0, d3.max(this.activeLinks(), function (link) {
+                    return Math.abs(link.coef);
+                })]).range([5, 15]);
         };
 
         SEM.prototype.rescale = function () {
@@ -2012,6 +2022,96 @@ var egrid;
             this.contentsZoomBehavior.scale(scale.sx);
             this.contentsSelection.transition().attr("transform", translate.toString() + scale.toString());
             return this;
+        };
+
+        SEM.prototype.activeNodes = function () {
+            return this.nodes().filter(function (d) {
+                return d.active;
+            });
+        };
+
+        SEM.prototype.activeLinks = function () {
+            return this.links().filter(function (d) {
+                return d.source.active && d.target.active;
+            });
+        };
+
+        SEM.prototype.dragNode = function () {
+            var egm = this;
+            var isDroppable_;
+            var dragToNode_;
+            var dragToOther_;
+            var f = function (selection) {
+                var from;
+                selection.call(d3.behavior.drag().on("dragstart", function () {
+                    from = d3.select(document.elementFromPoint(d3.event.sourceEvent.x, d3.event.sourceEvent.y));
+                    from.classed("dragSource", true);
+                    var pos = [from.datum().center().x, from.datum().center().y];
+                    egm.rootSelection.select(".contents").append("line").classed("dragLine", true).attr("x1", pos[0]).attr("y1", pos[1]).attr("x2", pos[0]).attr("y2", pos[1]);
+                    d3.event.sourceEvent.stopPropagation();
+                }).on("drag", function () {
+                    var dragLineSelection = egm.rootSelection.select(".dragLine");
+                    var x1 = Number(dragLineSelection.attr("x1"));
+                    var y1 = Number(dragLineSelection.attr("y1"));
+                    var p2 = egm.getPos(egm.rootSelection.select(".contents").node());
+                    var x2 = p2.x;
+                    var y2 = p2.y;
+                    var theta = Math.atan2(y2 - y1, x2 - x1);
+                    var r = Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1)) - 10;
+                    dragLineSelection.attr("x2", x1 + r * Math.cos(theta)).attr("y2", y1 + r * Math.sin(theta));
+                    var to = d3.select(document.elementFromPoint(d3.event.sourceEvent.x, d3.event.sourceEvent.y).parentNode);
+                    var fromNode = from.datum();
+                    var toNode = to.datum();
+                    if (to.classed("element") && !to.classed("selected")) {
+                        if (isDroppable_ && isDroppable_(fromNode, toNode)) {
+                            to.classed("droppable", true);
+                        } else {
+                            to.classed("undroppable", true);
+                        }
+                    } else {
+                        egm.rootSelection.selectAll(".droppable, .undroppable").classed("droppable", false).classed("undroppable", false);
+                    }
+                }).on("dragend", function () {
+                    var to = d3.select(document.elementFromPoint(d3.event.sourceEvent.x, d3.event.sourceEvent.y).parentNode);
+                    var fromNode = from.datum();
+                    var toNode = to.datum();
+                    if (toNode && fromNode != toNode) {
+                        if (dragToNode_ && (!isDroppable_ || isDroppable_(fromNode, toNode))) {
+                            dragToNode_(fromNode, toNode);
+                        }
+                    } else {
+                        if (dragToOther_) {
+                            dragToOther_(fromNode);
+                        }
+                    }
+                    to.classed("droppable", false);
+                    to.classed("undroppable", false);
+                    from.classed("dragSource", false);
+                    egm.rootSelection.selectAll(".dragLine").remove();
+                }));
+                return this;
+            };
+            f.isDroppable_ = function (from, to) {
+                return true;
+            };
+            f.isDroppable = function (f) {
+                isDroppable_ = f;
+                return this;
+            };
+            f.dragToNode = function (f) {
+                dragToNode_ = f;
+                return this;
+            };
+            f.dragToOther = function (f) {
+                dragToOther_ = f;
+                return this;
+            };
+            return f;
+        };
+
+        SEM.prototype.getPos = function (container) {
+            var xy = d3.event.sourceEvent instanceof MouseEvent ? d3.mouse(container) : d3.touches(container, d3.event.sourceEvent.changedTouches)[0];
+            return new Svg.Point(xy[0], xy[1]);
         };
         SEM.rx = 20;
         return SEM;
@@ -2582,34 +2682,46 @@ var Controllers;
             return new egrid.Link(egmNodes[d.target], egmNodes[d.source]);
         });
 
-        var dag = egrid.sem().nodes(egmNodes).links(egmLinks).registerUiCallback(function () {
-            var n = dag.nodes().length;
-            var alpha = dag.links().map(function (link) {
-                return [link.target.index, link.source.index];
+        var dag = egrid.sem();
+
+        function calcPath() {
+            var nodes = dag.activeNodes();
+            var links = dag.activeLinks();
+            var nodesDict = {};
+            nodes.forEach(function (node, i) {
+                nodesDict[node.text] = i;
             });
-            var sigma = dag.nodes().map(function (_, i) {
+            var n = nodes.length;
+            var alpha = links.map(function (link) {
+                return [nodesDict[link.target.text], nodesDict[link.source.text]];
+            });
+            var sigma = nodes.map(function (_, i) {
                 return [i, i];
             });
-            var S = dag.nodes().map(function (node1) {
-                return dag.nodes().map(function (node2) {
+            var S = nodes.map(function (node1) {
+                return nodes.map(function (node2) {
                     return SDict[node1.text][node2.text];
                 });
             });
             sem(n, alpha, sigma, S, (function (result) {
-                console.log(result);
-                var A = dag.nodes().map(function (_) {
-                    return dag.nodes().map(function (_) {
+                var A = nodes.map(function (_) {
+                    return nodes.map(function (_) {
                         return 0;
                     });
                 });
                 result.alpha.forEach(function (r) {
                     A[r[0]][r[1]] = r[2];
                 });
-                dag.links().forEach(function (link) {
-                    link.coef = A[link.target.index][link.source.index];
+                links.forEach(function (link) {
+                    link.coef = A[nodesDict[link.target.text]][nodesDict[link.source.text]];
                 });
                 dag.draw();
             }));
+        }
+
+        dag.nodes(egmNodes).links(egmLinks).registerUiCallback(function () {
+            $scope.$apply();
+            calcPath();
         });
 
         var n = nodes.length;
@@ -2639,6 +2751,13 @@ var Controllers;
             d3.select("#sem-analysis-display svg").call(dag.display(width, height));
 
             dag.draw().focusCenter();
+        };
+
+        $scope.items = dag.nodes();
+
+        $scope.removeNode = function () {
+            dag.draw();
+            calcPath();
         };
     }
     Controllers.SemProjectDetailAnalysisController = SemProjectDetailAnalysisController;
