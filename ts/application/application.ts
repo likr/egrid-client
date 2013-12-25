@@ -57,6 +57,12 @@ angular.module('collaboegm', ["ui.bootstrap", "pascalprecht.translate"])
         templateUrl : "/partials/sem-project-detail.html",
         controller : Controllers.SemProjectDetailController,
       })
+      .when("/help", {
+        templateUrl: "/partials/help.html",
+      })
+      .when("/about", {
+        templateUrl: "/partials/about.html",
+      })
       .otherwise({
         redirectTo : "/projects"
       });
