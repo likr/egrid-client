@@ -2514,6 +2514,27 @@ var Controllers;
         };
     }
     Controllers.ProjectDetailController = ProjectDetailController;
+
+    function ProjectDetailSemProjectListController($scope, $http) {
+        var projectId = $scope.$parent.projectId;
+
+        $http.get("/api/projects/" + projectId + "/sem-projects").success(function (data) {
+            $scope.semProjects = data;
+        });
+    }
+    Controllers.ProjectDetailSemProjectListController = ProjectDetailSemProjectListController;
+
+    function ProjectDetailSemProjectCreateController($scope, $http, $location) {
+        var projectId = $scope.$parent.projectId;
+
+        $scope.createSemProject = function () {
+            //$http({
+            //  method: "PUT",
+            //  url: "/api/
+            //})
+        };
+    }
+    Controllers.ProjectDetailSemProjectCreateController = ProjectDetailSemProjectCreateController;
 })(Controllers || (Controllers = {}));
 var Controllers;
 (function (Controllers) {

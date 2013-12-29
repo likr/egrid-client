@@ -17,13 +17,23 @@
   <div tabset>
     <div tab heading="{{ 'SEM.QUESTIONNAIRE.DESIGN' | translate }}">
       <div ng-controller="Controllers.SemProjectDetailDesignController">
-        <div>
-          <p>
-            <a class="btn btn-large" ng-click="fullscreen()">{{ 'ACTION.FULLSCREEN' | translate }}</a>
-            <a class="btn btn-primary btn-large">{{ 'ACTION.SAVE' | translate }}</a>
-          </p>
-        </div>
+        <h2>アンケート設定</h2>
+        <form class="form-horizontal">
+          <div class="control-group">
+            <label class="control-label">アンケート題名</label>
+            <div class="controls">
+              <input class="span6" type="text" placeholder="アンケート題名"/>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label">アンケート説明</label>
+            <div class="controls">
+              <textarea class="span6" placeholder="アンケート説明"></textarea>
+            </div>
+          </div>
+        </form>
 
+        <h3>質問項目設定</h3>
         <div class="row">
           <div class="span8">
             <div id="sem-questionnaire-design-display">
@@ -34,8 +44,8 @@
             <table class="table">
               <tr ng-repeat="item in items">
                 <td>
-                  <label>
-                    <input type="checkbox" ng-model="item.checked" ng-change="updateGraph()"/> {{ item.text }}
+                  <label class="checkbox">
+                    <input type="checkbox" ng-model="item.checked" ng-change="updateGraph()"/>{{ item.text }}
                   </label>
                 </td>
                 <td>{{ item.weight }}</td>
@@ -46,9 +56,28 @@
 
         <div>
           <div ng-repeat="item in items | filter:checked">
-            <h3>{{ item.text }}</h3>
-            <textarea rows="3">{{item.text}}を5段階で評価してください</textarea>
+            <form class="form-horizontal">
+              <fieldset>
+                <legend>{{ item.text }}</legend>
+                <div class="control-group">
+                  <label class="control-label">質問項目</label>
+                  <div class="controls">
+                    <input class="span6" type="text" value="{{ item.text }}"/>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label class="control-label">質問文</label>
+                  <div class="controls">
+                    <textarea class="span6" rows="3">{{item.text}}を5段階で評価してください。
+1:悪い 5:良い</textarea>
+                  </div>
+                </div>
+              </fieldset>
+            </form>
           </div>
+        </div>
+        <div>
+          <a class="btn btn-primary btn-large">{{ 'ACTION.SAVE' | translate }}</a>
         </div>
       </div>
     </div>
@@ -67,8 +96,8 @@
               <table class="table">
                 <tr ng-repeat="item in items">
                   <td>
-                    <label>
-                      <input type="checkbox" ng-model="item.active" ng-change="removeNode()"/> {{ item.text }}
+                    <label class="checkbox">
+                      <input type="checkbox" ng-model="item.active" ng-change="removeNode()"/>{{ item.text }}
                     </label>
                 </tr>
               </table>

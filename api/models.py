@@ -101,6 +101,24 @@ class SemProject(EgridModel):
         }
 
 
+class QuestionnaireParticipant(EgridModel):
+    name = db.StringProperty()
+    note = db.TextProperty()
+    sem_project = db.ReferenceProperty(SemProject)
+
+
+class QuestionnaireItem(EgridModel):
+    name = db.StringProperty()
+    message = db.StringProperty()
+    sem_project = db.ReferenceProperty(SemProject)
+
+
+class QuestionnaireItemRelation(EgridModel):
+    text = db.StringProperty()
+    questionnaire_item = db.ReferenceProperty(QuestionnaireItem)
+
+
 class QuestionnaireAnswer(EgridModel):
-    participant_name = db.StringProperty()
-    answer = db.TextProperty()
+    value = db.IntegerProperty()
+    questionnaire_item = db.ReferenceProperty(QuestionnaireItem)
+    questionnaire_participant = db.ReferenceProperty(QuestionnaireParticipant)

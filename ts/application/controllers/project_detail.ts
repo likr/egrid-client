@@ -36,4 +36,25 @@ module Controllers {
       });
     };
   }
+
+
+  export function ProjectDetailSemProjectListController($scope, $http) {
+    var projectId = $scope.$parent.projectId;
+
+    $http.get("/api/projects/" + projectId + "/sem-projects").success(data => {
+      $scope.semProjects = data;
+    });
+  }
+
+
+  export function ProjectDetailSemProjectCreateController($scope, $http, $location) {
+    var projectId = $scope.$parent.projectId;
+
+    $scope.createSemProject = function() {
+      //$http({
+      //  method: "PUT",
+      //  url: "/api/
+      //})
+    };
+  }
 }
