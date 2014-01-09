@@ -62,7 +62,7 @@ module egrid {
 
   export interface SaveButton {
     (selection : D3.Selection) : SaveButton;
-    save(f : (jsonString : string) => void) : SaveButton;
+    save(f : (json : GridData) => void) : SaveButton;
   }
 
 
@@ -85,7 +85,7 @@ module egrid {
     private onDisableUndoButton : () => void;
     private onEnableRedoButton : () => void;
     private onDisableRedoButton : () => void;
-    private onClickSaveButton : (json : Object) => void;
+    private onClickSaveButton : (json : GridData) => void;
 
 
     /**
@@ -108,11 +108,12 @@ module egrid {
 
 
     appendNodeButton() : AppendNodeButton {
+      var egmui = this;
       var onClickPrompt;
       var f : any = function(selection : D3.Selection) : AppendNodeButton {
         selection.on("click", () => {
           onClickPrompt && onClickPrompt((text : string) : void => {
-            this.egm().appendNode(text);
+            egmui.egm().appendNode(text);
           });
         });
         return this;
@@ -249,7 +250,7 @@ module egrid {
         });
         return this;
       }
-      f.save = function(f : (jsonString : string) => void) : SaveButton {
+      f.save = function(f : (jsonString : GridData) => void) : SaveButton {
         egmui.onClickSaveButton = f;
         return this;
       }

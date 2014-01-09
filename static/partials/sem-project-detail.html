@@ -1,4 +1,4 @@
-<div egm-application-view>
+<div>
   <h2>{{ semProject.name }}</h2>
 
   <ul class="breadcrumb">
@@ -16,7 +16,7 @@
 
   <div tabset>
     <div tab heading="{{ 'SEM.QUESTIONNAIRE.DESIGN' | translate }}">
-      <div ng-controller="Controllers.SemProjectDetailDesignController">
+      <div ng-controller="SemProjectEditController as questionnaire">
         <h2>アンケート設定</h2>
         <form class="form-horizontal">
           <div class="control-group">
@@ -42,20 +42,20 @@
           </div>
           <div class="span4" style="height: 500px; overflow: scroll;">
             <table class="table">
-              <tr ng-repeat="item in items">
+              <tr ng-repeat="item in questionnaire.items">
                 <td>
                   <label class="checkbox">
-                    <input type="checkbox" ng-model="item.checked" ng-change="updateGraph()"/>{{ item.text }}
+                    <input type="checkbox" ng-model="item.checked" ng-change="questionnaire.updateGraph()"/>{{item.text}}
                   </label>
                 </td>
-                <td>{{ item.weight }}</td>
+                <td>{{item.weight}}</td>
               </tr>
             </table>
           </div>
         </div>
 
         <div>
-          <div ng-repeat="item in items | filter:checked">
+          <div ng-repeat="item in questionnaire.items | filter:questionnaire.checked">
             <form class="form-horizontal">
               <fieldset>
                 <legend>{{ item.text }}</legend>
@@ -82,11 +82,11 @@
       </div>
     </div>
 
-    <div tab heading="{{ 'SEM.QUESTIONNAIRE' | translate }}">
+    <div tab heading="{{ 'SEM.QUESTIONNAIRE.QUESTIONNAIRE' | translate }}">
     </div>
 
     <div tab heading="{{ 'SEM.ANALYSIS' | translate }}" select="drawSemAnalysis()">
-      <div ng-controller="Controllers.SemProjectDetailAnalysisController">
+      <div ng-controller="SemProjectAnalysisController as analysis">
         <div id="sem-analysis-display">
           <div class="row">
             <div class="span10">

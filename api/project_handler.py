@@ -10,17 +10,17 @@ class ProjectHandler(webapp2.RequestHandler):
     def get(self, project_id=None):
         if project_id:
             project = Project.get(project_id)
-            self.response.write(json.dumps(project.dump()))
+            self.response.write(json.dumps(project.to_dict()))
         else:
             current_user = User.current_user()
             collaborators = Collaborator.all()\
                 .filter('user =', current_user)
             projects = [c.project for c in collaborators]
             projects.sort(key=lambda a: a.updated_at)
-            content = json.dumps([p.dump() for p in projects])
+            content = json.dumps([p.to_dict() for p in projects])
             self.response.write(content)
 
-    def put(self):
+    def post(self):
         data = json.loads(self.request.body)
         current_user = User.current_user()
         project = Project(
@@ -32,7 +32,7 @@ class ProjectHandler(webapp2.RequestHandler):
             user=current_user,
             is_manager=True)
         collaborator.put()
-        self.response.write(json.dumps(project.dump()))
+        self.response.write(json.dumps(project.to_dict()))
 
 
 class ProjectGridHandler(webapp2.RequestHandler):

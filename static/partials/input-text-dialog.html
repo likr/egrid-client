@@ -1,16 +1,16 @@
 <div class="modal-header">
-  <h3>{{ 'EGM.APP.INPUT_EVALUATION_FACTOR' | translate }}</h3>
+  <h3>{{'EGM.APP.INPUT_EVALUATION_FACTOR' | translate}}</h3>
 </div>
 <div class="modal-body">
   <form ng-submit="close(result)">
     <input ng-model="result" focus-me/>
-    <input type="submit" class="btn btn-primary" value="{{ 'ACTION.SUBMIT' | translate }}"/>
+    <input type="submit" class="btn btn-primary" value="{{'ACTION.SUBMIT' | translate}}"/>
   </form>
   <table class="table table-hover">
     <tr ng-repeat="text in texts | filter:result" ng-dblclick="close(text.text)">
       <td>{{text.text}}</td>
       <td>{{text.weight}}</td>
-      <td><button class="btn" ng-click="close(text.text)">{{ 'ACTION.SELECT' | translate }}</button></td>
+      <td><button class="btn" ng-click="close(text.text)">{{'ACTION.SELECT' | translate}}</button></td>
     </li>
   </table>
 </div>

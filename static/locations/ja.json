@@ -34,6 +34,7 @@
     }
   },
   "EGM": {
+    "ANALYSIS": "分析",
     "APP": {
       "INACTIVE_NODE": {
         "HIDDEN": "非表示",
@@ -80,6 +81,22 @@
       "PLACEHOLDERS": {
         "NAME": "プロジェクト名",
         "NOTE": "備考"
+      }
+    }
+  },
+  "SEM": {
+    "ANALYSIS": "分析",
+    "QUESTIONNAIRE": {
+      "DESIGN": "アンケート項目設定",
+      "QUESTIONNAIRE": "アンケート"
+    },
+    "SEM": "共分散構造分析"
+  },
+  "SEM_PROJECT": {
+    "ATTRIBUTES": {
+      "NAME": "名前",
+      "PLACEHOLDERS": {
+        "NAME": "プロジェクト名"
       }
     }
   }

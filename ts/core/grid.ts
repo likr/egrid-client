@@ -1,11 +1,31 @@
-/// <reference path="../dagre.d.ts"/>
+/// <reference path="../lib/dagre.d.ts"/>
 /// <reference path="svg.ts"/>
 
 module egrid {
+  export interface NodeData {
+    text : string;
+    weight : number;
+    original : boolean;
+  }
+
+
+  export interface LinkData {
+    source : number;
+    target : number;
+    weight : number;
+  }
+
+
+  export interface GridData {
+    nodes : NodeData[];
+    links : LinkData[];
+  }
+
+
   /**
   @class egrid.Node
   */
-  export class Node {
+  export class Node implements NodeData {
     public index : number;
     public x : number;
     public y : number;
@@ -362,7 +382,7 @@ module egrid {
     }
 
 
-    toJSON() : Object {
+    toJSON() : GridData {
       return {
         nodes : this.nodes_.map(node => {
           return {

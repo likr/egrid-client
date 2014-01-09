@@ -9,13 +9,10 @@ class EgridModel(db.Model):
     version = db.IntegerProperty(default=VERSION)
 
 
-class User(db.Model):
+class User(EgridModel):
     location = db.StringProperty(default="ja", required=True)
     email = db.StringProperty(required=True)
     user = db.UserProperty()
-    created_at = db.DateTimeProperty(auto_now_add=True)
-    updated_at = db.DateTimeProperty(auto_now=True)
-    version = db.IntegerProperty(default=VERSION)
 
     def to_dict(self):
         return {
@@ -39,52 +36,47 @@ class User(db.Model):
         return user
 
 
-class Project(db.Model):
+class Project(EgridModel):
     name = db.StringProperty(required=True)
     note = db.TextProperty()
-    created_at = db.DateTimeProperty(auto_now_add=True)
-    updated_at = db.DateTimeProperty(auto_now=True)
-    version = db.IntegerProperty(default=VERSION)
-
-    def dump(self):
-        return {
-            'key': str(self.key()),
-            'name': self.name,
-            'note': self.note,
-        }
-
-
-class Participant(db.Model):
-    name = db.StringProperty(required=True)
-    note = db.TextProperty()
-    json = db.TextProperty()
-    project = db.ReferenceProperty(Project)
-    created_at = db.DateTimeProperty(auto_now_add=True)
-    updated_at = db.DateTimeProperty(auto_now=True)
-    version = db.IntegerProperty(default=VERSION)
-
-    def dump(self):
-        return {
-            'key': str(self.key()),
-            'name': self.name,
-            'note': self.note,
-            'project': self.project.dump(),
-            'json': self.json,
-        }
-
-
-class Collaborator(db.Model):
-    project = db.ReferenceProperty(Project)
-    user = db.ReferenceProperty(User)
-    is_manager = db.BooleanProperty(default=False)
-    created_at = db.DateTimeProperty(auto_now_add=True)
-    updated_at = db.DateTimeProperty(auto_now=True)
-    version = db.IntegerProperty(default=VERSION)
 
     def to_dict(self):
         return {
             'key': str(self.key()),
+            'name': self.name,
+            'note': self.note,
+        }
+
+
+class Participant(EgridModel):
+    name = db.StringProperty(required=True)
+    note = db.TextProperty()
+    json = db.TextProperty()
+    project = db.ReferenceProperty(Project)
+
+    def to_dict(self):
+        return {
+            'key': str(self.key()),
+            'name': self.name,
+            'note': self.note,
+            'project': self.project.to_dict(),
+            'projectKey': str(self.project.key()),
+            'json': self.json,
+        }
+
+
+class Collaborator(EgridModel):
+    project = db.ReferenceProperty(Project)
+    user = db.ReferenceProperty(User)
+    is_manager = db.BooleanProperty(default=False)
+
+    def to_dict(self):
+        return {
+            'key': str(self.key()),
+            'project': self.project.to_dict(),
+            'projectKey': str(self.project.key()),
             'user': self.user.to_dict(),
+            'userKey': str(self.user.key()),
             'is_manager': int(bool(self.is_manager))
         }
 
@@ -97,7 +89,8 @@ class SemProject(EgridModel):
         return {
             'key': str(self.key()),
             'name': self.name,
-            'project': self.project.dump()
+            'project': self.project.to_dict(),
+            'projectKey': str(self.project.key()),
         }
 
 
