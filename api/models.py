@@ -84,6 +84,7 @@ class Collaborator(EgridModel):
 class SemProject(EgridModel):
     name = db.StringProperty(required=True)
     project = db.ReferenceProperty(Project)
+    questionnaire = db.TextProperty()
 
     def to_dict(self):
         return {
@@ -91,6 +92,7 @@ class SemProject(EgridModel):
             'name': self.name,
             'project': self.project.to_dict(),
             'projectKey': str(self.project.key()),
+            'questionnaire': self.questionnaire,
         }
 
 

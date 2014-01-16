@@ -26,3 +26,18 @@ class SemProjectListHandler(webapp2.RequestHandler):
             project=project)
         sem_project.put()
         self.response.write(json.dumps(sem_project.to_dict()))
+
+
+class SemProjectQuestionnaireHandler(webapp2.RequestHandler):
+    def get(self, project_id, sem_project_id):
+        sem_project = SemProject.get(sem_project_id)
+        result = json.loads(sem_project.questionnaire)
+        result['projectKey'] = project_id
+        result['semProjectKey'] = sem_project_id
+        self.response.write(json.dumps(result))
+
+    def put(self, project_id, sem_project_id):
+        sem_project = SemProject.get(sem_project_id)
+        sem_project.questionnaire = self.request.body
+        sem_project.put()
+        self.response.write(json.dumps(sem_project.to_dict()))

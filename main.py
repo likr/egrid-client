@@ -7,6 +7,7 @@ from api.project_handler import ProjectHandler
 from api.project_handler import ProjectGridHandler
 from api.sem_project_handler import SemProjectHandler
 from api.sem_project_handler import SemProjectListHandler
+from api.sem_project_handler import SemProjectQuestionnaireHandler
 from api.user_handler import UserHandler
 from api.user_handler import UserLogoutHandler
 
@@ -21,6 +22,7 @@ app = webapp2.WSGIApplication([
     Route('/api/projects/<project_id:[\w\-]+>/participants/<participant_id:[\w\-]+>/grid', ParticipantGridHandler),
     Route('/api/projects/<project_id:[\w\-]+>/sem-projects', SemProjectListHandler),
     Route('/api/projects/<project_id:[\w\-]+>/sem-projects/<sem_project_id:[\w\-]+>', SemProjectHandler),
+    Route('/api/projects/<project_id:[\w\-]+>/sem-projects/<sem_project_id:[\w\-]+>/questionnaire', SemProjectQuestionnaireHandler),
     Route('/api/users', UserHandler),
     Route('/api/users/logout', UserLogoutHandler),
 ], debug=True)

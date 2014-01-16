@@ -16,19 +16,19 @@
 
   <div tabset>
     <div tab heading="{{ 'SEM.QUESTIONNAIRE.DESIGN' | translate }}">
-      <div ng-controller="SemProjectEditController as questionnaire">
+      <div ng-controller="SemProjectQuestionnaireEditController as questionnaire">
         <h2>アンケート設定</h2>
         <form class="form-horizontal">
           <div class="control-group">
             <label class="control-label">アンケート題名</label>
             <div class="controls">
-              <input class="span6" type="text" placeholder="アンケート題名"/>
+              <input class="span6" type="text" placeholder="アンケート題名" ng-model="questionnaire.data.title"/>
             </div>
           </div>
           <div class="control-group">
             <label class="control-label">アンケート説明</label>
             <div class="controls">
-              <textarea class="span6" placeholder="アンケート説明"></textarea>
+              <textarea class="span6" placeholder="アンケート説明" ng-model="questionnaire.data.description"></textarea>
             </div>
           </div>
         </form>
@@ -45,7 +45,7 @@
               <tr ng-repeat="item in questionnaire.items">
                 <td>
                   <label class="checkbox">
-                    <input type="checkbox" ng-model="item.checked" ng-change="questionnaire.updateGraph()"/>{{item.text}}
+                    <input type="checkbox" ng-model="item.checked" ng-change="questionnaire.updateItems()"/>{{item.text}}
                   </label>
                 </td>
                 <td>{{item.weight}}</td>
@@ -55,21 +55,20 @@
         </div>
 
         <div>
-          <div ng-repeat="item in questionnaire.items | filter:questionnaire.checked">
+          <div ng-repeat="item in questionnaire.data.items">
             <form class="form-horizontal">
               <fieldset>
-                <legend>{{ item.text }}</legend>
+                <legend>{{item.text}}</legend>
                 <div class="control-group">
                   <label class="control-label">質問項目</label>
                   <div class="controls">
-                    <input class="span6" type="text" value="{{ item.text }}"/>
+                    <input class="span6" type="text" ng-model="item.title"/>
                   </div>
                 </div>
                 <div class="control-group">
                   <label class="control-label">質問文</label>
                   <div class="controls">
-                    <textarea class="span6" rows="3">{{item.text}}を5段階で評価してください。
-1:悪い 5:良い</textarea>
+                    <textarea class="span6" rows="3" ng-model="item.description"></textarea>
                   </div>
                 </div>
               </fieldset>
@@ -77,15 +76,15 @@
           </div>
         </div>
         <div>
-          <a class="btn btn-primary btn-large">{{ 'ACTION.SAVE' | translate }}</a>
+          <a class="btn btn-primary btn-large">{{'ACTION.SAVE' | translate}}</a>
         </div>
       </div>
     </div>
 
-    <div tab heading="{{ 'SEM.QUESTIONNAIRE.QUESTIONNAIRE' | translate }}">
+    <div tab heading="{{'SEM.QUESTIONNAIRE.QUESTIONNAIRE' | translate}}">
     </div>
 
-    <div tab heading="{{ 'SEM.ANALYSIS' | translate }}" select="drawSemAnalysis()">
+    <div tab heading="{{'SEM.ANALYSIS' | translate}}" select="drawSemAnalysis()">
       <div ng-controller="SemProjectAnalysisController as analysis">
         <div id="sem-analysis-display">
           <div class="row">

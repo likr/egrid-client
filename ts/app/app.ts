@@ -11,7 +11,7 @@
 /// <reference path="sem-project.ts"/>
 /// <reference path="sem-project-analysis.ts"/>
 /// <reference path="sem-project-create.ts"/>
-/// <reference path="sem-project-edit.ts"/>
+/// <reference path="sem-project-questionnaire-edit.ts"/>
 /// <reference path="sem-project-list.ts"/>
 /// <reference path="url.ts"/>
 
@@ -87,8 +87,8 @@ module egrid.app {
     .controller('SemProjectController', ['$q', '$routeParams', SemProjectController])
     .controller('SemProjectAnalysisController', ['$q', '$routeParams', SemProjectAnalysisController])
     .controller('SemProjectCreateController', ['$q', '$routeParams', '$location', SemProjectCreateController])
-    .controller('SemProjectEditController', ['$q', '$routeParams', SemProjectEditController])
     .controller('SemProjectListController', ['$q', '$routeParams', SemProjectListController])
+    .controller('SemProjectQuestionnaireEditController', ['$q', '$routeParams', SemProjectQuestionnaireEditController])
     .run(['$rootScope', '$translate', '$http', ($rootScope, $translate, $http) => {
       $rootScope.Url = Url;
 

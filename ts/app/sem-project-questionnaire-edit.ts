@@ -2,28 +2,27 @@
 /// <reference path="../core/egm.ts"/>
 /// <reference path="../model/project-grid.ts"/>
 /// <reference path="../model/sem-project.ts"/>
+/// <reference path="../model/sem-project-questionnaire.ts"/>
 
 module egrid.app {
-  export class SemProjectEditController {
-    projectKey : string;
-    semProjectKey : string;
-    egm : EGM;
-    overallEgm : EGM;
-    semProject : model.SemProject;
-    items;
+  export class SemProjectQuestionnaireEditController {
+    public items;
+    public projectKey : string;
+    public semProjectKey : string;
+    public data : model.SemProjectQuestionnaire;
+    private egm : EGM;
+    private overallEgm : EGM;
 
-    constructor($q, $routeParams) {
+    constructor(private $q, $routeParams, private $location) {
       this.projectKey = $routeParams.projectId;
       this.semProjectKey = $routeParams.semProjectId;
+      this.data = new model.SemProjectQuestionnaire({
+        projectKey: this.projectKey,
+        semProjectKey: this.semProjectKey,
+      });
 
       this.egm = new EGM;
       this.overallEgm = new EGM;
-
-      $q.when(model.SemProject.get(this.projectKey, this.semProjectKey))
-        .then((semProject : model.SemProject) => {
-          this.semProject = semProject;
-        })
-        ;
 
       $q.when(model.ProjectGrid.get(this.projectKey))
         .then((grid : model.ProjectGrid) => {
@@ -42,19 +41,21 @@ module egrid.app {
               text: node.text,
               weight: node.weight,
               checked: false,
+              title: node.text,
+              description: node.text + 'を5段階で評価してください。\n1:悪い 5:良い',
             };
           });
           this.items.sort((item1, item2) => item2.weight - item1.weight);
         })
         ;
-      
     }
 
-    updateGraph() {
+    updateItems() {
       var itemDict = {};
       this.items.forEach(item => {
         itemDict[item.text] = item.checked;
       });
+      this.data.items = this.items.filter(item => item.checked);
       var nodes = [];
       var links = [];
       this.overallEgm.nodes().forEach(node => {
@@ -79,8 +80,11 @@ module egrid.app {
         ;
     }
 
-    checked(item) {
-      return item.checked;
+    submit() {
+      this.$q.when(this.data.save())
+        .then(() => {
+        })
+        ;
     }
   }
 }

@@ -495,6 +495,38 @@ module egrid {
         : d3.touches(container, d3.event.sourceEvent.changedTouches)[0];
       return new Svg.Point(xy[0], xy[1]);
     }
+
+    /**
+     * @method appendNode
+     * @return {egrid.G
+     */
+    appendNode(text : string) : DAG {
+      if (text) {
+        var node;
+        if (node = this.grid().findNode(text)) {
+          // node already exists
+        } else {
+          // create new node
+          node = this.createNode(text);
+          node.original = true;
+          this.grid().appendNode(node);
+          this.draw();
+        }
+        var addedElement = this.contentsSelection
+            .selectAll(".element")
+            .filter(node => node.text == text);
+        //this.selectElement(addedElement);
+        //this.focusNode(addedElement.datum());
+        this.notify();
+      }
+      return this;
+    }
+
+    private createNode(text : string) : Node {
+      var node : any = new egrid.Node(text);
+      node.factor = true;
+      return node;
+    }
   }
 
 
