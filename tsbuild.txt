@@ -1,10 +1,1 @@
---out static/scripts/collaboegm.js
-ts/svg.ts
-ts/application.ts
-ts/egm.ts
-ts/controllers/egm_edit.ts
-ts/controllers/egm_show.ts
-ts/controllers/egm_show_all.ts
-ts/controllers/participant_detail.ts
-ts/controllers/project_detail.ts
-ts/controllers/project_list.ts
+--out static/scripts/collaboegm.js ts/app/app.ts

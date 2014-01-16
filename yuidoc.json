@@ -1,0 +1,10 @@
+{
+  "name": "collaboegm",
+  "options": {
+    "linkNatives": "true",
+    "attributesEmit": "true",
+    "selleck": "true",
+    "paths": "static/scripts",
+    "outdir": "doc"
+  }
+}

@@ -1,17 +1,17 @@
 <div class="modal-header">
-  <h3>Filter Participants</h3>
+  <h3>{{'PARTICIPANT.FILTER' | translate}}</h3>
 </div>
 <div class="modal-body">
   <table class="table table-hover">
-    <tr ng-class={"info":participant.active} ng-repeat="participant in participants">
+    <tr ng-class={"info":active[participant.key()]} ng-repeat="participant in participants">
       <td>
         <label class="checkbox">
-          <input type="checkbox" ng-model="results[participant.key]"/>{{participant.name}}
+          <input type="checkbox" ng-model="results[participant.key()]"/>{{participant.name}}
         </label>
       </td>
     </tr>
   </table>
 </div>
 <div class="modal-footer">
-  <button class="btn" ng-click="close()">Close</button>
+  <button class="btn" ng-click="close()">{{ 'ACTION.CLOSE' | translate }}</button>
 </div>

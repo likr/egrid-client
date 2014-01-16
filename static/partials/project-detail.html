@@ -1,78 +1,168 @@
-<div egm-application-view>
+<div>
   <h2>{{project.name}}</h2>
 
   <ul class="breadcrumb">
-    <li><a href="/">Projects</a> <span class="divider">/</span></li>
+    <li><a href="/#/projects">{{'PROJECT.PROJECTS' | translate}}</a> <span class="divider">/</span></li>
     <li class="active">{{project.name}}</li>
   </ul>
 
   <div tabset>
-    <div tab heading="Detail">
-      <form class="form-horizontal">
-        <div class="control-group">
-          <label class="control-label" for="name">Name</label>
-          <div class="controls">
-            <input type="text" name="name" placeholder="Project Name" ng-model="project.name"/>
+    <div tab heading="{{'ACTION.DETAIL' | translate}}">
+      <div>
+        <form class="form-horizontal">
+          <div class="control-group">
+            <label class="control-label" for="name">{{'PROJECT.ATTRIBUTES.NAME' | translate}}</label>
+            <div class="controls">
+              <input type="text" name="name" placeholder="{{'PROJECT.ATTRIBUTES.PLACEHOLDERS.NAME' | translate}}" ng-model="project.name"/>
+            </div>
           </div>
-        </div>
 
-        <div class="control-group">
-          <label class="control-label" for="note">Note</label>
-          <div class="controls">
-            <textarea name="note" rows="3" placeholder="Note" ng-model="project.note"></textarea>
+          <div class="control-group">
+            <label class="control-label" for="note">{{'PROJECT.ATTRIBUTES.NOTE' | translate}}</label>
+            <div class="controls">
+              <textarea name="note" rows="3" placeholder="{{'PROJECT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate}}" ng-model="project.note"></textarea>
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
 
-    <div tab heading="Participants">
+    <div tab heading="{{ 'PARTICIPANT.PARTICIPANTS' | translate }}">
       <div tabset>
-        <div tab heading="List">
-          <h3>Participants</h3>
+        <div tab heading="{{ 'ACTION.LIST' | translate }}">
+          <div ng-controller="ParticipantListController as participants">
+            <table class="table">
+              <tr>
+                <th>#</th>
+                <th>{{'PARTICIPANT.ATTRIBUTES.NAME' | translate}}</th>
+                <th>{{'ACTION.ACTION' | translate}}</th>
+              </tr>
+              <tr ng-repeat="participant in participants.list">
+                <td>{{$index + 1}}</td>
+                <td>{{participant.name}}</td>
+                <td><a href="/#{{Url.participantUrl(participant)}}">{{'ACTION.SHOW' | translate}}</a>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div tab heading="{{'ACTION.NEW' | translate}}">
+          <div ng-controller="ParticipantCreateController as newParticipant">
+            <form class="form-horizontal" ng-submit="newParticipant.submit()">
+              <div class="control-group">
+                <label class="control-label" for="name">{{'PARTICIPANT.ATTRIBUTES.NAME' | translate}}</label>
+                <div class="controls">
+                  <input type="text" name="name" placeholder="{{'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NAME' | translate}}" ng-model="newParticipant.name"/>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <label class="control-label" for="note">{{'PARTICIPANT.ATTRIBUTES.NOTE' | translate}}</label>
+                <div class="controls">
+                  <textarea name="note" rows="3" placeholder="{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate }}" ng-model="newParticipant.note"></textarea>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <div class="controls">
+                  <input type="submit" class="btn" value="{{'ACTION.SUBMIT' | translate}}"/>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div tab heading="{{ 'EGM.EVALUATION_STRUCTURE' | translate }}">
+      <h3>{{ 'EGM.OVERALL_EVALUATION_STRUCTURE' | translate }}</h3>
+      <a href="/#{{Url.projectGridUrl(project.projectKey)}}" class="btn">{{ 'ACTION.SHOW' | translate }}</a>
+    </div>
+
+    <div tab heading="{{ 'EGM.ANALYSIS' | translate }}">
+      <h3>{{ 'SEM.SEM' | translate }}</h3>
+      <div tabset>
+        <div tab heading="{{ 'ACTION.LIST' | translate }}">
+          <div ng-controller="SemProjectListController as semProjects">
+            <table class="table">
+              <tr>
+                <th>#</th>
+                <th>{{ 'SEM_PROJECT.ATTRIBUTES.NAME' | translate }}</th>
+                <th>{{ 'ACTION.ACTION' | translate }}</th>
+              </tr>
+              <tr ng-repeat="semProject in semProjects.list">
+                <td>{{ $index + 1 }}</td>
+                <td>{{ semProject.name }}</td>
+                <td><a href="/#{{Url.semProjectUrl(semProject)}}">{{ 'ACTION.SHOW' | translate }}</a>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div tab heading="{{ 'ACTION.NEW' | translate }}">
+          <div ng-controller="SemProjectCreateController as newSemProject">
+            <form class="form-horizontal" ng-submit="newSemProject.submit()">
+              <div class="control-group">
+                <label class="control-label" for="name">{{ 'SEM_PROJECT.ATTRIBUTES.NAME' | translate }}</label>
+                <div class="controls">
+                  <input type="text" name="name" placeholder="{{ 'SEM_PROJECT.ATTRIBUTES.PLACEHOLDERS.NAME' | translate }}" ng-model="newSemProject.name"/>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <div class="controls">
+                  <input type="submit" class="btn" value="{{ 'ACTION.SUBMIT' | translate }}"/>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div tab heading="{{ 'COLLABORATOR.COLLABORATOR' | translate }}">
+      <div tabset>
+        <div tab heading="{{ 'ACTION.LIST' | translate }}">
           <table class="table">
             <tr>
               <th>#</th>
-              <th>Name</th>
-              <th>Action</th>
+              <th>{{ 'COLLABORATOR.ATTRIBUTES.USER' | translate }}</th>
+              <th>{{ 'COLLABORATOR.ROLE.ROLE' | translate }}</th>
             </tr>
-            <tr ng-repeat="participant in participants">
-              <td>{{$index + 1}}</td>
-              <td>{{participant.name}}</td>
-              <td><a href="/#/participants/{{projectId}}/{{participant.key}}">Show</a>
+            <tr ng-repeat="collaborator in collaborators">
+              <td>{{ $index + 1 }}</td>
+              <td>{{ collaborator.user.nickname }}</td>
+              <td>{{ collaborator.is_manager }}</td>
             </tr>
           </table>
         </div>
 
-        <div tab heading="New">
-          <h3>New Participant</h3>
-          <form class="form-horizontal" ng-submit="createParticipant()">
+        <div tab heading="{{ 'ACTION.NEW' | translate }}">
+          <form class="form-horizontal" ng-submit="createCollaborator()">
             <div class="control-group">
-              <label class="control-label" for="name">Name</label>
+              <label class="control-label" for="name">{{ 'COLLABORATOR.ATTRIBUTES.USER' | translate }}</label>
               <div class="controls">
-                <input type="text" name="name" placeholder="Participant Name" ng-model="newParticipant.name"/>
+                <input type="text" name="name" placeholder="{{ 'COLLABORATOR.ATTRIBUTES.PLACEHOLDERS.USER' | translate }}" ng-model="newCollaborator.user"/>
               </div>
             </div>
 
             <div class="control-group">
-              <label class="control-label" for="note">Note</label>
+              <label class="control-label" for="note">{{ 'COLLABORATOR.ROLE.ROLE' | translate }}</label>
               <div class="controls">
-                <textarea name="note" rows="3" placeholder="Note" ng-model="newParticipant.note"></textarea>
+                <label class="checkbox">
+                  <input type="checkbox" ng-model="newCollaborator.is_manager"/>{{ 'COLLABORATOR.ROLE.MANAGER' | translate }}
+                </label>
               </div>
             </div>
 
             <div class="control-group">
               <div class="controls">
-                <input type="submit" class="btn"/>
+                <input type="submit" class="btn" value="{{ 'ACTION.SUBMIT' | translate }}"/>
               </div>
             </div>
           </form>
         </div>
       </div>
-    </div>
-
-    <div tab heading="Evaluation Structure">
-      <h3>Overall Evaluation Structure</h3>
-      <a href="/#/projects/{{project.key}}/grid" class="btn">Show</a>
     </div>
   </div>
 </div>

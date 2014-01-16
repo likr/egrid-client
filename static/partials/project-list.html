@@ -1,50 +1,52 @@
-<div egm-application-view>
-  <h2>プロジェクト</h2>
+<div>
+  <h2>{{'PROJECT.PROJECTS' | translate}}</h2>
 
   <ul class="breadcrumb">
-    <li class="active">プロジェクト</li>
+    <li class="active">{{'PROJECT.PROJECTS' | translate}}</li>
   </ul>
 
   <div tabset>
-    <div tab heading="一覧">
-      <h3>プロジェクト一覧</h3>
-      <table class="table">
-        <tr>
-          <th>#</th>
-          <th>名前</th>
-          <th>操作</th>
-        </tr>
-        <tr ng-repeat="project in projects">
-          <td>{{$index + 1}}</td>
-          <td>{{project.name}}</td>
-          <td><a href="/#/projects/{{project.key}}">確認</a>
-        </tr>
-      </table>
-    </div tab>
+    <div tab heading="{{ 'ACTION.LIST' | translate }}">
+      <div ng-controller="ProjectListController as projects">
+        <table class="table">
+          <tr>
+            <th>#</th>
+            <th>{{'PROJECT.ATTRIBUTES.NAME' | translate}}</th>
+            <th>{{'ACTION.ACTION' | translate}}</th>
+          </tr>
+          <tr ng-repeat="project in projects.list">
+            <td>{{$index + 1}}</td>
+            <td>{{project.name}}</td>
+            <td><a href="/#{{Url.projectUrl(project)}}">{{'ACTION.SHOW' | translate}}</a>
+          </tr>
+        </table>
+      </div>
+    </div>
 
-    <div tab heading="新規">
-      <h3>新規プロジェクト</h3>
-      <form class="form-horizontal" ng-submit="createProject()">
-        <div class="control-group">
-          <label class="control-label" for="name">Name</label>
-          <div class="controls">
-            <input type="text" name="name" placeholder="Project Name" ng-model="newProject.name"/>
+    <div tab heading="{{'ACTION.NEW' | translate}}">
+      <div ng-controller="ProjectCreateController as newProject">
+        <form class="form-horizontal" ng-submit="newProject.submit()">
+          <div class="control-group">
+            <label class="control-label" for="name">{{'PROJECT.ATTRIBUTES.NAME' | translate}}</label>
+            <div class="controls">
+              <input type="text" name="name" placeholder="{{'PROJECT.ATTRIBUTES.PLACEHOLDERS.NAME' | translate}}" ng-model="newProject.name"/>
+            </div>
           </div>
-        </div>
 
-        <div class="control-group">
-          <label class="control-label" for="note">Note</label>
-          <div class="controls">
-            <textarea name="note" rows="3" placeholder="Note" ng-model="newProject.note"></textarea>
+          <div class="control-group">
+            <label class="control-label" for="note">{{'PROJECT.ATTRIBUTES.NOTE' | translate}}</label>
+            <div class="controls">
+              <textarea name="note" rows="3" placeholder="{{'PROJECT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate}}" ng-model="newProject.note"></textarea>
+            </div>
           </div>
-        </div>
 
-        <div class="control-group">
-          <div class="controls">
-            <input type="submit" class="btn"/>
+          <div class="control-group">
+            <div class="controls">
+              <input type="submit" class="btn" value="{{'ACTION.SUBMIT' | translate}}"/>
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   </div>
 </div>

@@ -19,3 +19,8 @@ indexes:
   properties:
   - name: owner
   - name: created_at
+
+- kind: SemProject
+  properties:
+  - name: project
+  - name: created_at

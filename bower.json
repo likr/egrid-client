@@ -16,8 +16,11 @@
   "dependencies": {
     "jquery": "~2.0.3",
     "bootstrap": "~2.3.2",
-    "angular": "~1.0.8",
-    "d3": "~3.3.6",
-    "angular-ui-bootstrap-bower": "~0.4.0"
+    "angular": "~1.2.7",
+    "d3": "~3.3.13",
+    "angular-ui-bootstrap-bower": "~0.4.0",
+    "angular-translate": "~1.1.1",
+    "angular-translate-loader-static-files": "~0.1.6",
+    "angular-route": "~1.2.7"
   }
 }

@@ -23,11 +23,17 @@ handlers:
 - url: /styles
   static_dir: static/styles
 
+- url: /images
+  static_dir: static/images
+
 - url: /partials
   static_dir: static/partials
 
 - url: /bower_components
   static_dir: static/bower_components
+
+- url: /locations
+  static_dir: static/locations
 
 - url: /api/.*
   script: main.app
