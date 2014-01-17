@@ -78,6 +78,8 @@
     "ATTRIBUTES": {
       "NAME": "名前",
       "NOTE": "備考",
+      "CREATED_AT": "追加日時",
+      "UPDATED_AT": "更新日時",
       "PLACEHOLDERS": {
         "NAME": "プロジェクト名",
         "NOTE": "備考"
