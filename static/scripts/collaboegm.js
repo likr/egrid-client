@@ -2723,6 +2723,7 @@ var egrid;
         var ProjectListController = (function () {
             function ProjectListController($q) {
                 var _this = this;
+                this.predicate = 'name';
                 $q.when(egrid.model.Project.query()).then(function (projects) {
                     _this.list = projects;
                 });

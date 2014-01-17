@@ -3,6 +3,7 @@
 module egrid.app {
   export class ProjectListController {
     list : model.Project[];
+    predicate : string = 'name';
 
     constructor($q) {
       $q.when(model.Project.query())

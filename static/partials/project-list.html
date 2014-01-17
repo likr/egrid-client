@@ -10,18 +10,18 @@
       <div ng-controller="ProjectListController as projects">
         <table class="table">
           <thead>
-          <tr>
-            <th>#</th>
-            <th>{{'PROJECT.ATTRIBUTES.NAME' | translate}}</th>
-            <th>{{'ACTION.ACTION' | translate}}</th>
-          </tr>
+            <tr>
+              <th>#</th>
+              <th><a ng-click="predicate = 'name'; reverse = !reverse">{{'PROJECT.ATTRIBUTES.NAME' | translate}}</a></th>
+              <th>{{'ACTION.ACTION' | translate}}</th>
+            </tr>
           </thead>
           <tbody>
-          <tr ng-repeat="project in projects.list">
-            <td>{{$index + 1}}</td>
-            <td>{{project.name}}</td>
-            <td><a href="/#{{Url.projectUrl(project)}}">{{'ACTION.SHOW' | translate}}</a>
-          </tr>
+            <tr ng-repeat="project in projects.list | orderBy:predicate:reverse">
+              <td>{{$index + 1}}</td>
+              <td>{{project.name}}</td>
+              <td><a href="/#{{Url.projectUrl(project)}}">{{'ACTION.SHOW' | translate}}</a>
+            </tr>
           </tbody>
         </table>
       </div>
