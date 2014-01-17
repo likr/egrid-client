@@ -8,6 +8,8 @@ var egrid;
         var Project = (function () {
             function Project(obj) {
                 if (obj) {
+                    // for-in と hasOwnProperty を組み合わせて書き換えるかもしれない
+                    // そのとき値の変換を考えよう
                     this.name = obj.name;
                     this.note = obj.note;
                     this.created_at = Date.parse(obj.created_at);
@@ -2536,6 +2538,8 @@ var egrid;
                 $q.when(egrid.model.Project.get(this.projectKey)).then(function (project) {
                     _this.name = project.name;
                     _this.note = project.note;
+                    _this.created_at = project.created_at;
+                    _this.updated_at = project.updated_at;
                 });
             }
             return ProjectController;
