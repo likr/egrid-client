@@ -94,3 +94,9 @@ text.measure {
 .invisible {
   visibility: hidden;
 }
+
+
+
+.tab-content {
+  margin-top: 20px; /* @modal-inner-padding */
+}

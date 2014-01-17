@@ -1,9 +1,9 @@
 <div>
   <h2>{{participant.name}}</h2>
 
-  <ul class="breadcrumb">
+  <ol class="breadcrumb">
     <li>
-      <a href="/#/projects">{{ 'PROJECT.PROJECTS' | translate }}</a> <span class="divider">/</span>
+      <a href="/#/projects">{{ 'PROJECT.PROJECTS' | translate }}</a>
     </li>
     <li>
       <a href="/#/projects/{{participant.project.key}}">{{participant.project.name}}</a>
@@ -12,7 +12,7 @@
     <li class="active">
       {{participant.name}}
     </li>
-  </ul>
+  </ol>
 
   <div tabset>
     <div tab heading="{{ 'ACTION.DETAIL' | translate }}">
