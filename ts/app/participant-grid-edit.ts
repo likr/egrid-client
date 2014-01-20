@@ -13,7 +13,7 @@ module egrid.app {
     grid : model.ParticipantGrid;
     overallNodes : model.ProjectGridNodeData[];
 
-    constructor($q, $routeParams, $location, private $dialog, private $scope) {
+    constructor($q, $routeParams, $location, private $modal, private $scope) {
       this.projectKey = $routeParams.projectId;
       this.participantKey = $routeParams.participantId;
 
@@ -147,20 +147,20 @@ module egrid.app {
         }
       });
       texts.sort((t1, t2) => t2.weight - t1.weight);
-      var d = this.$dialog.dialog({
+      var m = this.$modal.open({
         backdrop: true,
         keyboard: true,
         backdropClick: true,
         templateUrl: '/partials/input-text-dialog.html',
-        controller: ($scope, dialog) => {
+        controller: ($scope, $modalInstance) => {
           $scope.result = "";
           $scope.texts = texts;
           $scope.close = function(result) {
-            dialog.close(result);
+            $modalInstance.close(result);
           }
         },
       });
-      d.open().then(result => {
+      m.result.then(result => {
         callback(result);
       });
       this.$scope.$apply();

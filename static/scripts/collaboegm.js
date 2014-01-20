@@ -2220,9 +2220,9 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var ParticipantGridEditController = (function () {
-            function ParticipantGridEditController($q, $routeParams, $location, $dialog, $scope) {
+            function ParticipantGridEditController($q, $routeParams, $location, $modal, $scope) {
                 var _this = this;
-                this.$dialog = $dialog;
+                this.$modal = $modal;
                 this.$scope = $scope;
                 this.projectKey = $routeParams.projectId;
                 this.participantKey = $routeParams.participantId;
@@ -2339,20 +2339,20 @@ var egrid;
                 texts.sort(function (t1, t2) {
                     return t2.weight - t1.weight;
                 });
-                var d = this.$dialog.dialog({
+                var m = this.$modal.open({
                     backdrop: true,
                     keyboard: true,
                     backdropClick: true,
                     templateUrl: '/partials/input-text-dialog.html',
-                    controller: function ($scope, dialog) {
+                    controller: function ($scope, $modalInstance) {
                         $scope.result = "";
                         $scope.texts = texts;
                         $scope.close = function (result) {
-                            dialog.close(result);
+                            $modalInstance.close(result);
                         };
                     }
                 });
-                d.open().then(function (result) {
+                m.result.then(function (result) {
                     callback(result);
                 });
                 this.$scope.$apply();
@@ -2450,7 +2450,7 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var ProjectGridController = (function () {
-            function ProjectGridController($q, $routeParams, $dialog, $scope) {
+            function ProjectGridController($q, $routeParams, $modal, $scope) {
                 var _this = this;
                 this.$scope = $scope;
                 this.filter = {};
@@ -2503,23 +2503,23 @@ var egrid;
                             _this.participantState[participant.key()] = false;
                         }
                     });
-                    var d = $dialog.dialog({
+                    var m = $modal.open({
                         backdrop: true,
                         keyboard: true,
                         backdropClick: true,
                         templateUrl: '/partials/filter-participants-dialog.html',
-                        controller: function ($scope, dialog) {
+                        controller: function ($scope, $modalInstance) {
                             $scope.results = _this.filter;
                             $scope.participants = _this.participants;
                             $scope.active = _this.participantState;
                             $scope.close = function () {
-                                dialog.close($scope.results);
+                                $modalInstance.close($scope.results);
                             };
                         }
                     });
-                    d.open().then(function (result) {
+                    m.result.then(function (result) {
                         _this.egm.nodes().forEach(function (d) {
-                            d.active = d.participants.some(function (key) {
+                            m.active = m.participants.some(function (key) {
                                 return result[key];
                             });
                         });
@@ -2529,21 +2529,21 @@ var egrid;
                 });
 
                 d3.select("#layoutButton").on("click", function () {
-                    var d = $dialog.dialog({
+                    var m = $modal.open({
                         backdrop: true,
                         keyboard: true,
                         backdropClick: true,
                         templateUrl: '/partials/setting-dialog.html',
-                        controller: function ($scope, dialog) {
+                        controller: function ($scope, $modalInstance) {
                             $scope.options = _this.egm.options();
                             $scope.ViewMode = egrid.ViewMode;
                             $scope.InactiveNode = egrid.InactiveNode;
                             $scope.close = function () {
-                                dialog.close();
+                                $modalInstance.close();
                             };
                         }
                     });
-                    d.open().then(function () {
+                    m.result.then(function () {
                         _this.egm.draw();
                     });
                     $scope.$apply();
@@ -3295,7 +3295,7 @@ var egrid;
                     prefix: 'locations/',
                     suffix: '.json'
                 }).fallbackLanguage("en").preferredLanguage("ja");
-            }]).controller('ParticipantController', ['$q', '$routeParams', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$routeParams', '$location', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$routeParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$routeParams', '$location', '$dialog', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$routeParams', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$routeParams', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$location', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$routeParams', '$dialog', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$routeParams', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$routeParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$routeParams', '$location', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$routeParams', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$routeParams', egrid.app.SemProjectQuestionnaireEditController]).run([
+            }]).controller('ParticipantController', ['$q', '$routeParams', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$routeParams', '$location', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$routeParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$routeParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$routeParams', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$routeParams', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$location', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$routeParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$routeParams', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$routeParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$routeParams', '$location', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$routeParams', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$routeParams', egrid.app.SemProjectQuestionnaireEditController]).run([
             '$rootScope', '$translate', '$http', function ($rootScope, $translate, $http) {
                 $rootScope.Url = egrid.app.Url;
 
