@@ -628,6 +628,15 @@ dagre.layout.rank = function() {
   function normalize(g) {
     var m = min(g.nodes().map(function(u) { return g.node(u).rank; }));
     g.eachNode(function(u, node) { node.rank -= m; });
+    var bottomRank = max(g.nodes().map(function(u) { return g.node(u).rank; }));
+    g.eachNode(function(u, node) {
+      console.log(u, node);
+      if (g.successors(u).length == 0) {
+        node.rank = bottomRank;
+      } else if (g.predecessors(u).length == 0) {
+        node.rank = 0;
+      }
+    });
   }
 
   /*
