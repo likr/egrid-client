@@ -15,12 +15,12 @@
   ],
   "dependencies": {
     "jquery": "~2.0.3",
-    "bootstrap": "~2.3.2",
-    "angular": "~1.2.7",
+    "bootstrap": "~3.0.0",
+    "angular": "1.2.9",
     "d3": "~3.3.13",
-    "angular-ui-bootstrap-bower": "~0.4.0",
+    "angular-ui-bootstrap-bower": "<1",
     "angular-translate": "~1.1.1",
     "angular-translate-loader-static-files": "~0.1.6",
-    "angular-route": "~1.2.7"
+    "angular-route": "1.2.9"
   }
 }

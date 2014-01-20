@@ -12,7 +12,7 @@ module egrid.app {
     participants : model.Participant[];
     participantState : {} = {};
 
-    constructor($q, $routeParams, $dialog, private $scope) {
+    constructor($q, $routeParams, $modal, private $scope) {
       this.projectKey = $routeParams.projectId;
 
       var egmui = egrid.egmui();
@@ -75,23 +75,23 @@ module egrid.app {
               this.participantState[participant.key()] = false;
             }
           });
-          var d = $dialog.dialog({
+          var m = $modal.open({
             backdrop: true,
             keyboard: true,
             backdropClick: true,
             templateUrl: '/partials/filter-participants-dialog.html',
-            controller: ($scope, dialog) => {
+            controller: ($scope, $modalInstance) => {
               $scope.results = this.filter;
               $scope.participants = this.participants;
               $scope.active = this.participantState;
               $scope.close = () => {
-                dialog.close($scope.results);
+                $modalInstance.close($scope.results);
               };
             },
           });
-          d.open().then(result => {
+          m.result.then(result => {
             this.egm.nodes().forEach(d => {
-              d.active = d.participants.some(key => result[key]);
+              m.active = m.participants.some(key => result[key]);
             });
             this.egm
               .draw()
@@ -104,21 +104,21 @@ module egrid.app {
 
       d3.select("#layoutButton")
         .on("click", () => {
-          var d = $dialog.dialog({
+          var m = $modal.open({
             backdrop: true,
             keyboard: true,
             backdropClick: true,
             templateUrl: '/partials/setting-dialog.html',
-            controller: ($scope, dialog) => {
+            controller: ($scope, $modalInstance) => {
               $scope.options = this.egm.options();
               $scope.ViewMode = egrid.ViewMode;
               $scope.InactiveNode = egrid.InactiveNode;
               $scope.close = () => {
-                dialog.close();
+                $modalInstance.close();
               }
             },
           });
-          d.open().then(() => {
+          m.result.then(() => {
             this.egm.draw();
           });
           $scope.$apply();
