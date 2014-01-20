@@ -7,6 +7,16 @@
 
   <div tabset>
     <div tab heading="{{ 'ACTION.LIST' | translate }}">
+      <div class="row">
+        <nav class="col-sm-4 col-sm-offset-8 search-control">
+          <form class="form-inline">
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="{{'ACTION.SEARCH' | translate}}" ng-model="search.name" />
+              <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+            </div>
+          </form>
+        </nav>
+      </div>
       <div ng-controller="ProjectListController as projects">
         <table class="table">
           <thead>
@@ -19,7 +29,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr ng-repeat="project in projects.list | orderBy:predicate:reverse">
+            <tr ng-repeat="project in projects.list | filter:search.name | orderBy:predicate:reverse">
               <td>{{$index + 1}}</td>
               <td>{{project.name}}</td>
               <td>{{project.created_at | date}}</td>
