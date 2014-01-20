@@ -123,44 +123,48 @@
     <div tab heading="{{ 'COLLABORATOR.COLLABORATOR' | translate }}">
       <div tabset>
         <div tab heading="{{ 'ACTION.LIST' | translate }}">
-          <table class="table">
-            <tr>
-              <th>#</th>
-              <th>{{ 'COLLABORATOR.ATTRIBUTES.USER' | translate }}</th>
-              <th>{{ 'COLLABORATOR.ROLE.ROLE' | translate }}</th>
-            </tr>
-            <tr ng-repeat="collaborator in collaborators">
-              <td>{{ $index + 1 }}</td>
-              <td>{{ collaborator.user.nickname }}</td>
-              <td>{{ collaborator.is_manager }}</td>
-            </tr>
-          </table>
+          <div ng-controller="CollaboratorListController as collaborators">
+            <table class="table">
+              <tr>
+                <th>#</th>
+                <th>{{'COLLABORATOR.ATTRIBUTES.USER' | translate}}</th>
+                <th>{{'COLLABORATOR.ROLE.ROLE' | translate}}</th>
+              </tr>
+              <tr ng-repeat="collaborator in collaborators.list">
+                <td>{{ $index + 1 }}</td>
+                <td>{{collaborator.user.nickname}}</td>
+                <td>{{collaborator.isManager}}</td>
+              </tr>
+            </table>
+          </div>
         </div>
 
         <div tab heading="{{ 'ACTION.NEW' | translate }}">
-          <form class="form-horizontal" ng-submit="createCollaborator()">
-            <div class="control-group">
-              <label class="control-label" for="name">{{ 'COLLABORATOR.ATTRIBUTES.USER' | translate }}</label>
-              <div class="controls">
-                <input type="text" name="name" placeholder="{{ 'COLLABORATOR.ATTRIBUTES.PLACEHOLDERS.USER' | translate }}" ng-model="newCollaborator.user"/>
+          <div ng-controller="CollaboratorCreateController as newCollaborator">
+            <form class="form-horizontal" ng-submit="newCollaborator.submit()">
+              <div class="control-group">
+                <label class="control-label" for="name">{{'COLLABORATOR.ATTRIBUTES.USER' | translate}}</label>
+                <div class="controls">
+                  <input type="text" name="name" placeholder="{{'COLLABORATOR.ATTRIBUTES.PLACEHOLDERS.USER' | translate }}" ng-model="newCollaborator.data.userEmail"/>
+                </div>
               </div>
-            </div>
 
-            <div class="control-group">
-              <label class="control-label" for="note">{{ 'COLLABORATOR.ROLE.ROLE' | translate }}</label>
-              <div class="controls">
-                <label class="checkbox">
-                  <input type="checkbox" ng-model="newCollaborator.is_manager"/>{{ 'COLLABORATOR.ROLE.MANAGER' | translate }}
-                </label>
+              <div class="control-group">
+                <label class="control-label" for="note">{{'COLLABORATOR.ROLE.ROLE' | translate}}</label>
+                <div class="controls">
+                  <label class="checkbox">
+                    <input type="checkbox" ng-model="newCollaborator.data.isManager"/>{{'COLLABORATOR.ROLE.MANAGER' | translate}}
+                  </label>
+                </div>
               </div>
-            </div>
 
-            <div class="control-group">
-              <div class="controls">
-                <input type="submit" class="btn" value="{{ 'ACTION.SUBMIT' | translate }}"/>
+              <div class="control-group">
+                <div class="controls">
+                  <input type="submit" class="btn" value="{{'ACTION.SUBMIT' | translate}}"/>
+                </div>
               </div>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </div>

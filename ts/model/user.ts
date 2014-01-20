@@ -1,32 +1,22 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
 
-module egrid {
-export module api {
-  export interface UserLike {
-    nickname : string;
+module egrid.model {
+  export interface UserData {
+    email? : string;
+    location? : string;
+    nickname? : string;
   }
 
 
-  export interface UserData extends UserLike {
+  interface ApiUserData extends UserData {
     key : string;
   }
 
 
-  export class User implements UserLike {
+  export class User implements UserData {
     private key_ : string;
+    public email : string;
+    public location : string;
     public nickname : string;
-
-
-    constructor(obj : UserLike) {
-      this.nickname = obj.nickname;
-    }
-
-
-    static load(obj : UserData) : User {
-      var user = new User(obj);
-      user.key_ = obj.key;
-      return user;
-    }
   }
-}
 }

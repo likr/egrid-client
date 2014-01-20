@@ -16,6 +16,7 @@ class User(EgridModel):
 
     def to_dict(self):
         return {
+            'key': str(self.key()),
             "location": self.location,
             'email': self.email,
             'nickname': self.user.nickname(),
@@ -77,7 +78,7 @@ class Collaborator(EgridModel):
             'projectKey': str(self.project.key()),
             'user': self.user.to_dict(),
             'userKey': str(self.user.key()),
-            'is_manager': int(bool(self.is_manager))
+            'isManager': int(bool(self.is_manager))
         }
 
 
