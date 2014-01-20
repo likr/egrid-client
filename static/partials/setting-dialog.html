@@ -23,6 +23,13 @@
         <label class="checkbox"><input type="checkbox" ng-model="options.scalingConnection"/>{{ 'EGM.APP.SCALING.CONNECTION' | translate }}</label>
       </div>
     </div>
+    <div class="control-group">
+      <label class="control-label">{{'EGM.APP.LINE_UP' | translate}}</label>
+      <div class="controls">
+        <label class="checkbox"><input type="checkbox" ng-model="options.lineUpTop"/>{{'EGM.UPPERMOST_EVALUATION_ITEM' | translate}}</label>
+        <label class="checkbox"><input type="checkbox" ng-model="options.lineUpBottom"/>{{'EGM.LOWERMOST_EVALUATION_ITEM' | translate}}</label>
+      </div>
+    </div>
   </form>
 </div>
 <div class="modal-footer">

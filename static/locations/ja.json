@@ -43,6 +43,7 @@
       },
       "INPUT_EVALUATION_FACTOR": "評価項目を入力してください",
       "LAYOUT_SETTINGS": "レイアウト設定",
+      "LINE_UP": "整列",
       "SCALING": {
         "CONNECTION": "接続数",
         "SCALING": "評価項目の拡大"
@@ -56,7 +57,9 @@
     "EVALUATION_STRUCTURE": "評価構造",
     "LADDER_DOWN": "ラダーダウン",
     "LADDER_UP": "ラダーアップ",
-    "OVERALL_EVALUATION_STRUCTURE": "全体評価構造"
+    "LOWERMOST_EVALUATION_ITEM": "最下位評価項目",
+    "OVERALL_EVALUATION_STRUCTURE": "全体評価構造",
+    "UPPERMOST_EVALUATION_ITEM": "最上位評価項目"
   },
   "PARTICIPANT": {
     "PARTICIPANTS": "実験参加者",

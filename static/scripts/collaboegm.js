@@ -1002,8 +1002,10 @@ var egrid;
             }
         };
 
-        Grid.prototype.layout = function (checkActive) {
+        Grid.prototype.layout = function (checkActive, lineUpTop, lineUpBottom) {
             if (typeof checkActive === "undefined") { checkActive = false; }
+            if (typeof lineUpTop === "undefined") { lineUpTop = true; }
+            if (typeof lineUpBottom === "undefined") { lineUpBottom = true; }
             var nodes = this.nodes_;
             var links = this.links_;
             if (checkActive) {
@@ -1015,27 +1017,16 @@ var egrid;
                 });
             }
 
-            nodes.forEach(function (node) {
-                var tmp = node.height;
-                node.height = node.width;
-                node.width = tmp;
-            });
-
-            dagre.layout().nodes(nodes).edges(links).rankSep(200).edgeSep(20).run();
+            dagre.layout().nodes(nodes).edges(links).lineUpTop(lineUpTop).lineUpBottom(lineUpBottom).rankDir("LR").rankSep(200).edgeSep(20).run();
 
             nodes.forEach(function (node) {
-                node.x = node.dagre.y;
-                node.y = node.dagre.x;
-                node.width = node.dagre.height;
-                node.height = node.dagre.width;
+                node.x = node.dagre.x;
+                node.y = node.dagre.y;
+                node.width = node.dagre.width;
+                node.height = node.dagre.height;
             });
 
             links.forEach(function (link) {
-                link.dagre.points.forEach(function (point) {
-                    var tmp = point.x;
-                    point.x = point.y;
-                    point.y = tmp;
-                });
                 link.previousPoints = link.points;
                 link.points = link.dagre.points.map(function (p) {
                     return p;
@@ -1312,6 +1303,8 @@ var egrid;
             option.viewMode = 0 /* Normal */;
             option.inactiveNode = 1 /* Transparent */;
             option.scalingConnection = true;
+            option.lineUpTop = true;
+            option.lineUpBottom = true;
             return option;
         };
         return EgmOption;
@@ -1411,7 +1404,7 @@ var egrid;
                 }
             });
 
-            this.grid().layout(this.options_.inactiveNode == 0 /* Hidden */);
+            this.grid().layout(this.options_.inactiveNode == 0 /* Hidden */, this.options_.lineUpTop, this.options_.lineUpBottom);
 
             this.rootSelection.selectAll(".contents .links .link path").filter(function (link) {
                 return link.previousPoints.length != link.points.length;

@@ -270,6 +270,9 @@ dagre.layout = function() {
   self.nodes = propertyAccessor(self, config, "nodes");
   self.edges = propertyAccessor(self, config, "edges");
 
+  self.lineUpTop = delegateProperty(rank.lineUpTop);
+  self.lineUpBottom = delegateProperty(rank.lineUpBottom);
+
   self.orderIters = delegateProperty(order.iterations);
 
   self.nodeSep = delegateProperty(position.nodeSep);
@@ -544,7 +547,9 @@ dagre.layout.acyclic = function() {
 dagre.layout.rank = function() {
   // External configuration
   var config = {
-    debugLevel: 0
+    debugLevel: 0,
+    lineUpTop: true,
+    lineUpBottom: true
   };
 
   var timer = createTimer();
@@ -554,6 +559,8 @@ dagre.layout.rank = function() {
   self.debugLevel = propertyAccessor(self, config, "debugLevel", function(x) {
     timer.enabled(x);
   });
+  self.lineUpTop = propertyAccessor(self, config, "lineUpTop");
+  self.lineUpBottom = propertyAccessor(self, config, "lineUpBottom");
 
   self.run = timer.wrap("Rank Phase", run);
 
@@ -566,7 +573,12 @@ dagre.layout.rank = function() {
       feasibleTree(subgraph);
       normalize(subgraph);
     });
-    normalizeGlobal(g);
+    if (config.lineUpTop) {
+      lineUpTop(g);
+    }
+    if (config.lineUpBottom) {
+      lineUpBottom(g);
+    }
   }
 
   function initRank(g) {
@@ -631,13 +643,19 @@ dagre.layout.rank = function() {
     g.eachNode(function(u, node) { node.rank -= m; });
   }
 
-  function normalizeGlobal(g) {
+  function lineUpTop(g) {
+    g.eachNode(function(u, node) {
+      if (g.predecessors(u).length == 0) {
+        node.rank = 0;
+      }
+    });
+  }
+
+  function lineUpBottom(g) {
     var bottomRank = max(g.nodes().map(function(u) { return g.node(u).rank; }));
     g.eachNode(function(u, node) {
       if (g.successors(u).length == 0) {
         node.rank = bottomRank;
-      } else if (g.predecessors(u).length == 0) {
-        node.rank = 0;
       }
     });
   }

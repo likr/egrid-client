@@ -20,12 +20,16 @@ module egrid {
     public viewMode : ViewMode;
     public inactiveNode : InactiveNode;
     public scalingConnection : boolean;
+    public lineUpTop : boolean;
+    public lineUpBottom : boolean;
 
     static default() : EgmOption {
       var option = new EgmOption;
       option.viewMode = ViewMode.Normal;
       option.inactiveNode = InactiveNode.Transparent;
       option.scalingConnection = true;
+      option.lineUpTop = true;
+      option.lineUpBottom = true;
       return option;
     }
   }
@@ -163,7 +167,11 @@ module egrid {
         })
         ;
 
-      this.grid().layout(this.options_.inactiveNode == InactiveNode.Hidden);
+      this.grid()
+        .layout(
+            this.options_.inactiveNode == InactiveNode.Hidden,
+            this.options_.lineUpTop,
+            this.options_.lineUpBottom);
 
       this.rootSelection.selectAll(".contents .links .link path")
         .filter(link => link.previousPoints.length != link.points.length)
