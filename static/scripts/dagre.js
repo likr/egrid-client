@@ -566,6 +566,7 @@ dagre.layout.rank = function() {
       feasibleTree(subgraph);
       normalize(subgraph);
     });
+    normalizeGlobal(g);
   }
 
   function initRank(g) {
@@ -628,9 +629,11 @@ dagre.layout.rank = function() {
   function normalize(g) {
     var m = min(g.nodes().map(function(u) { return g.node(u).rank; }));
     g.eachNode(function(u, node) { node.rank -= m; });
+  }
+
+  function normalizeGlobal(g) {
     var bottomRank = max(g.nodes().map(function(u) { return g.node(u).rank; }));
     g.eachNode(function(u, node) {
-      console.log(u, node);
       if (g.successors(u).length == 0) {
         node.rank = bottomRank;
       } else if (g.predecessors(u).length == 0) {
