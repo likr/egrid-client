@@ -1,4 +1,6 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+/// <reference path="collaborator-create.ts"/>
+/// <reference path="collaborator-list.ts"/>
 /// <reference path="participant.ts"/>
 /// <reference path="participant-create.ts"/>
 /// <reference path="participant-grid.ts"/>
@@ -75,6 +77,8 @@ module egrid.app {
         .fallbackLanguage("en")
         .preferredLanguage("ja");
     }])
+    .controller('CollaboratorCreateController', ['$q', '$routeParams', '$location', CollaboratorCreateController])
+    .controller('CollaboratorListController', ['$q', '$routeParams', CollaboratorListController])
     .controller('ParticipantController', ['$q', '$routeParams', ParticipantController])
     .controller('ParticipantCreateController', ['$q', '$routeParams', '$location', ParticipantCreateController])
     .controller('ParticipantGridController', ['$q', '$routeParams', '$scope', ParticipantGridController])

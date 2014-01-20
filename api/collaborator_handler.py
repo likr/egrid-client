@@ -13,11 +13,11 @@ class CollaboratorHandler(webapp2.RequestHandler):
         content = json.dumps([c.to_dict() for c in collaborators])
         self.response.write(content)
 
-    def put(self, project_id):
+    def post(self, project_id):
         data = json.loads(self.request.body)
         project = Project.get(project_id)
         user = User.all()\
-            .filter('email =', data.get('user'))\
+            .filter('email =', data.get('userEmail'))\
             .get()
         if not project or not user:
             raise Exception()
@@ -30,7 +30,7 @@ class CollaboratorHandler(webapp2.RequestHandler):
         collaborator = Collaborator(
             project=project,
             user=user,
-            is_manager=data.get('is_manager'))
+            is_manager=data.get('isManager'))
         collaborator.put()
 
         content = json.dumps(collaborator.to_dict())

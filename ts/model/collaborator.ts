@@ -2,38 +2,80 @@
 /// <reference path="project.ts"/>
 /// <reference path="user.ts"/>
 
-module egrid {
-export module api {
-  export class CollaboratorLike {
-    is_manager : boolean;
-    project : ProjectLike;
-    user : UserLike;
+module egrid.model {
+  export interface CollaboratorData {
+    isManager? : boolean;
+    project? : ProjectData;
+    projectKey : string;
+    user? : UserData;
+    userEmail? : string;
   }
 
 
-  export interface CollaboratorData extends CollaboratorLike {
+  interface ApiCollaboratorData extends CollaboratorData {
     key : string;
-    user : UserData;
   }
 
 
-  export class Collaborator implements CollaboratorLike {
-    public is_manager : boolean;
-    public project : Project;
-    public user : User;
+  export class Collaborator implements CollaboratorData {
+    private key_ : string;
+    public isManager : boolean;
+    public project : ProjectData;
+    public projectKey : string;
+    public user : UserData;
+    public userEmail : string;
 
-
-    constructor() {
+    constructor(obj : CollaboratorData) {
+      this.isManager = obj.isManager;
+      this.project = obj.project;
+      this.projectKey = obj.projectKey;
+      this.user = obj.user;
+      this.userEmail = obj.userEmail;
     }
 
+    save() : JQueryXHR {
+      return $.ajax({
+        url: Collaborator.url(this.projectKey),
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          isManager: this.isManager,
+          projectKey: this.projectKey,
+          userEmail: this.userEmail,
+        }),
+        dataFilter: data => {
+          var obj : ApiCollaboratorData = JSON.parse(data);
+          this.key_ = obj.key;
+          return this;
+        },
+      });
+    }
 
-    static load(obj : CollaboratorData) : Collaborator {
-      var collaborator = new Collaborator;
+    static query(projectKey : string) : JQueryXHR {
+      return $.ajax({
+        url: Collaborator.url(projectKey),
+        type: 'GET',
+        dataFilter: data => {
+          var objs = JSON.parse(data);
+          return objs.map((obj : ApiCollaboratorData) => {
+            return Collaborator.load(obj);
+          });
+        },
+      });
+    }
+
+    private static load(obj : ApiCollaboratorData) : Collaborator {
+      var collaborator = new Collaborator(obj);
       collaborator.key_ = obj.key;
-      collaborator.is_manager = obj.is_manager;
-      collaborator.user = User.load(obj.user);
       return collaborator;
     }
+
+    private static url(projectKey : string, key? : string) : string {
+      if (key) {
+        return '/api/projects/'  + projectKey + '/collaborators' + key;
+      } else {
+        return '/api/projects/'  + projectKey + '/collaborators';
+      }
+    }
   }
-}
 }
