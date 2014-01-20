@@ -39,6 +39,6 @@ class ParticipantGridHandler(webapp2.RequestHandler):
 
     def put(self, project_id, participant_id):
         participant = Participant.get(participant_id)
-        participant.json = self.request.body
+        participant.json = self.request.body.decode('utf-8')
         participant.put()
         self.response.write(json.dumps(participant.to_dict()))
