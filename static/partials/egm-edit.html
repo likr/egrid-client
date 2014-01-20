@@ -10,19 +10,17 @@
     </div>
   </div>
   <div class="navbar navbar-inverse navbar-fixed-bottom">
-    <div class="navbar-inner">
-      <div class="container">
-        <ul class="nav pull-right">
+    <div class="container">
+      <div class="collapse navbar-collapse bs-navbar-collapse">
+        <ul class="nav navbar-nav navbar-right">
           <li><a id="appendNodeButton">{{'ACTION.APPEND' | translate}}</a></button>
           <li class="dropdown">
             <a class="dropdown-toggle">{{'ACTION.ACTION' | translate}}<b class="caret"></b></a>
             <ul class="dropdown-menu">
               <li><a id="saveButton">{{'ACTION.SAVE' | translate}}</a></li>
               <li><a id="quitButton" href="/#{{Url.participantUrl(participantGrid.projectKey, participantGrid.participantKey)}}">{{'ACTION.QUIT' | translate}}</a></li>
-              <li class="divider"></li>
               <li id="undoButtonContainer" class="disabled"><a id="undoButton">{{'ACTION.UNDO' | translate}}</a></li>
               <li id="redoButtonContainer" class="disabled"><a id="redoButton">{{'ACTION.REDO' | translate}}</a></li>
-              <li class="divider"></li>
               <li><a id="layoutButton">{{'EGM.APP.LAYOUT_SETTINGS' | translate}}</a></li>
             </ul>
           </li>
