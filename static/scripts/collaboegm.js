@@ -2725,13 +2725,84 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var ProjectListController = (function () {
-            function ProjectListController($q) {
+            function ProjectListController($q, $scope, $filter) {
                 var _this = this;
-                this.predicate = 'name';
-                $q.when(egrid.model.Project.query()).then(function (projects) {
-                    _this.list = projects;
+                this.list = [];
+                $scope.itemsPerPage = 2;
+                $scope.reverse = true;
+                $scope.predicate = 'created_at';
+                $scope.size = 0;
+                $scope.processedProjects = [];
+                $scope.currentPage = 1;
+
+                $scope.$watchCollection('processedProjects', function () {
+                    $scope.render();
                 });
+                $scope.$watch('currentPage', function () {
+                    $scope.render();
+                });
+
+                $q.when(egrid.model.Project.query()).then(function (projects) {
+                    $scope.processedProjects = _this.list = projects;
+                });
+
+                $scope.render = function () {
+                    $scope.processedProjects = $filter('orderBy')($scope.processedProjects, $scope.predicate, $scope.reverse);
+                    $scope.paginatedProjects = [];
+                    $scope.size = $scope.processedProjects.length;
+
+                    for (var i = 0, l = $scope.processedProjects.length; i < l; i++) {
+                        if ((i % $scope.itemsPerPage) === 0) {
+                            $scope.paginatedProjects[Math.floor(i / $scope.itemsPerPage) + 1] = [$scope.processedProjects[i]];
+                        } else {
+                            $scope.paginatedProjects[Math.floor(i / $scope.itemsPerPage) + 1].push($scope.processedProjects[i]);
+                        }
+                    }
+                };
+
+                $scope.search = function () {
+                    $scope.processedProjects = $filter('filter')(_this.list, function (project) {
+                        if (!$scope.query)
+                            return true;
+
+                        return project.name.toLowerCase().indexOf($scope.query.toLowerCase()) !== -1;
+                    });
+                };
+
+                $scope.setPage = function (page) {
+                    $scope.currentPage = page;
+                };
             }
+            ProjectListController.prototype.search = function (haystack, needle) {
+                if (!needle)
+                    return true;
+
+                return haystack.toLowerCase().indexOf(needle.toLowerCase()) !== -1;
+            };
+
+            /**
+            * @copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+            * @license   MIT License
+            */
+            ProjectListController.prototype.range = function (start, stop, step) {
+                if (arguments.length <= 1) {
+                    stop = start || 0;
+                    start = 0;
+                }
+
+                step = arguments[2] || 1;
+
+                var length = Math.max(Math.ceil((stop - start) / step), 0);
+                var idx = 0;
+                var range = new Array(length);
+
+                while (idx < length) {
+                    range[idx++] = start;
+                    start += step;
+                }
+
+                return range;
+            };
             return ProjectListController;
         })();
         app.ProjectListController = ProjectListController;
@@ -3428,7 +3499,7 @@ var egrid;
                     prefix: 'locations/',
                     suffix: '.json'
                 }).fallbackLanguage("en").preferredLanguage("ja");
-            }]).controller('CollaboratorCreateController', ['$q', '$routeParams', '$location', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$routeParams', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$routeParams', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$routeParams', '$location', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$routeParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$routeParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$routeParams', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$routeParams', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$location', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$routeParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$routeParams', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$routeParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$routeParams', '$location', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$routeParams', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$routeParams', egrid.app.SemProjectQuestionnaireEditController]).run([
+            }]).controller('CollaboratorCreateController', ['$q', '$routeParams', '$location', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$routeParams', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$routeParams', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$routeParams', '$location', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$routeParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$routeParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$routeParams', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$routeParams', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$location', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$routeParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', '$scope', '$filter', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$routeParams', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$routeParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$routeParams', '$location', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$routeParams', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$routeParams', egrid.app.SemProjectQuestionnaireEditController]).run([
             '$rootScope', '$translate', '$http', function ($rootScope, $translate, $http) {
                 $rootScope.Url = egrid.app.Url;
 

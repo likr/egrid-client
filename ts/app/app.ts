@@ -87,7 +87,7 @@ module egrid.app {
     .controller('ProjectController', ['$q', '$routeParams', ProjectController])
     .controller('ProjectCreateController', ['$q', '$location', ProjectCreateController])
     .controller('ProjectGridController', ['$q', '$routeParams', '$modal', '$scope', ProjectGridController])
-    .controller('ProjectListController', ['$q', ProjectListController])
+    .controller('ProjectListController', ['$q', '$scope', '$filter', ProjectListController])
     .controller('SemProjectController', ['$q', '$routeParams', SemProjectController])
     .controller('SemProjectAnalysisController', ['$q', '$routeParams', SemProjectAnalysisController])
     .controller('SemProjectCreateController', ['$q', '$routeParams', '$location', SemProjectCreateController])
