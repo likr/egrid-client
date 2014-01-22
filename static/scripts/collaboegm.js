@@ -1574,11 +1574,10 @@ var egrid;
 
                 selection.append("rect").attr("fill", "#fff").attr("width", _this.displayWidth).attr("height", _this.displayHeight);
 
-                _this.createGuide(selection);
-
                 _this.contentsSelection = selection.append("g").classed("contents", true);
                 _this.contentsSelection.append("g").classed("links", true);
                 _this.contentsSelection.append("g").classed("nodes", true);
+                _this.createGuide(selection);
 
                 _this.contentsZoomBehavior = d3.behavior.zoom().on("zoom", function () {
                     var translate = new Svg.Transform.Translate(d3.event.translate[0], d3.event.translate[1]);
@@ -1592,11 +1591,11 @@ var egrid;
         };
 
         EGM.prototype.createGuide = function (selection) {
-            var _this = this;
-            var guideSelection = selection.append('g').classed('guide', true);
+            var guideHeight = 170;
+            var guideSelection = selection.append('g').classed('guide', true).style('visibility', 'hidden').attr('transform', 'translate(0,' + (this.displayHeight - guideHeight) + ')');
             var line = d3.svg.line();
-            var axisFrom = [this.displayWidth * 0.1, this.displayHeight * 0.9];
-            var axisTo = [this.displayWidth * 0.9, this.displayHeight * 0.9];
+            var axisFrom = [this.displayWidth * 0.1, 35];
+            var axisTo = [this.displayWidth * 0.9, 35];
             guideSelection.append('defs').call(function (selection) {
                 selection.append('marker').attr({
                     'id': 'arrow-start-marker',
@@ -1623,22 +1622,29 @@ var egrid;
                     'fill': 'black'
                 });
             });
+
+            guideSelection.append('rect').attr({
+                'opacity': 0.9,
+                'width': this.displayWidth,
+                'height': guideHeight,
+                'fill': 'lightgray'
+            });
             guideSelection.append('path').attr({
                 'stroke': 'black',
-                'stroke-width': '5',
+                'stroke-width': 5,
                 'd': line([axisFrom, axisTo]),
                 'marker-start': 'url(#arrow-start-marker)',
                 'marker-end': 'url(#arrow-end-marker)'
             });
             guideSelection.append('text').text('上位項目').attr({
                 'x': axisFrom[0],
-                'y': axisFrom[1] - 10,
+                'y': 25,
                 'text-anchor': 'start',
                 'font-size': '1.5em'
             });
             guideSelection.append('text').text('下位項目').attr({
                 'x': axisTo[0],
-                'y': axisTo[1] - 10,
+                'y': 25,
                 'text-anchor': 'end',
                 'font-size': '1.5em'
             });
@@ -1653,7 +1659,7 @@ var egrid;
             }).attr({
                 'x': axisFrom[0],
                 'y': function (_, i) {
-                    return _this.displayHeight * 0.1 + 20 * i;
+                    return 20 * i + 60;
                 },
                 'text-anchor': 'start'
             });
@@ -1667,7 +1673,7 @@ var egrid;
             }).attr({
                 'x': axisTo[0],
                 'y': function (_, i) {
-                    return _this.displayHeight * 0.1 + 20 * i;
+                    return 20 * i + 60;
                 },
                 'text-anchor': 'end'
             });

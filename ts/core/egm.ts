@@ -409,11 +409,10 @@ module egrid {
           .attr("height", this.displayHeight)
           ;
 
-        this.createGuide(selection);
-
         this.contentsSelection = selection.append("g").classed("contents", true);
         this.contentsSelection.append("g").classed("links", true);
         this.contentsSelection.append("g").classed("nodes", true);
+        this.createGuide(selection);
 
         this.contentsZoomBehavior = d3.behavior.zoom()
           .on("zoom", () => {
@@ -431,12 +430,15 @@ module egrid {
 
 
     private createGuide(selection : D3.Selection) : void {
+      var guideHeight = 170;
       var guideSelection = selection.append('g')
         .classed('guide', true)
+        .style('visibility', 'hidden')
+        .attr('transform', 'translate(0,' + (this.displayHeight - guideHeight) + ')')
         ;
       var line = d3.svg.line();
-      var axisFrom = [this.displayWidth * 0.1, this.displayHeight * 0.9];
-      var axisTo = [this.displayWidth * 0.9, this.displayHeight * 0.9];
+      var axisFrom = [this.displayWidth * 0.1, 35];
+      var axisTo = [this.displayWidth * 0.9, 35];
       guideSelection.append('defs')
         .call(selection => {
           selection.append('marker')
@@ -473,10 +475,19 @@ module egrid {
             ;
         })
         ;
+
+      guideSelection.append('rect')
+        .attr({
+          'opacity': 0.9,
+          'width': this.displayWidth,
+          'height': guideHeight,
+          'fill': 'lightgray'
+        })
+        ;
       guideSelection.append('path')
         .attr({
           'stroke': 'black',
-          'stroke-width': '5',
+          'stroke-width': 5,
           'd': line([axisFrom, axisTo]),
           'marker-start': 'url(#arrow-start-marker)',
           'marker-end': 'url(#arrow-end-marker)',
@@ -486,7 +497,7 @@ module egrid {
         .text('上位項目')
         .attr({
           'x': axisFrom[0],
-          'y': axisFrom[1] - 10,
+          'y': 25,
           'text-anchor': 'start',
           'font-size': '1.5em',
         })
@@ -495,7 +506,7 @@ module egrid {
         .text('下位項目')
         .attr({
           'x': axisTo[0],
-          'y': axisTo[1] - 10,
+          'y': 25,
           'text-anchor': 'end',
           'font-size': '1.5em',
         })
@@ -514,7 +525,7 @@ module egrid {
         .text(d => d)
         .attr({
           'x': axisFrom[0],
-          'y': (_, i) => this.displayHeight * 0.1 + 20 * i,
+          'y': (_, i) => 20 * i + 60,
           'text-anchor': 'start'
         })
         ;
@@ -531,7 +542,7 @@ module egrid {
         .text(d => d)
         .attr({
           'x': axisTo[0],
-          'y': (_, i) => this.displayHeight * 0.1 + 20 * i,
+          'y': (_, i) => 20 * i + 60,
           'text-anchor': 'end'
         })
         ;
