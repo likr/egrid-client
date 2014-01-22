@@ -21,6 +21,7 @@ module egrid.app {
       this.egm = egmui.egm();
       this.egm.showRemoveLinkButton(true);
       this.egm.options().scalingConnection = false;
+      this.egm.options().showGuide = true;
       d3.select("#display")
         .attr({
           width: $(window).width(),

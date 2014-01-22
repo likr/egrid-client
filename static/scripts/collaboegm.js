@@ -1305,6 +1305,7 @@ var egrid;
             option.scalingConnection = true;
             option.lineUpTop = true;
             option.lineUpBottom = true;
+            option.showGuide = false;
             return option;
         };
         return EgmOption;
@@ -1445,6 +1446,8 @@ var egrid;
 
             this.rescale();
 
+            this.rootSelection.select('.guide').style('visibility', this.options_.showGuide ? 'visible' : 'hidden');
+
             return this;
         };
 
@@ -1571,6 +1574,8 @@ var egrid;
 
                 selection.append("rect").attr("fill", "#fff").attr("width", _this.displayWidth).attr("height", _this.displayHeight);
 
+                _this.createGuide(selection);
+
                 _this.contentsSelection = selection.append("g").classed("contents", true);
                 _this.contentsSelection.append("g").classed("links", true);
                 _this.contentsSelection.append("g").classed("nodes", true);
@@ -1584,6 +1589,88 @@ var egrid;
                 });
                 selection.call(_this.contentsZoomBehavior);
             };
+        };
+
+        EGM.prototype.createGuide = function (selection) {
+            var _this = this;
+            var guideSelection = selection.append('g').classed('guide', true);
+            var line = d3.svg.line();
+            var axisFrom = [this.displayWidth * 0.1, this.displayHeight * 0.9];
+            var axisTo = [this.displayWidth * 0.9, this.displayHeight * 0.9];
+            guideSelection.append('defs').call(function (selection) {
+                selection.append('marker').attr({
+                    'id': 'arrow-start-marker',
+                    'markerUnits': 'strokeWidth',
+                    'markerWidth': 3,
+                    'markerHeight': 3,
+                    'viewBox': '0 0 10 10',
+                    'refX': 5,
+                    'refY': 5
+                }).append('polygon').attr({
+                    'points': '10,0 5,5 10,10 0,5',
+                    'fill': 'black'
+                });
+                selection.append('marker').attr({
+                    'id': 'arrow-end-marker',
+                    'markerUnits': 'strokeWidth',
+                    'markerWidth': 3,
+                    'markerHeight': 3,
+                    'viewBox': '0 0 10 10',
+                    'refX': 5,
+                    'refY': 5
+                }).append('polygon').attr({
+                    'points': '0,0 5,5 0,10 10,5',
+                    'fill': 'black'
+                });
+            });
+            guideSelection.append('path').attr({
+                'stroke': 'black',
+                'stroke-width': '5',
+                'd': line([axisFrom, axisTo]),
+                'marker-start': 'url(#arrow-start-marker)',
+                'marker-end': 'url(#arrow-end-marker)'
+            });
+            guideSelection.append('text').text('上位項目').attr({
+                'x': axisFrom[0],
+                'y': axisFrom[1] - 10,
+                'text-anchor': 'start',
+                'font-size': '1.5em'
+            });
+            guideSelection.append('text').text('下位項目').attr({
+                'x': axisTo[0],
+                'y': axisTo[1] - 10,
+                'text-anchor': 'end',
+                'font-size': '1.5em'
+            });
+            var upperElementTexts = [
+                '○○だと、なぜいいのですか？',
+                '○○が重要な理由は？',
+                '○○だとどのように感じますか？',
+                '○○であることには、どんないい点があるのですか？'
+            ];
+            guideSelection.append('g').selectAll('text').data(upperElementTexts).enter().append('text').text(function (d) {
+                return d;
+            }).attr({
+                'x': axisFrom[0],
+                'y': function (_, i) {
+                    return _this.displayHeight * 0.1 + 20 * i;
+                },
+                'text-anchor': 'start'
+            });
+            var lowerElementTexts = [
+                '○○のどこがいいのですか？',
+                'どういった点で○○が重要なのですか？',
+                '○○であるためには、具体的に何がどうなっていることが必要だと思いますか？'
+            ];
+            guideSelection.append('g').selectAll('text').data(lowerElementTexts).enter().append('text').text(function (d) {
+                return d;
+            }).attr({
+                'x': axisTo[0],
+                'y': function (_, i) {
+                    return _this.displayHeight * 0.1 + 20 * i;
+                },
+                'text-anchor': 'end'
+            });
         };
 
         EGM.prototype.createNode = function (text) {
@@ -2348,6 +2435,7 @@ var egrid;
                 this.egm = egmui.egm();
                 this.egm.showRemoveLinkButton(true);
                 this.egm.options().scalingConnection = false;
+                this.egm.options().showGuide = true;
                 d3.select("#display").attr({
                     width: $(window).width(),
                     height: $(window).height()
