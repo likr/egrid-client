@@ -2577,7 +2577,7 @@ var egrid;
                 if (!selection.empty()) {
                     var nodeRect = selection.node().getBoundingClientRect();
                     var controllerWidth = $("#nodeController").width();
-                    d3.select("#nodeController").classed("invisible", false).style("top", nodeRect.top + nodeRect.height + 10 + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
+                    d3.select("#nodeController").classed("invisible", false).style("top", nodeRect.top + nodeRect.height + 10 - $('#navbar-top').height() + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
                 }
             };
 
@@ -2789,7 +2789,7 @@ var egrid;
                 if (!selection.empty()) {
                     var nodeRect = selection.node().getBoundingClientRect();
                     var controllerWidth = $("#nodeController").width();
-                    d3.select("#nodeController").classed("invisible", false).style("top", nodeRect.top + nodeRect.height + 10 + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
+                    d3.select("#nodeController").classed("invisible", false).style("top", nodeRect.top + nodeRect.height + 10 - $('#navbar-top').height() + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
                 }
             };
 

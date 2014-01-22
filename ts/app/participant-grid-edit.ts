@@ -176,7 +176,7 @@ module egrid.app {
         var controllerWidth = $("#nodeController").width();
         d3.select("#nodeController")
           .classed("invisible", false)
-          .style("top", nodeRect.top + nodeRect.height + 10 + "px")
+          .style("top", nodeRect.top + nodeRect.height + 10 - $('#navbar-top').height() + "px")
           .style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px")
           ;
       }
