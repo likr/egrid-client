@@ -430,7 +430,7 @@ module egrid {
 
 
     private createGuide(selection : D3.Selection) : void {
-      var guideHeight = 170;
+      var guideHeight = 130;
       var guideSelection = selection.append('g')
         .classed('guide', true)
         .style('visibility', 'hidden')

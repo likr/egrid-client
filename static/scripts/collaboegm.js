@@ -1591,7 +1591,7 @@ var egrid;
         };
 
         EGM.prototype.createGuide = function (selection) {
-            var guideHeight = 170;
+            var guideHeight = 130;
             var guideSelection = selection.append('g').classed('guide', true).style('visibility', 'hidden').attr('transform', 'translate(0,' + (this.displayHeight - guideHeight) + ')');
             var line = d3.svg.line();
             var axisFrom = [this.displayWidth * 0.1, 35];
@@ -2442,14 +2442,17 @@ var egrid;
                 this.egm.showRemoveLinkButton(true);
                 this.egm.options().scalingConnection = false;
                 this.egm.options().showGuide = true;
+                var calcHeight = function () {
+                    return $(window).height() - $('#navbar-top').height() - $('#navbar-bottom').height();
+                };
                 d3.select("#display").attr({
                     width: $(window).width(),
-                    height: $(window).height()
-                }).call(this.egm.display($(window).width(), $(window).height()));
+                    height: calcHeight()
+                }).call(this.egm.display($(window).width(), calcHeight()));
                 d3.select(window).on('resize', function () {
                     d3.select("#display").attr({
                         width: $(window).width(),
-                        height: $(window).height()
+                        height: calcHeight()
                     });
                 });
 
@@ -2672,14 +2675,17 @@ var egrid;
                 this.egm = egmui.egm();
                 this.egm.showRemoveLinkButton(true);
                 this.egm.options().scalingConnection = false;
+                var calcHeight = function () {
+                    return $(window).height() - $('#navbar-top').height() - $('#navbar-bottom').height();
+                };
                 d3.select("#display").attr({
                     width: $(window).width(),
-                    height: $(window).height()
-                }).call(this.egm.display($(window).width(), $(window).height()));
+                    height: calcHeight()
+                }).call(this.egm.display($(window).width(), calcHeight()));
                 d3.select(window).on('resize', function () {
                     d3.select("#display").attr({
                         width: $(window).width(),
-                        height: $(window).height()
+                        height: calcHeight()
                     });
                 });
 

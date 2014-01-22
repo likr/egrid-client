@@ -22,19 +22,22 @@ module egrid.app {
       this.egm.showRemoveLinkButton(true);
       this.egm.options().scalingConnection = false;
       this.egm.options().showGuide = true;
+      var calcHeight = () => {
+        return $(window).height() - $('#navbar-top').height() - $('#navbar-bottom').height();
+      };
       d3.select("#display")
         .attr({
           width: $(window).width(),
-          height: $(window).height(),
+          height: calcHeight(),
         })
-        .call(this.egm.display($(window).width(), $(window).height()))
+        .call(this.egm.display($(window).width(), calcHeight()))
         ;
       d3.select(window)
         .on('resize', () => {
           d3.select("#display")
             .attr({
               width: $(window).width(),
-              height: $(window).height(),
+              height: calcHeight(),
             })
             ;
         })
