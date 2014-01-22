@@ -1587,6 +1587,7 @@ var egrid;
                     _this.notify();
                 });
                 selection.call(_this.contentsZoomBehavior);
+                selection.on('dblclick.zoom', null);
             };
         };
 

@@ -425,6 +425,7 @@ module egrid {
           })
           ;
         selection.call(this.contentsZoomBehavior);
+        selection.on('dblclick.zoom', null);
       };
     }
 
