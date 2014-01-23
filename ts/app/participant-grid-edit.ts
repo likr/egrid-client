@@ -27,7 +27,18 @@ module egrid.app {
       this.egm.options().scalingConnection = false;
       this.egm.options().showGuide = true;
       var calcHeight = () => {
-        return $(window).height() - $('#navbar-top').height() - $('#navbar-bottom').height();
+        return $(window).height() - 82; //XXX
+      };
+      var updateSize = () => {
+        var width = $(window).width();
+        var height = calcHeight();
+        d3.select("#display")
+          .attr({
+            width: width,
+            height: height,
+          })
+          ;
+        this.egm.resize(width, height);
       };
       d3.select("#display")
         .attr({
@@ -38,17 +49,12 @@ module egrid.app {
         ;
       d3.select(window)
         .on('resize', () => {
-          var width = $(window).width();
-          var height = calcHeight();
-          d3.select("#display")
-            .attr({
-              width: width,
-              height: height,
-            })
-            ;
-          this.egm.resize(width, height);
+          updateSize();
         })
         ;
+      $(() => {
+        updateSize();
+      });
 
       d3.select("#appendNodeButton")
         .call(egmui.appendNodeButton()
@@ -57,18 +63,18 @@ module egrid.app {
       d3.select("#undoButton")
         .call(egmui.undoButton()
             .onEnable(() => {
-              d3.select("#undoButtonContainer").classed("disabled", false);
+              d3.select("#undoButton").classed("disabled", false);
             })
             .onDisable(() => {
-              d3.select("#undoButtonContainer").classed("disabled", true);
+              d3.select("#undoButton").classed("disabled", true);
             }));
       d3.select("#redoButton")
         .call(egmui.redoButton()
             .onEnable(() => {
-              d3.select("#redoButtonContainer").classed("disabled", false);
+              d3.select("#redoButton").classed("disabled", false);
             })
             .onDisable(() => {
-              d3.select("#redoButtonContainer").classed("disabled", true);
+              d3.select("#redoButton").classed("disabled", true);
             }));
       d3.select("#saveButton")
         .call(egmui.saveButton()
@@ -188,7 +194,7 @@ module egrid.app {
         var controllerWidth = $("#nodeController").width();
         d3.select("#nodeController")
           .classed("invisible", false)
-          .style("top", nodeRect.top + nodeRect.height + 10 - $('#navbar-top').height() + "px")
+          .style("top", nodeRect.top + nodeRect.height + 10 - $('#navbar-top').height() - $('#navbar-control').height() + "px")
           .style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px")
           ;
       }

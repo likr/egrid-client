@@ -2461,13 +2461,9 @@ var egrid;
                 this.egm.options().scalingConnection = false;
                 this.egm.options().showGuide = true;
                 var calcHeight = function () {
-                    return $(window).height() - $('#navbar-top').height() - $('#navbar-bottom').height();
+                    return $(window).height() - 82;
                 };
-                d3.select("#display").attr({
-                    width: $(window).width(),
-                    height: calcHeight()
-                }).call(this.egm.display($(window).width(), calcHeight()));
-                d3.select(window).on('resize', function () {
+                var updateSize = function () {
                     var width = $(window).width();
                     var height = calcHeight();
                     d3.select("#display").attr({
@@ -2475,20 +2471,30 @@ var egrid;
                         height: height
                     });
                     _this.egm.resize(width, height);
+                };
+                d3.select("#display").attr({
+                    width: $(window).width(),
+                    height: calcHeight()
+                }).call(this.egm.display($(window).width(), calcHeight()));
+                d3.select(window).on('resize', function () {
+                    updateSize();
+                });
+                $(function () {
+                    updateSize();
                 });
 
                 d3.select("#appendNodeButton").call(egmui.appendNodeButton().onClick(function (callback) {
                     return _this.openInputTextDialog(callback);
                 }));
                 d3.select("#undoButton").call(egmui.undoButton().onEnable(function () {
-                    d3.select("#undoButtonContainer").classed("disabled", false);
+                    d3.select("#undoButton").classed("disabled", false);
                 }).onDisable(function () {
-                    d3.select("#undoButtonContainer").classed("disabled", true);
+                    d3.select("#undoButton").classed("disabled", true);
                 }));
                 d3.select("#redoButton").call(egmui.redoButton().onEnable(function () {
-                    d3.select("#redoButtonContainer").classed("disabled", false);
+                    d3.select("#redoButton").classed("disabled", false);
                 }).onDisable(function () {
-                    d3.select("#redoButtonContainer").classed("disabled", true);
+                    d3.select("#redoButton").classed("disabled", true);
                 }));
                 d3.select("#saveButton").call(egmui.saveButton().save(function (data) {
                     _this.grid.nodes = data.nodes;
@@ -2602,7 +2608,7 @@ var egrid;
                 if (!selection.empty()) {
                     var nodeRect = selection.node().getBoundingClientRect();
                     var controllerWidth = $("#nodeController").width();
-                    d3.select("#nodeController").classed("invisible", false).style("top", nodeRect.top + nodeRect.height + 10 - $('#navbar-top').height() + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
+                    d3.select("#nodeController").classed("invisible", false).style("top", nodeRect.top + nodeRect.height + 10 - $('#navbar-top').height() - $('#navbar-control').height() + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
                 }
             };
 
