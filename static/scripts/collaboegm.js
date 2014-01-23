@@ -2523,7 +2523,8 @@ var egrid;
                     return _this.hideNodeController();
                 }));
                 d3.select("#editNodeButton").call(egmui.editNodeButton().onClick(function (callback) {
-                    return _this.openInputTextDialog(callback);
+                    var node = _this.egm.selectedNode();
+                    _this.openInputTextDialog(callback, node.text);
                 }).onEnable(function (selection) {
                     return _this.showNodeController(selection);
                 }).onDisable(function () {
@@ -2545,7 +2546,8 @@ var egrid;
                     _this.overallNodes = grid.nodes;
                 });
             }
-            ParticipantGridEditController.prototype.openInputTextDialog = function (callback) {
+            ParticipantGridEditController.prototype.openInputTextDialog = function (callback, initialText) {
+                if (typeof initialText === "undefined") { initialText = ''; }
                 var _this = this;
                 var texts;
                 if (this.disableCompletion) {
@@ -2585,7 +2587,7 @@ var egrid;
                     backdropClick: true,
                     templateUrl: '/partials/input-text-dialog.html',
                     controller: function ($scope, dialog) {
-                        $scope.result = "";
+                        $scope.result = initialText;
                         $scope.texts = texts;
                         $scope.close = function (result) {
                             dialog.close(result);

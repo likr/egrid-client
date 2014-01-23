@@ -106,7 +106,10 @@ module egrid.app {
         );
       d3.select("#editNodeButton")
         .call(egmui.editNodeButton()
-            .onClick(callback => this.openInputTextDialog(callback))
+            .onClick(callback => {
+              var node = this.egm.selectedNode();
+              this.openInputTextDialog(callback, node.text)
+            })
             .onEnable(selection => this.showNodeController(selection))
             .onDisable(() => this.hideNodeController())
         );
@@ -132,7 +135,7 @@ module egrid.app {
         ;
     }
 
-    private openInputTextDialog(callback) {
+    private openInputTextDialog(callback, initialText : string = '') {
       var texts;
       if (this.disableCompletion) {
         texts = [];
@@ -169,7 +172,7 @@ module egrid.app {
         backdropClick: true,
         templateUrl: '/partials/input-text-dialog.html',
         controller: ($scope, dialog) => {
-          $scope.result = "";
+          $scope.result = initialText;
           $scope.texts = texts;
           $scope.close = function(result) {
             dialog.close(result);
