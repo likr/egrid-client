@@ -35,8 +35,14 @@
 
     <div tab heading="{{'EGM.EVALUATION_STRUCTURE' | translate}}" select="drawSvg()">
       <div ng-controller="ParticipantGridController as participantGrid">
-        <a href="/#{{Url.participantGridUrl(participant.projectKey, participant.participantKey)}}" class="btn btn-primary btn-large">{{'ACTION.EDIT' | translate}}</a>
-        <a href="/#{{Url.participantGridUrl(participant.projectKey, participant.participantKey)}}?disableCompletion=1" class="btn btn-primary btn-large">{{'ACTION.EDIT' | translate}}(テキスト補完なし)</a>
+        <div class="navbar">
+          <div class="navbar-inner">
+            <form class="navbar-form">
+              <a href="/#{{Url.participantGridUrl(participant.projectKey, participant.participantKey)}}" class="btn btn-primary">{{'ACTION.EDIT' | translate}}</a>
+              <a href="/#{{Url.participantGridUrl(participant.projectKey, participant.participantKey)}}?disableCompletion=1" class="btn">{{'ACTION.EDIT' | translate}}(テキスト補完なし)</a>
+            </form>
+          </div>
+        </div>
         <div style="height: 500px; border: solid;">
           <svg id="display" width="100%" height="100%"></svg>
         </div>

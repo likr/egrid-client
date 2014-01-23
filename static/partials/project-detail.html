@@ -76,7 +76,13 @@
 
     <div tab heading="{{ 'EGM.EVALUATION_STRUCTURE' | translate }}">
       <h3>{{ 'EGM.OVERALL_EVALUATION_STRUCTURE' | translate }}</h3>
-      <a href="/#{{Url.projectGridUrl(project.projectKey)}}" class="btn">{{ 'ACTION.SHOW' | translate }}</a>
+      <div class="navbar">
+        <div class="navbar-inner">
+          <form class="navbar-form">
+            <a href="/#{{Url.projectGridUrl(project.projectKey)}}" class="btn btn-primary">{{'ACTION.SHOW' | translate}}</a>
+          </form>
+        </div>
+      </div>
     </div>
 
     <div tab heading="{{ 'EGM.ANALYSIS' | translate }}">

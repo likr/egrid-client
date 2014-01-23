@@ -29,17 +29,6 @@ module egrid.app {
       var calcHeight = () => {
         return $(window).height() - 82; //XXX
       };
-      var updateSize = () => {
-        var width = $(window).width();
-        var height = calcHeight();
-        d3.select("#display")
-          .attr({
-            width: width,
-            height: height,
-          })
-          ;
-        this.egm.resize(width, height);
-      };
       d3.select("#display")
         .attr({
           width: $(window).width(),
@@ -49,12 +38,17 @@ module egrid.app {
         ;
       d3.select(window)
         .on('resize', () => {
-          updateSize();
+          var width = $(window).width();
+          var height = calcHeight();
+          d3.select("#display")
+            .attr({
+              width: width,
+              height: height,
+            })
+            ;
+          this.egm.resize(width, height);
         })
         ;
-      $(() => {
-        updateSize();
-      });
 
       d3.select("#appendNodeButton")
         .call(egmui.appendNodeButton()
@@ -194,7 +188,7 @@ module egrid.app {
         var controllerWidth = $("#nodeController").width();
         d3.select("#nodeController")
           .classed("invisible", false)
-          .style("top", nodeRect.top + nodeRect.height + 10 - $('#navbar-top').height() - $('#navbar-control').height() + "px")
+          .style("top", nodeRect.top + nodeRect.height + 10 - 82 + "px")
           .style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px")
           ;
       }
