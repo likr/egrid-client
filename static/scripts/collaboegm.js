@@ -1437,8 +1437,8 @@ var egrid;
             });
             transition.selectAll(".link .removeLinkButton").attr("transform", function (link) {
                 return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
-            }).attr("opacity", function (link) {
-                return link.source == selectedNode || link.target == selectedNode ? 1 : 0;
+            }).style('visibility', function (link) {
+                return link.source == selectedNode || link.target == selectedNode ? 'visible' : 'hidden';
             });
             transition.each("end", function () {
                 _this.notify();
@@ -1462,8 +1462,8 @@ var egrid;
                 d3.selectAll(".link").filter(function (link) {
                     return (_this.grid().hasPath(d.index, link.source.index) && _this.grid().hasPath(d.index, link.target.index)) || (_this.grid().hasPath(link.source.index, d.index) && _this.grid().hasPath(link.target.index, d.index));
                 }).classed("connected", true);
-                d3.selectAll(".link .removeLinkButton").attr("opacity", function (link) {
-                    return link.source == d || link.target == d ? 1 : 0;
+                d3.selectAll(".link .removeLinkButton").style('visibility', function (link) {
+                    return link.source == d || link.target == d ? 'visible' : 'hidden';
                 });
             }
         };
@@ -1504,7 +1504,7 @@ var egrid;
             return function (selection) {
                 selection.append("g").classed("removeLinkButton", true).attr("transform", function (link) {
                     return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
-                }).attr("opacity", 0).on("click", function (d) {
+                }).style('visibility', 'hidden').on("click", function (d) {
                     _this.grid().removeLink(d.index);
                     _this.draw();
                 }).call(function (selection) {
@@ -1764,7 +1764,7 @@ var egrid;
         EGM.prototype.unselectElement = function () {
             this.rootSelection.selectAll(".selected").classed("selected", false);
             this.rootSelection.selectAll(".connected").classed("connected", false);
-            this.rootSelection.selectAll(".link .removeLinkButton").attr("opacity", 0);
+            this.rootSelection.selectAll(".link .removeLinkButton").style('visibility', 'hidden');
         };
 
         EGM.prototype.dragNode = function () {

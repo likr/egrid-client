@@ -215,8 +215,8 @@ module egrid {
         .attr("transform", link => {
           return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
         })
-        .attr("opacity", link => {
-          return link.source == selectedNode || link.target == selectedNode ? 1 : 0;
+        .style('visibility', link => {
+          return link.source == selectedNode || link.target == selectedNode ? 'visible' : 'hidden';
         })
         ;
       transition.each("end", () => {
@@ -251,8 +251,8 @@ module egrid {
           .classed("connected", true)
           ;
        d3.selectAll(".link .removeLinkButton")
-          .attr("opacity", link => {
-            return link.source == d || link.target == d ? 1 : 0;
+          .style('visibility', link => {
+            return link.source == d || link.target == d ? 'visible' : 'hidden';
           })
           ;
       }
@@ -307,7 +307,7 @@ module egrid {
           .attr("transform", link => {
             return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
           })
-          .attr("opacity", 0)
+          .style('visibility', 'hidden')
           .on("click", (d) => {
             this.grid().removeLink(d.index);
             this.draw();
@@ -671,7 +671,7 @@ module egrid {
       this.rootSelection.selectAll(".selected").classed("selected", false);
       this.rootSelection.selectAll(".connected").classed("connected", false);
       this.rootSelection.selectAll(".link .removeLinkButton")
-        .attr("opacity", 0)
+        .style('visibility', 'hidden')
         ;
     }
 
