@@ -225,9 +225,7 @@ module egrid {
 
       this.rescale();
 
-      this.rootSelection.select('.guide')
-        .style('visibility', this.options_.showGuide ? 'visible' : 'hidden')
-        ;
+      this.drawGuide();
 
       return this;
     }
@@ -384,6 +382,16 @@ module egrid {
     }
 
 
+    resize(width : number, height : number) : void {
+      this.displayWidth = width;
+      this.displayHeight = height;
+      this.rootSelection
+        .attr("viewBox", (new Svg.ViewBox(0, 0, this.displayWidth, this.displayHeight)).toString())
+        ;
+      this.drawGuide();
+    }
+
+
     /**
      * Generates a function to init display region.
      * @method display
@@ -431,15 +439,10 @@ module egrid {
 
 
     private createGuide(selection : D3.Selection) : void {
-      var guideHeight = 130;
       var guideSelection = selection.append('g')
         .classed('guide', true)
         .style('visibility', 'hidden')
-        .attr('transform', 'translate(0,' + (this.displayHeight - guideHeight) + ')')
         ;
-      var line = d3.svg.line();
-      var axisFrom = [this.displayWidth * 0.1, 35];
-      var axisTo = [this.displayWidth * 0.9, 35];
       guideSelection.append('defs')
         .call(selection => {
           selection.append('marker')
@@ -478,35 +481,34 @@ module egrid {
         ;
 
       guideSelection.append('rect')
+        .classed('guide-rect', true)
         .attr({
           'opacity': 0.9,
-          'width': this.displayWidth,
-          'height': guideHeight,
           'fill': 'lightgray'
         })
         ;
       guideSelection.append('path')
+        .classed('guide-axis', true)
         .attr({
           'stroke': 'black',
           'stroke-width': 5,
-          'd': line([axisFrom, axisTo]),
           'marker-start': 'url(#arrow-start-marker)',
           'marker-end': 'url(#arrow-end-marker)',
         })
         ;
       guideSelection.append('text')
+        .classed('guide-upper-label', true)
         .text('上位項目')
         .attr({
-          'x': axisFrom[0],
           'y': 25,
           'text-anchor': 'start',
           'font-size': '1.5em',
         })
         ;
       guideSelection.append('text')
+        .classed('guide-lower-label', true)
         .text('下位項目')
         .attr({
-          'x': axisTo[0],
           'y': 25,
           'text-anchor': 'end',
           'font-size': '1.5em',
@@ -519,13 +521,13 @@ module egrid {
         '○○であることには、どんないい点があるのですか？',
       ];
       guideSelection.append('g')
-        .selectAll('text')
+        .selectAll('text.guide-upper-question')
         .data(upperElementTexts)
         .enter()
         .append('text')
+        .classed('guide-upper-question', true)
         .text(d => d)
         .attr({
-          'x': axisFrom[0],
           'y': (_, i) => 20 * i + 60,
           'text-anchor': 'start'
         })
@@ -536,16 +538,49 @@ module egrid {
         '○○であるためには、具体的に何がどうなっていることが必要だと思いますか？',
       ];
       guideSelection.append('g')
-        .selectAll('text')
+        .selectAll('text.guide-lower-question')
         .data(lowerElementTexts)
         .enter()
         .append('text')
+        .classed('guide-lower-question', true)
         .text(d => d)
         .attr({
-          'x': axisTo[0],
           'y': (_, i) => 20 * i + 60,
           'text-anchor': 'end'
         })
+        ;
+    }
+
+
+    private drawGuide() : void {
+      var guideHeight = 130;
+      var line = d3.svg.line();
+      var axisFrom = [this.displayWidth * 0.1, 35];
+      var axisTo = [this.displayWidth * 0.9, 35];
+      var guideSelection = this.rootSelection.select('.guide')
+        .attr('transform', 'translate(0,' + (this.displayHeight - guideHeight) + ')')
+        .style('visibility', this.options_.showGuide ? 'visible' : 'hidden')
+        ;
+      guideSelection.select('.guide-rect')
+        .attr({
+          'width': this.displayWidth,
+          'height': guideHeight,
+        })
+        ;
+      guideSelection.select('.guide-axis')
+        .attr('d', line([axisFrom, axisTo]))
+        ;
+      guideSelection.select('.guide-upper-label')
+        .attr('x', axisFrom[0])
+        ;
+      guideSelection.select('.guide-lower-label')
+        .attr('x', axisTo[0])
+        ;
+      guideSelection.selectAll('.guide-upper-question')
+        .attr('x', axisFrom[0])
+        ;
+      guideSelection.selectAll('.guide-lower-question')
+        .attr('x', axisTo[0])
         ;
     }
 

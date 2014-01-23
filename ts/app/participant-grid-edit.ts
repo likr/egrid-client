@@ -34,12 +34,15 @@ module egrid.app {
         ;
       d3.select(window)
         .on('resize', () => {
+          var width = $(window).width();
+          var height = calcHeight();
           d3.select("#display")
             .attr({
-              width: $(window).width(),
-              height: calcHeight(),
+              width: width,
+              height: height,
             })
             ;
+          this.egm.resize(width, height);
         })
         ;
 

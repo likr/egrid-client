@@ -1446,7 +1446,7 @@ var egrid;
 
             this.rescale();
 
-            this.rootSelection.select('.guide').style('visibility', this.options_.showGuide ? 'visible' : 'hidden');
+            this.drawGuide();
 
             return this;
         };
@@ -1553,6 +1553,13 @@ var egrid;
             this.contentsZoomBehavior.scaleExtent([s, 1]);
         };
 
+        EGM.prototype.resize = function (width, height) {
+            this.displayWidth = width;
+            this.displayHeight = height;
+            this.rootSelection.attr("viewBox", (new Svg.ViewBox(0, 0, this.displayWidth, this.displayHeight)).toString());
+            this.drawGuide();
+        };
+
         /**
         * Generates a function to init display region.
         * @method display
@@ -1592,11 +1599,7 @@ var egrid;
         };
 
         EGM.prototype.createGuide = function (selection) {
-            var guideHeight = 130;
-            var guideSelection = selection.append('g').classed('guide', true).style('visibility', 'hidden').attr('transform', 'translate(0,' + (this.displayHeight - guideHeight) + ')');
-            var line = d3.svg.line();
-            var axisFrom = [this.displayWidth * 0.1, 35];
-            var axisTo = [this.displayWidth * 0.9, 35];
+            var guideSelection = selection.append('g').classed('guide', true).style('visibility', 'hidden');
             guideSelection.append('defs').call(function (selection) {
                 selection.append('marker').attr({
                     'id': 'arrow-start-marker',
@@ -1624,27 +1627,22 @@ var egrid;
                 });
             });
 
-            guideSelection.append('rect').attr({
+            guideSelection.append('rect').classed('guide-rect', true).attr({
                 'opacity': 0.9,
-                'width': this.displayWidth,
-                'height': guideHeight,
                 'fill': 'lightgray'
             });
-            guideSelection.append('path').attr({
+            guideSelection.append('path').classed('guide-axis', true).attr({
                 'stroke': 'black',
                 'stroke-width': 5,
-                'd': line([axisFrom, axisTo]),
                 'marker-start': 'url(#arrow-start-marker)',
                 'marker-end': 'url(#arrow-end-marker)'
             });
-            guideSelection.append('text').text('上位項目').attr({
-                'x': axisFrom[0],
+            guideSelection.append('text').classed('guide-upper-label', true).text('上位項目').attr({
                 'y': 25,
                 'text-anchor': 'start',
                 'font-size': '1.5em'
             });
-            guideSelection.append('text').text('下位項目').attr({
-                'x': axisTo[0],
+            guideSelection.append('text').classed('guide-lower-label', true).text('下位項目').attr({
                 'y': 25,
                 'text-anchor': 'end',
                 'font-size': '1.5em'
@@ -1655,10 +1653,9 @@ var egrid;
                 '○○だとどのように感じますか？',
                 '○○であることには、どんないい点があるのですか？'
             ];
-            guideSelection.append('g').selectAll('text').data(upperElementTexts).enter().append('text').text(function (d) {
+            guideSelection.append('g').selectAll('text.guide-upper-question').data(upperElementTexts).enter().append('text').classed('guide-upper-question', true).text(function (d) {
                 return d;
             }).attr({
-                'x': axisFrom[0],
                 'y': function (_, i) {
                     return 20 * i + 60;
                 },
@@ -1669,15 +1666,31 @@ var egrid;
                 'どういった点で○○が重要なのですか？',
                 '○○であるためには、具体的に何がどうなっていることが必要だと思いますか？'
             ];
-            guideSelection.append('g').selectAll('text').data(lowerElementTexts).enter().append('text').text(function (d) {
+            guideSelection.append('g').selectAll('text.guide-lower-question').data(lowerElementTexts).enter().append('text').classed('guide-lower-question', true).text(function (d) {
                 return d;
             }).attr({
-                'x': axisTo[0],
                 'y': function (_, i) {
                     return 20 * i + 60;
                 },
                 'text-anchor': 'end'
             });
+        };
+
+        EGM.prototype.drawGuide = function () {
+            var guideHeight = 130;
+            var line = d3.svg.line();
+            var axisFrom = [this.displayWidth * 0.1, 35];
+            var axisTo = [this.displayWidth * 0.9, 35];
+            var guideSelection = this.rootSelection.select('.guide').attr('transform', 'translate(0,' + (this.displayHeight - guideHeight) + ')').style('visibility', this.options_.showGuide ? 'visible' : 'hidden');
+            guideSelection.select('.guide-rect').attr({
+                'width': this.displayWidth,
+                'height': guideHeight
+            });
+            guideSelection.select('.guide-axis').attr('d', line([axisFrom, axisTo]));
+            guideSelection.select('.guide-upper-label').attr('x', axisFrom[0]);
+            guideSelection.select('.guide-lower-label').attr('x', axisTo[0]);
+            guideSelection.selectAll('.guide-upper-question').attr('x', axisFrom[0]);
+            guideSelection.selectAll('.guide-lower-question').attr('x', axisTo[0]);
         };
 
         EGM.prototype.createNode = function (text) {
@@ -2451,10 +2464,13 @@ var egrid;
                     height: calcHeight()
                 }).call(this.egm.display($(window).width(), calcHeight()));
                 d3.select(window).on('resize', function () {
+                    var width = $(window).width();
+                    var height = calcHeight();
                     d3.select("#display").attr({
-                        width: $(window).width(),
-                        height: calcHeight()
+                        width: width,
+                        height: height
                     });
+                    _this.egm.resize(width, height);
                 });
 
                 d3.select("#appendNodeButton").call(egmui.appendNodeButton().onClick(function (callback) {
