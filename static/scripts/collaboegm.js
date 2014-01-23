@@ -2448,8 +2448,12 @@ var egrid;
                 var _this = this;
                 this.$dialog = $dialog;
                 this.$scope = $scope;
+                this.disableCompletion = false;
                 this.projectKey = $routeParams.projectId;
                 this.participantKey = $routeParams.participantId;
+                if ($routeParams.disableCompletion) {
+                    this.disableCompletion = true;
+                }
 
                 var egmui = egrid.egmui();
                 this.egm = egmui.egm();
@@ -2543,33 +2547,38 @@ var egrid;
             }
             ParticipantGridEditController.prototype.openInputTextDialog = function (callback) {
                 var _this = this;
-                var textsDict = {};
-                var texts = this.overallNodes.map(function (d) {
-                    var obj = {
-                        text: d.text,
-                        weight: d.weight
-                    };
-                    d.participants.forEach(function (p) {
-                        if (p == _this.participantKey) {
-                            obj.weight -= 1;
+                var texts;
+                if (this.disableCompletion) {
+                    texts = [];
+                } else {
+                    var textsDict = {};
+                    texts = this.overallNodes.map(function (d) {
+                        var obj = {
+                            text: d.text,
+                            weight: d.weight
+                        };
+                        d.participants.forEach(function (p) {
+                            if (p == _this.participantKey) {
+                                obj.weight -= 1;
+                            }
+                        });
+                        textsDict[d.text] = obj;
+                        return obj;
+                    });
+                    this.egm.nodes().forEach(function (node) {
+                        if (textsDict[node.text]) {
+                            textsDict[node.text].weight += 1;
+                        } else {
+                            texts.push({
+                                text: node.text,
+                                weight: 1
+                            });
                         }
                     });
-                    textsDict[d.text] = obj;
-                    return obj;
-                });
-                this.egm.nodes().forEach(function (node) {
-                    if (textsDict[node.text]) {
-                        textsDict[node.text].weight += 1;
-                    } else {
-                        texts.push({
-                            text: node.text,
-                            weight: 1
-                        });
-                    }
-                });
-                texts.sort(function (t1, t2) {
-                    return t2.weight - t1.weight;
-                });
+                    texts.sort(function (t1, t2) {
+                        return t2.weight - t1.weight;
+                    });
+                }
                 var d = this.$dialog.dialog({
                     backdrop: true,
                     keyboard: true,
