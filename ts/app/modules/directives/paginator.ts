@@ -6,7 +6,6 @@ module egrid.app.modules.paginator.directives {
     templateUrl: string = '/partials/directives/paginator.html';
     transclude: any = false;
     replace: boolean = true;
-    scope: boolean = true;
     controller: Function = egrid.app.modules.paginator.controllers.PaginatorController;
   }
 }

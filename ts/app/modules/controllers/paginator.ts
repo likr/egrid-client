@@ -4,7 +4,6 @@
 module egrid.app.modules.paginator.controllers {
   export class PaginatorController {
     private processedItems: Object[] = [];
-    private items: Object[] = [];
 
     constructor($q, $scope, $filter: ng.IFilterService) {
       $scope.currentPage = 1;
@@ -12,7 +11,13 @@ module egrid.app.modules.paginator.controllers {
       $scope.predicate = 'created_at';
       $scope.size = 0;
       $scope.itemsPerPage = 2;
+      $scope.items = [];
 
+      $scope.$watchCollection('items', () => {
+        this.processedItems = $scope.items;
+
+        $scope.render();
+      });
       $scope.$watchCollection(() => { // 検索してるとき
         return this.processedItems;
       }, () => {
@@ -22,18 +27,13 @@ module egrid.app.modules.paginator.controllers {
         $scope.render();
       });
 
-      $q
-        .when(model.Project.query())
-        .then((items : Object[]) => {
-          this.processedItems = this.items = items;
-        });
-
       $scope.render = () => {
         this.processedItems = $filter('orderBy')(this.processedItems, $scope.predicate, $scope.reverse);
 
         $scope.paginatedItems = [];
         $scope.size = this.processedItems.length;
 
+        // FIXME
         for (var i = 0, l = this.processedItems.length; i < l; i++) {
           if ((i % $scope.itemsPerPage) === 0) {
             $scope.paginatedItems[Math.floor(i / $scope.itemsPerPage) + 1] = [ this.processedItems[i] ];
@@ -44,7 +44,7 @@ module egrid.app.modules.paginator.controllers {
       };
 
       $scope.search = () => {
-        this.processedItems = $filter('filter')(this.items, (item: any) => {
+        this.processedItems = $filter('filter')($scope.items, (item: any) => {
           if (!$scope.query) return true;
 
           return item.name.toLowerCase().indexOf($scope.query.toLowerCase()) !== -1;

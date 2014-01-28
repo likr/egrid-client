@@ -97,13 +97,18 @@ var egrid;
                         function PaginatorController($q, $scope, $filter) {
                             var _this = this;
                             this.processedItems = [];
-                            this.items = [];
                             $scope.currentPage = 1;
                             $scope.reverse = true;
                             $scope.predicate = 'created_at';
                             $scope.size = 0;
                             $scope.itemsPerPage = 2;
+                            $scope.items = [];
 
+                            $scope.$watchCollection('items', function () {
+                                _this.processedItems = $scope.items;
+
+                                $scope.render();
+                            });
                             $scope.$watchCollection(function () {
                                 return _this.processedItems;
                             }, function () {
@@ -111,10 +116,6 @@ var egrid;
                             });
                             $scope.$watch('currentPage', function () {
                                 $scope.render();
-                            });
-
-                            $q.when(egrid.model.Project.query()).then(function (items) {
-                                _this.processedItems = _this.items = items;
                             });
 
                             $scope.render = function () {
@@ -133,7 +134,7 @@ var egrid;
                             };
 
                             $scope.search = function () {
-                                _this.processedItems = $filter('filter')(_this.items, function (item) {
+                                _this.processedItems = $filter('filter')($scope.items, function (item) {
                                     if (!$scope.query)
                                         return true;
 
@@ -170,7 +171,6 @@ var egrid;
                             this.templateUrl = '/partials/directives/paginator.html';
                             this.transclude = false;
                             this.replace = true;
-                            this.scope = true;
                             this.controller = egrid.app.modules.paginator.controllers.PaginatorController;
                         }
                         return PaginatorDirective;
@@ -2842,7 +2842,12 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var ProjectListController = (function () {
-            function ProjectListController() {
+            function ProjectListController($q, $scope) {
+                $scope.items = [];
+
+                $q.when(egrid.model.Project.query()).then(function (items) {
+                    $scope.items = items;
+                });
             }
             return ProjectListController;
         })();
