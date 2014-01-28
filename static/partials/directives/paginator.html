@@ -1,9 +1,9 @@
-<div ng-controller="PaginatorController as pageCtrl">
+<div>
   <div class="row">
     <nav class="col-sm-4 col-sm-offset-8 search-control">
       <form class="form-inline">
         <div class="input-group">
-          <input type="text" class="form-control" placeholder="{{'ACTION.SEARCH' | translate}}" ng-model="pageCtrl.query" ng-keyup="pageCtrl.search()" />
+          <input type="text" class="form-control" placeholder="{{'ACTION.SEARCH' | translate}}" ng-model="query" ng-keyup="search()" />
           <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
         </div>
       </form>
@@ -13,14 +13,14 @@
     <thead>
       <tr>
         <th>#</th>
-        <th><a href ng-click="pageCtrl.prdicate = 'name'; reverse = !reverse; pageCtrl.render()">{{'PROJECT.ATTRIBUTES.NAME' | translate}}</a></th>
-        <th><a href ng-click="pageCtrl.prdicate = 'created_at'; reverse = !reverse; pageCtrl.render()">{{'PROJECT.ATTRIBUTES.CREATED_AT' | translate}}</a></th>
-        <th><a href ng-click="pageCtrl.prdicate = 'updated_at'; reverse = !reverse; pageCtrl.render()">{{'PROJECT.ATTRIBUTES.UPDATED_AT' | translate}}</a></th>
+        <th><a href ng-click="prdicate = 'name'; reverse = !reverse; render()">{{'PROJECT.ATTRIBUTES.NAME' | translate}}</a></th>
+        <th><a href ng-click="prdicate = 'created_at'; reverse = !reverse; render()">{{'PROJECT.ATTRIBUTES.CREATED_AT' | translate}}</a></th>
+        <th><a href ng-click="prdicate = 'updated_at'; reverse = !reverse; render()">{{'PROJECT.ATTRIBUTES.UPDATED_AT' | translate}}</a></th>
         <th>{{'ACTION.ACTION' | translate}}</th>
       </tr>
     </thead>
     <tbody>
-      <tr ng-repeat="project in pageCtrl.paginatedItems[pageCtrl.currentPage]">
+      <tr ng-repeat="project in paginatedItems[currentPage]">
         <td>{{$index + 1}}</td>
         <td>{{project.name}}</td>
         <td>{{project.created_at | date}}</td>
@@ -29,5 +29,5 @@
       </tr>
     </tbody>
   </table>
-  <pagination total-items="pageCtrl.size" page="pageCtrl.currentPage" items-per-page="pageCtrl.itemsPerPage"></pagination>
+  <pagination total-items="size" page="currentPage" items-per-page="itemsPerPage"></pagination>
 </div>

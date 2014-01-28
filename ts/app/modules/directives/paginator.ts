@@ -7,5 +7,6 @@ module egrid.app.modules.paginator.directives {
     transclude: any = false;
     replace: boolean = true;
     scope: boolean = true;
+    controller: Function = egrid.app.modules.paginator.controllers.PaginatorController;
   }
 }
