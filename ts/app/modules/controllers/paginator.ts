@@ -5,55 +5,51 @@ module egrid.app.modules.paginator.controllers {
   export class PaginatorController {
     private processedItems: Object[] = [];
     private items: Object[] = [];
+    private currentPage: number = 1;
+    private reverse: boolean = true;
+    private predicate: string = 'created_at';
+    private size: number = 0;
+    private itemsPerPage: number = 2;
+    private paginatedItems: Object[][] = [];
+    private query: string;
 
-    constructor($q, $scope, $filter: ng.IFilterService) {
-      $scope.currentPage = 1;
-      $scope.reverse = true;
-      $scope.predicate = 'created_at';
-      $scope.size = 0;
-      $scope.itemsPerPage = 2;
-
-      $scope.$watchCollection(() => { // 検索してるとき
-        return this.processedItems;
-      }, () => {
-        $scope.render();
-      });
-      $scope.$watch('currentPage', () => { // ページが変わるとき
-        $scope.render();
-      });
-
-      $q
+    constructor(private $q, private $scope, private $filter: ng.IFilterService) {
+      this.$q
         .when(model.Project.query())
         .then((items : Object[]) => {
           this.processedItems = this.items = items;
+
+          this.render();
         });
+    }
 
-      $scope.render = () => {
-        this.processedItems = $filter('orderBy')(this.processedItems, $scope.predicate, $scope.reverse);
+    public render() {
+      this.processedItems = this.$filter('orderBy')(this.processedItems, this.predicate, this.reverse);
 
-        $scope.paginatedItems = [];
-        $scope.size = this.processedItems.length;
+      this.paginatedItems = [];
+      this.size = this.processedItems.length;
 
-        for (var i = 0, l = this.processedItems.length; i < l; i++) {
-          if ((i % $scope.itemsPerPage) === 0) {
-            $scope.paginatedItems[Math.floor(i / $scope.itemsPerPage) + 1] = [ this.processedItems[i] ];
-          } else {
-            $scope.paginatedItems[Math.floor(i / $scope.itemsPerPage) + 1].push(this.processedItems[i]);
-          }
+      for (var i = 0, l = this.processedItems.length; i < l; i++) {
+        if ((i % this.itemsPerPage) === 0) {
+          this.paginatedItems[Math.floor(i / this.itemsPerPage) + 1] = [ this.processedItems[i] ];
+        } else {
+          this.paginatedItems[Math.floor(i / this.itemsPerPage) + 1].push(this.processedItems[i]);
         }
-      };
+      }
+    }
 
-      $scope.search = () => {
-        this.processedItems = $filter('filter')(this.items, (item: any) => {
-          if (!$scope.query) return true;
+    public search() {
+      this.processedItems = this.$filter('filter')(this.items, (item: any) => {
+        if (!this.query) return true;
 
-          return item.name.toLowerCase().indexOf($scope.query.toLowerCase()) !== -1;
-        });
-      };
+        return item.name.toLowerCase().indexOf(this.query.toLowerCase()) !== -1;
+      });
 
-      $scope.setPage = (page: number) => {
-        $scope.currentPage = page;
-      };
+      this.render();
+    }
+
+    public setPage(page: number) {
+      this.currentPage = page;
     }
   }
 }

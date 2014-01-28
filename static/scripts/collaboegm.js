@@ -96,55 +96,53 @@ var egrid;
                     var PaginatorController = (function () {
                         function PaginatorController($q, $scope, $filter) {
                             var _this = this;
+                            this.$q = $q;
+                            this.$scope = $scope;
+                            this.$filter = $filter;
                             this.processedItems = [];
                             this.items = [];
-                            $scope.currentPage = 1;
-                            $scope.reverse = true;
-                            $scope.predicate = 'created_at';
-                            $scope.size = 0;
-                            $scope.itemsPerPage = 2;
-
-                            $scope.$watchCollection(function () {
-                                return _this.processedItems;
-                            }, function () {
-                                $scope.render();
-                            });
-                            $scope.$watch('currentPage', function () {
-                                $scope.render();
-                            });
-
-                            $q.when(egrid.model.Project.query()).then(function (items) {
+                            this.currentPage = 1;
+                            this.reverse = true;
+                            this.predicate = 'created_at';
+                            this.size = 0;
+                            this.itemsPerPage = 2;
+                            this.paginatedItems = [];
+                            this.$q.when(egrid.model.Project.query()).then(function (items) {
                                 _this.processedItems = _this.items = items;
+
+                                _this.render();
+                            });
+                        }
+                        PaginatorController.prototype.render = function () {
+                            this.processedItems = this.$filter('orderBy')(this.processedItems, this.predicate, this.reverse);
+
+                            this.paginatedItems = [];
+                            this.size = this.processedItems.length;
+
+                            for (var i = 0, l = this.processedItems.length; i < l; i++) {
+                                if ((i % this.itemsPerPage) === 0) {
+                                    this.paginatedItems[Math.floor(i / this.itemsPerPage) + 1] = [this.processedItems[i]];
+                                } else {
+                                    this.paginatedItems[Math.floor(i / this.itemsPerPage) + 1].push(this.processedItems[i]);
+                                }
+                            }
+                        };
+
+                        PaginatorController.prototype.search = function () {
+                            var _this = this;
+                            this.processedItems = this.$filter('filter')(this.items, function (item) {
+                                if (!_this.query)
+                                    return true;
+
+                                return item.name.toLowerCase().indexOf(_this.query.toLowerCase()) !== -1;
                             });
 
-                            $scope.render = function () {
-                                _this.processedItems = $filter('orderBy')(_this.processedItems, $scope.predicate, $scope.reverse);
+                            this.render();
+                        };
 
-                                $scope.paginatedItems = [];
-                                $scope.size = _this.processedItems.length;
-
-                                for (var i = 0, l = _this.processedItems.length; i < l; i++) {
-                                    if ((i % $scope.itemsPerPage) === 0) {
-                                        $scope.paginatedItems[Math.floor(i / $scope.itemsPerPage) + 1] = [_this.processedItems[i]];
-                                    } else {
-                                        $scope.paginatedItems[Math.floor(i / $scope.itemsPerPage) + 1].push(_this.processedItems[i]);
-                                    }
-                                }
-                            };
-
-                            $scope.search = function () {
-                                _this.processedItems = $filter('filter')(_this.items, function (item) {
-                                    if (!$scope.query)
-                                        return true;
-
-                                    return item.name.toLowerCase().indexOf($scope.query.toLowerCase()) !== -1;
-                                });
-                            };
-
-                            $scope.setPage = function (page) {
-                                $scope.currentPage = page;
-                            };
-                        }
+                        PaginatorController.prototype.setPage = function (page) {
+                            this.currentPage = page;
+                        };
                         return PaginatorController;
                     })();
                     controllers.PaginatorController = PaginatorController;
@@ -166,22 +164,12 @@ var egrid;
                 (function (directives) {
                     var PaginatorDirective = (function () {
                         function PaginatorDirective() {
+                            this.restrict = 'E';
+                            this.templateUrl = '/partials/directives/paginator.html';
+                            this.transclude = false;
+                            this.replace = true;
+                            this.scope = true;
                         }
-                        PaginatorDirective.prototype.initializer = function () {
-                            return {
-                                restrict: 'E',
-                                scope: {
-                                    totalItems: '='
-                                },
-                                require: ['paginator', '?ngModel'],
-                                controller: ['$scope', egrid.app.modules.paginator.controllers.PaginatorController],
-                                templateUrl: '/partials/directives/paginator.html',
-                                replace: true,
-                                link: function (scope, element, attrs, ctrls) {
-                                    var paginatorCtrl = ctrls[0], ngModel = ctrls[1];
-                                }
-                            };
-                        };
                         return PaginatorDirective;
                     })();
                     directives.PaginatorDirective = PaginatorDirective;
@@ -201,18 +189,9 @@ var egrid;
 (function (egrid) {
     (function (app) {
         (function (modules) {
-            angular.module('paginator.controllers', []).controller('PaginatorController', [egrid.app.modules.paginator.controllers.PaginatorController]);
+            angular.module('paginator.controllers', []).controller('PaginatorController', egrid.app.modules.paginator.controllers.PaginatorController);
             angular.module('paginator.directives', []).directive('paginator', function () {
-                return {
-                    restrict: 'E',
-                    scope: true,
-                    controller: egrid.app.modules.paginator.controllers.PaginatorController,
-                    templateUrl: '/partials/directives/paginator.html',
-                    replace: true,
-                    link: function (scope, element, attrs, ctrls) {
-                        var paginatorCtrl = ctrls[0], ngModel = ctrls[1];
-                    }
-                };
+                return new egrid.app.modules.paginator.directives.PaginatorDirective();
             });
             angular.module('paginator', ['paginator.controllers', 'paginator.directives']);
         })(app.modules || (app.modules = {}));
