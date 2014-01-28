@@ -1,4 +1,5 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+/// <reference path="modules/app.ts"/>
 /// <reference path="collaborator-create.ts"/>
 /// <reference path="collaborator-list.ts"/>
 /// <reference path="participant.ts"/>
@@ -18,7 +19,7 @@
 /// <reference path="url.ts"/>
 
 module egrid.app {
-  angular.module('collaboegm', ['ngRoute', "ui.bootstrap", "pascalprecht.translate"])
+  angular.module('collaboegm', ['paginator', 'ngRoute', "ui.bootstrap", "pascalprecht.translate"])
     .directive('focusMe', ['$timeout', function($timeout) {
       return {
          link: function (scope, element, attrs, model) {
@@ -87,7 +88,7 @@ module egrid.app {
     .controller('ProjectController', ['$q', '$routeParams', ProjectController])
     .controller('ProjectCreateController', ['$q', '$location', ProjectCreateController])
     .controller('ProjectGridController', ['$q', '$routeParams', '$modal', '$scope', ProjectGridController])
-    .controller('ProjectListController', ['$q', '$scope', '$filter', ProjectListController])
+    .controller('ProjectListController', ['$q', '$scope', ProjectListController])
     .controller('SemProjectController', ['$q', '$routeParams', SemProjectController])
     .controller('SemProjectAnalysisController', ['$q', '$routeParams', SemProjectAnalysisController])
     .controller('SemProjectCreateController', ['$q', '$routeParams', '$location', SemProjectCreateController])

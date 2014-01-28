@@ -85,6 +85,141 @@ var egrid;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
 })(egrid || (egrid = {}));
+/// <reference path="../../../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+/// <reference path="../../../model/project.ts"/>
+var egrid;
+(function (egrid) {
+    (function (app) {
+        (function (modules) {
+            (function (paginator) {
+                (function (controllers) {
+                    var PaginatorController = (function () {
+                        function PaginatorController($q, $scope, $filter) {
+                            var _this = this;
+                            this.processedItems = [];
+                            this.items = [];
+                            $scope.currentPage = 1;
+                            $scope.reverse = true;
+                            $scope.predicate = 'created_at';
+                            $scope.size = 0;
+                            $scope.itemsPerPage = 2;
+
+                            $scope.$watchCollection(function () {
+                                return _this.processedItems;
+                            }, function () {
+                                $scope.render();
+                            });
+                            $scope.$watch('currentPage', function () {
+                                $scope.render();
+                            });
+
+                            $q.when(egrid.model.Project.query()).then(function (items) {
+                                _this.processedItems = _this.items = items;
+                            });
+
+                            $scope.render = function () {
+                                _this.processedItems = $filter('orderBy')(_this.processedItems, $scope.predicate, $scope.reverse);
+
+                                $scope.paginatedItems = [];
+                                $scope.size = _this.processedItems.length;
+
+                                for (var i = 0, l = _this.processedItems.length; i < l; i++) {
+                                    if ((i % $scope.itemsPerPage) === 0) {
+                                        $scope.paginatedItems[Math.floor(i / $scope.itemsPerPage) + 1] = [_this.processedItems[i]];
+                                    } else {
+                                        $scope.paginatedItems[Math.floor(i / $scope.itemsPerPage) + 1].push(_this.processedItems[i]);
+                                    }
+                                }
+                            };
+
+                            $scope.search = function () {
+                                _this.processedItems = $filter('filter')(_this.items, function (item) {
+                                    if (!$scope.query)
+                                        return true;
+
+                                    return item.name.toLowerCase().indexOf($scope.query.toLowerCase()) !== -1;
+                                });
+                            };
+
+                            $scope.setPage = function (page) {
+                                $scope.currentPage = page;
+                            };
+                        }
+                        return PaginatorController;
+                    })();
+                    controllers.PaginatorController = PaginatorController;
+                })(paginator.controllers || (paginator.controllers = {}));
+                var controllers = paginator.controllers;
+            })(modules.paginator || (modules.paginator = {}));
+            var paginator = modules.paginator;
+        })(app.modules || (app.modules = {}));
+        var modules = app.modules;
+    })(egrid.app || (egrid.app = {}));
+    var app = egrid.app;
+})(egrid || (egrid = {}));
+/// <reference path="../../../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+var egrid;
+(function (egrid) {
+    (function (app) {
+        (function (modules) {
+            (function (paginator) {
+                (function (directives) {
+                    var PaginatorDirective = (function () {
+                        function PaginatorDirective() {
+                        }
+                        PaginatorDirective.prototype.initializer = function () {
+                            return {
+                                restrict: 'E',
+                                scope: {
+                                    totalItems: '='
+                                },
+                                require: ['paginator', '?ngModel'],
+                                controller: ['$scope', egrid.app.modules.paginator.controllers.PaginatorController],
+                                templateUrl: '/partials/directives/paginator.html',
+                                replace: true,
+                                link: function (scope, element, attrs, ctrls) {
+                                    var paginatorCtrl = ctrls[0], ngModel = ctrls[1];
+                                }
+                            };
+                        };
+                        return PaginatorDirective;
+                    })();
+                    directives.PaginatorDirective = PaginatorDirective;
+                })(paginator.directives || (paginator.directives = {}));
+                var directives = paginator.directives;
+            })(modules.paginator || (modules.paginator = {}));
+            var paginator = modules.paginator;
+        })(app.modules || (app.modules = {}));
+        var modules = app.modules;
+    })(egrid.app || (egrid.app = {}));
+    var app = egrid.app;
+})(egrid || (egrid = {}));
+/// <reference path="../../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+/// <reference path="controllers/paginator.ts"/>
+/// <reference path="directives/paginator.ts"/>
+var egrid;
+(function (egrid) {
+    (function (app) {
+        (function (modules) {
+            angular.module('paginator.controllers', []).controller('PaginatorController', [egrid.app.modules.paginator.controllers.PaginatorController]);
+            angular.module('paginator.directives', []).directive('paginator', function () {
+                return {
+                    restrict: 'E',
+                    scope: true,
+                    controller: egrid.app.modules.paginator.controllers.PaginatorController,
+                    templateUrl: '/partials/directives/paginator.html',
+                    replace: true,
+                    link: function (scope, element, attrs, ctrls) {
+                        var paginatorCtrl = ctrls[0], ngModel = ctrls[1];
+                    }
+                };
+            });
+            angular.module('paginator', ['paginator.controllers', 'paginator.directives']);
+        })(app.modules || (app.modules = {}));
+        var modules = app.modules;
+    })(egrid.app || (egrid.app = {}));
+    var app = egrid.app;
+})(egrid || (egrid = {}));
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
 var egrid;
 (function (egrid) {
@@ -2725,84 +2860,8 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var ProjectListController = (function () {
-            function ProjectListController($q, $scope, $filter) {
-                var _this = this;
-                this.list = [];
-                $scope.itemsPerPage = 2;
-                $scope.reverse = true;
-                $scope.predicate = 'created_at';
-                $scope.size = 0;
-                $scope.processedProjects = [];
-                $scope.currentPage = 1;
-
-                $scope.$watchCollection('processedProjects', function () {
-                    $scope.render();
-                });
-                $scope.$watch('currentPage', function () {
-                    $scope.render();
-                });
-
-                $q.when(egrid.model.Project.query()).then(function (projects) {
-                    $scope.processedProjects = _this.list = projects;
-                });
-
-                $scope.render = function () {
-                    $scope.processedProjects = $filter('orderBy')($scope.processedProjects, $scope.predicate, $scope.reverse);
-                    $scope.paginatedProjects = [];
-                    $scope.size = $scope.processedProjects.length;
-
-                    for (var i = 0, l = $scope.processedProjects.length; i < l; i++) {
-                        if ((i % $scope.itemsPerPage) === 0) {
-                            $scope.paginatedProjects[Math.floor(i / $scope.itemsPerPage) + 1] = [$scope.processedProjects[i]];
-                        } else {
-                            $scope.paginatedProjects[Math.floor(i / $scope.itemsPerPage) + 1].push($scope.processedProjects[i]);
-                        }
-                    }
-                };
-
-                $scope.search = function () {
-                    $scope.processedProjects = $filter('filter')(_this.list, function (project) {
-                        if (!$scope.query)
-                            return true;
-
-                        return project.name.toLowerCase().indexOf($scope.query.toLowerCase()) !== -1;
-                    });
-                };
-
-                $scope.setPage = function (page) {
-                    $scope.currentPage = page;
-                };
+            function ProjectListController() {
             }
-            ProjectListController.prototype.search = function (haystack, needle) {
-                if (!needle)
-                    return true;
-
-                return haystack.toLowerCase().indexOf(needle.toLowerCase()) !== -1;
-            };
-
-            /**
-            * @copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-            * @license   MIT License
-            */
-            ProjectListController.prototype.range = function (start, stop, step) {
-                if (arguments.length <= 1) {
-                    stop = start || 0;
-                    start = 0;
-                }
-
-                step = arguments[2] || 1;
-
-                var length = Math.max(Math.ceil((stop - start) / step), 0);
-                var idx = 0;
-                var range = new Array(length);
-
-                while (idx < length) {
-                    range[idx++] = start;
-                    start += step;
-                }
-
-                return range;
-            };
             return ProjectListController;
         })();
         app.ProjectListController = ProjectListController;
@@ -3433,6 +3492,7 @@ var egrid;
     var app = egrid.app;
 })(egrid || (egrid = {}));
 /// <reference path="../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+/// <reference path="modules/app.ts"/>
 /// <reference path="collaborator-create.ts"/>
 /// <reference path="collaborator-list.ts"/>
 /// <reference path="participant.ts"/>
@@ -3453,7 +3513,7 @@ var egrid;
 var egrid;
 (function (egrid) {
     (function (app) {
-        angular.module('collaboegm', ['ngRoute', "ui.bootstrap", "pascalprecht.translate"]).directive('focusMe', [
+        angular.module('collaboegm', ['paginator', 'ngRoute', "ui.bootstrap", "pascalprecht.translate"]).directive('focusMe', [
             '$timeout', function ($timeout) {
                 return {
                     link: function (scope, element, attrs, model) {
@@ -3499,7 +3559,7 @@ var egrid;
                     prefix: 'locations/',
                     suffix: '.json'
                 }).fallbackLanguage("en").preferredLanguage("ja");
-            }]).controller('CollaboratorCreateController', ['$q', '$routeParams', '$location', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$routeParams', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$routeParams', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$routeParams', '$location', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$routeParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$routeParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$routeParams', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$routeParams', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$location', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$routeParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', '$scope', '$filter', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$routeParams', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$routeParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$routeParams', '$location', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$routeParams', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$routeParams', egrid.app.SemProjectQuestionnaireEditController]).run([
+            }]).controller('CollaboratorCreateController', ['$q', '$routeParams', '$location', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$routeParams', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$routeParams', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$routeParams', '$location', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$routeParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$routeParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$routeParams', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$routeParams', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$location', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$routeParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', '$scope', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$routeParams', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$routeParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$routeParams', '$location', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$routeParams', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$routeParams', egrid.app.SemProjectQuestionnaireEditController]).run([
             '$rootScope', '$translate', '$http', function ($rootScope, $translate, $http) {
                 $rootScope.Url = egrid.app.Url;
 
