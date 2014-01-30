@@ -6,12 +6,13 @@ module egrid.app {
       $scope.projects = [];
       $scope.itemsPerPage = 2;
       $scope.currentPage = 1;
+      $scope.predicate = 'created_at';
+      $scope.reverse = true;
 
       $q
         .when(model.Project.query())
         .then((projects : model.Project[]) => {
           $scope.projects = projects;
-          $scope.size = projects.length;
         });
     }
   }

@@ -2855,10 +2855,11 @@ var egrid;
                 $scope.projects = [];
                 $scope.itemsPerPage = 2;
                 $scope.currentPage = 1;
+                $scope.predicate = 'created_at';
+                $scope.reverse = true;
 
                 $q.when(egrid.model.Project.query()).then(function (projects) {
                     $scope.projects = projects;
-                    $scope.size = projects.length;
                 });
             }
             return ProjectListController;
