@@ -13,14 +13,14 @@
     <thead>
       <tr>
         <th>#</th>
-        <th><a href ng-click="prdicate = 'name'; reverse = !reverse; render()">{{'PROJECT.ATTRIBUTES.NAME' | translate}}</a></th>
-        <th><a href ng-click="prdicate = 'created_at'; reverse = !reverse; render()">{{'PROJECT.ATTRIBUTES.CREATED_AT' | translate}}</a></th>
-        <th><a href ng-click="prdicate = 'updated_at'; reverse = !reverse; render()">{{'PROJECT.ATTRIBUTES.UPDATED_AT' | translate}}</a></th>
+        <th><a href>{{'PROJECT.ATTRIBUTES.NAME' | translate}}</a></th>
+        <th><a href>{{'PROJECT.ATTRIBUTES.CREATED_AT' | translate}}</a></th>
+        <th><a href>{{'PROJECT.ATTRIBUTES.UPDATED_AT' | translate}}</a></th>
         <th>{{'ACTION.ACTION' | translate}}</th>
       </tr>
     </thead>
     <tbody>
-      <tr ng-repeat="project in paginatedItems[currentPage]">
+      <tr ng-repeat="project in projects">
         <td>{{$index + 1}}</td>
         <td>{{project.name}}</td>
         <td>{{project.created_at | date}}</td>

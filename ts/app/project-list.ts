@@ -3,12 +3,15 @@
 module egrid.app {
   export class ProjectListController {
     constructor($q, $scope) {
-      $scope.items = [];
+      $scope.projects = [];
+      $scope.itemsPerPage = 2;
+      $scope.currentPage = 1;
 
       $q
         .when(model.Project.query())
-        .then((items : model.Project[]) => {
-          $scope.items = items;
+        .then((projects : model.Project[]) => {
+          $scope.projects = projects;
+          $scope.size = projects.length;
         });
     }
   }

@@ -186,17 +186,26 @@ var egrid;
     var app = egrid.app;
 })(egrid || (egrid = {}));
 /// <reference path="../../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+/// <reference path="../../model/project.ts"/>
 /// <reference path="controllers/paginator.ts"/>
 /// <reference path="directives/paginator.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
         (function (modules) {
-            angular.module('paginator.controllers', []).controller('PaginatorController', egrid.app.modules.paginator.controllers.PaginatorController);
-            angular.module('paginator.directives', []).directive('paginator', function () {
-                return new egrid.app.modules.paginator.directives.PaginatorDirective();
+            angular.module('paginator.filters', []).filter('pager', function () {
+                return function (input, currentPage, itemsPerPage) {
+                    var begin = (currentPage - 1) * itemsPerPage;
+
+                    return input.slice(begin, begin + itemsPerPage);
+                };
             });
-            angular.module('paginator', ['paginator.controllers', 'paginator.directives']);
+
+            // angular.module('paginator.controllers', [])
+            //   .controller('PaginatorController', egrid.app.modules.paginator.controllers.PaginatorController);
+            // angular.module('paginator.directives', [])
+            //   .directive('paginator', () => new egrid.app.modules.paginator.directives.PaginatorDirective());
+            angular.module('paginator', ['paginator.filters']);
         })(app.modules || (app.modules = {}));
         var modules = app.modules;
     })(egrid.app || (egrid.app = {}));
@@ -2843,10 +2852,13 @@ var egrid;
     (function (app) {
         var ProjectListController = (function () {
             function ProjectListController($q, $scope) {
-                $scope.items = [];
+                $scope.projects = [];
+                $scope.itemsPerPage = 2;
+                $scope.currentPage = 1;
 
-                $q.when(egrid.model.Project.query()).then(function (items) {
-                    $scope.items = items;
+                $q.when(egrid.model.Project.query()).then(function (projects) {
+                    $scope.projects = projects;
+                    $scope.size = projects.length;
                 });
             }
             return ProjectListController;
