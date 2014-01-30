@@ -2,14 +2,18 @@
 
 module egrid.app {
   export class ProjectListController {
-    list : model.Project[];
+    constructor($q, $scope) {
+      $scope.projects = [];
+      $scope.itemsPerPage = 2;
+      $scope.currentPage = 1;
+      $scope.predicate = 'created_at';
+      $scope.reverse = false;
 
-    constructor($q) {
-      $q.when(model.Project.query())
+      $q
+        .when(model.Project.query())
         .then((projects : model.Project[]) => {
-          this.list = projects;
-        })
-        ;
+          $scope.projects = projects;
+        });
     }
   }
 }

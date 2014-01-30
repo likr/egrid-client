@@ -4,6 +4,8 @@ module egrid.model {
   export interface ProjectData {
     name: string;
     note: string;
+    created_at: number;
+    updated_at: number;
   }
 
 
@@ -19,13 +21,17 @@ module egrid.model {
     private key_: string;
     public name: string;
     public note: string;
+    public created_at: number;
+    public updated_at: number;
 
     constructor(obj? : ProjectData) {
       if (obj) {
+        // for-in と hasOwnProperty を組み合わせて書き換えるかもしれない
+        // そのとき値の変換を考えよう
         this.name = obj.name;
         this.note = obj.note;
-        this.created_at = Date.parse(obj.created_at);
-        this.updated_at = Date.parse(obj.updated_at);
+        this.created_at = obj.created_at;
+        this.updated_at = obj.updated_at;
       }
     }
 

@@ -6,25 +6,47 @@
   </ol>
 
   <div tabset>
-    <div tab heading="{{ 'ACTION.LIST' | translate }}">
-      <div ng-controller="ProjectListController as projects">
-        <table class="table">
-          <thead>
+    <div tab heading="{{ 'ACTION.LIST' | translate }}" ng-controller="ProjectListController">
+      <div class="row">
+        <nav class="col-sm-4 col-sm-offset-8 search-control">
+          <form class="form-inline">
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="{{'ACTION.SEARCH' | translate}}" ng-model="query.name" />
+              <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+            </div>
+          </form>
+        </nav>
+      </div>
+      <table class="table">
+        <thead>
           <tr>
             <th>#</th>
-            <th>{{'PROJECT.ATTRIBUTES.NAME' | translate}}</th>
+            <th>
+              <a href ng-click="predicate = 'name'">{{'PROJECT.ATTRIBUTES.NAME' | translate}}</a>
+              (<a href ng-click="predicate = '-name'">^</a>)
+            </th>
+            <th>
+              <a href ng-click="predicate = 'created_at'">{{'PROJECT.ATTRIBUTES.CREATED_AT' | translate}}</a>
+              (<a href ng-click="predicate = '-created_at'">^</a>)
+            </th>
+            <th>
+              <a href ng-click="predicate = 'updated_at'">{{'PROJECT.ATTRIBUTES.UPDATED_AT' | translate}}</a>
+              (<a href ng-click="predicate = '-updated_at'">^</a>)
+            </th>
             <th>{{'ACTION.ACTION' | translate}}</th>
           </tr>
-          </thead>
-          <tbody>
-          <tr ng-repeat="project in projects.list">
-            <td>{{$index + 1}}</td>
+        </thead>
+        <tbody>
+          <tr ng-repeat="project in projects | filter:query | orderBy:predicate:reverse | pager:currentPage:itemsPerPage">
+            <td>{{$index + 1 + itemsPerPage * (currentPage - 1)}}</td>
             <td>{{project.name}}</td>
+            <td>{{project.created_at | date}}</td>
+            <td>{{project.updated_at | date}}</td>
             <td><a href="/#{{Url.projectUrl(project)}}">{{'ACTION.SHOW' | translate}}</a>
           </tr>
-          </tbody>
-        </table>
-      </div>
+        </tbody>
+      </table>
+      <pagination total-items="projects.length" page="currentPage" items-per-page="itemsPerPage"></pagination>
     </div>
 
     <div tab heading="{{'ACTION.NEW' | translate}}">
