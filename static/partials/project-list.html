@@ -21,17 +21,27 @@
         <thead>
           <tr>
             <th>#</th>
-            <th ng-repeat="subject in subjects">
-              <a href ng-click="predicate = '{{subject}}'">{{'PROJECT.ATTRIBUTES.'.concat(subject.toUpperCase()) | translate}}</a>
-              (<a href ng-click="predicate = '-{{subject}}'">^</a>)
+            <th>
+              <a href ng-click="predicate = 'name'">{{'PROJECT.ATTRIBUTES.NAME' | translate}}</a>
+              (<a href ng-click="predicate = '-name'">^</a>)
+            </th>
+            <th>
+              <a href ng-click="predicate = 'created_at'">{{'PROJECT.ATTRIBUTES.CREATED_AT' | translate}}</a>
+              (<a href ng-click="predicate = '-created_at'">^</a>)
+            </th>
+            <th>
+              <a href ng-click="predicate = 'updated_at'">{{'PROJECT.ATTRIBUTES.UPDATED_AT' | translate}}</a>
+              (<a href ng-click="predicate = '-updated_at'">^</a>)
             </th>
             <th>{{'ACTION.ACTION' | translate}}</th>
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="item in projects | filter:query | orderBy:predicate:reverse | pager:currentPage:itemsPerPage">
+          <tr ng-repeat="project in projects | filter:query | orderBy:predicate:reverse | pager:currentPage:itemsPerPage">
             <td>{{$index + 1 + itemsPerPage * (currentPage - 1)}}</td>
-            <td ng-repeat="subject in subjects">{{item[subject]}}</td>
+            <td>{{project.name}}</td>
+            <td>{{project.created_at | date}}</td>
+            <td>{{project.updated_at | date}}</td>
             <td><a href="/#{{Url.projectUrl(project)}}">{{'ACTION.SHOW' | translate}}</a>
           </tr>
         </tbody>

@@ -8,7 +8,6 @@ module egrid.app {
       $scope.currentPage = 1;
       $scope.predicate = 'created_at';
       $scope.reverse = false;
-      $scope.subjects = ['name', 'created_at', 'updated_at'];
 
       $q
         .when(model.Project.query())
