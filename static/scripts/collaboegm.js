@@ -10,8 +10,6 @@ var egrid;
                 if (obj) {
                     this.name = obj.name;
                     this.note = obj.note;
-                    this.created_at = Date.parse(obj.created_at);
-                    this.updated_at = Date.parse(obj.updated_at);
                 }
             }
             Project.prototype.key = function () {
@@ -36,6 +34,14 @@ var egrid;
                 });
             };
 
+            Project.prototype.createdAt = function () {
+                return this.createdAt_;
+            };
+
+            Project.prototype.updatedAt = function () {
+                return this.updatedAt_;
+            };
+
             Project.prototype.url = function () {
                 return Project.url(this.key());
             };
@@ -43,6 +49,8 @@ var egrid;
             Project.load = function (obj) {
                 var project = new Project(obj);
                 project.key_ = obj.key;
+                project.createdAt_ = new Date(obj.created_at);
+                project.updatedAt_ = new Date(obj.updated_at);
                 return project;
             };
 
@@ -195,6 +203,14 @@ var egrid;
                 return this.key_;
             };
 
+            Participant.prototype.createdAt = function () {
+                return this.createdAt_;
+            };
+
+            Participant.prototype.updatedAt = function () {
+                return this.updatedAt_;
+            };
+
             Participant.get = function (projectKey, participantKey) {
                 return $.ajax({
                     url: Participant.url(projectKey, participantKey),
@@ -222,6 +238,8 @@ var egrid;
             Participant.load = function (obj) {
                 var participant = new Participant(obj);
                 participant.key_ = obj.key;
+                participant.createdAt_ = new Date(obj.created_at);
+                participant.updatedAt_ = new Date(obj.updated_at);
                 return participant;
             };
 
