@@ -12,8 +12,8 @@ var egrid;
                     // そのとき値の変換を考えよう
                     this.name = obj.name;
                     this.note = obj.note;
-                    this.created_at = Date.parse(obj.created_at);
-                    this.updated_at = Date.parse(obj.updated_at);
+                    this.created_at = obj.created_at;
+                    this.updated_at = obj.updated_at;
                 }
             }
             Project.prototype.key = function () {
