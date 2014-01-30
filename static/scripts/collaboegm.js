@@ -85,110 +85,8 @@ var egrid;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
 })(egrid || (egrid = {}));
-/// <reference path="../../../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
-/// <reference path="../../../model/project.ts"/>
-var egrid;
-(function (egrid) {
-    (function (app) {
-        (function (modules) {
-            (function (paginator) {
-                (function (controllers) {
-                    var PaginatorController = (function () {
-                        function PaginatorController($q, $scope, $filter) {
-                            var _this = this;
-                            this.processedItems = [];
-                            $scope.currentPage = 1;
-                            $scope.reverse = true;
-                            $scope.predicate = 'created_at';
-                            $scope.size = 0;
-                            $scope.itemsPerPage = 2;
-                            $scope.items = [];
-
-                            $scope.$watchCollection('items', function () {
-                                _this.processedItems = $scope.items;
-
-                                $scope.render();
-                            });
-                            $scope.$watchCollection(function () {
-                                return _this.processedItems;
-                            }, function () {
-                                $scope.render();
-                            });
-                            $scope.$watch('currentPage', function () {
-                                $scope.render();
-                            });
-
-                            $scope.render = function () {
-                                _this.processedItems = $filter('orderBy')(_this.processedItems, $scope.predicate, $scope.reverse);
-
-                                $scope.paginatedItems = [];
-                                $scope.size = _this.processedItems.length;
-
-                                for (var i = 0, l = _this.processedItems.length; i < l; i++) {
-                                    if ((i % $scope.itemsPerPage) === 0) {
-                                        $scope.paginatedItems[Math.floor(i / $scope.itemsPerPage) + 1] = [_this.processedItems[i]];
-                                    } else {
-                                        $scope.paginatedItems[Math.floor(i / $scope.itemsPerPage) + 1].push(_this.processedItems[i]);
-                                    }
-                                }
-                            };
-
-                            $scope.search = function () {
-                                _this.processedItems = $filter('filter')($scope.items, function (item) {
-                                    if (!$scope.query)
-                                        return true;
-
-                                    return item.name.toLowerCase().indexOf($scope.query.toLowerCase()) !== -1;
-                                });
-                            };
-
-                            $scope.setPage = function (page) {
-                                $scope.currentPage = page;
-                            };
-                        }
-                        return PaginatorController;
-                    })();
-                    controllers.PaginatorController = PaginatorController;
-                })(paginator.controllers || (paginator.controllers = {}));
-                var controllers = paginator.controllers;
-            })(modules.paginator || (modules.paginator = {}));
-            var paginator = modules.paginator;
-        })(app.modules || (app.modules = {}));
-        var modules = app.modules;
-    })(egrid.app || (egrid.app = {}));
-    var app = egrid.app;
-})(egrid || (egrid = {}));
-/// <reference path="../../../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
-var egrid;
-(function (egrid) {
-    (function (app) {
-        (function (modules) {
-            (function (paginator) {
-                (function (directives) {
-                    var PaginatorDirective = (function () {
-                        function PaginatorDirective() {
-                            this.restrict = 'E';
-                            this.templateUrl = '/partials/directives/paginator.html';
-                            this.transclude = false;
-                            this.replace = true;
-                            this.controller = egrid.app.modules.paginator.controllers.PaginatorController;
-                        }
-                        return PaginatorDirective;
-                    })();
-                    directives.PaginatorDirective = PaginatorDirective;
-                })(paginator.directives || (paginator.directives = {}));
-                var directives = paginator.directives;
-            })(modules.paginator || (modules.paginator = {}));
-            var paginator = modules.paginator;
-        })(app.modules || (app.modules = {}));
-        var modules = app.modules;
-    })(egrid.app || (egrid.app = {}));
-    var app = egrid.app;
-})(egrid || (egrid = {}));
 /// <reference path="../../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
 /// <reference path="../../model/project.ts"/>
-/// <reference path="controllers/paginator.ts"/>
-/// <reference path="directives/paginator.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -200,11 +98,6 @@ var egrid;
                     return input.slice(begin, begin + itemsPerPage);
                 };
             });
-
-            // angular.module('paginator.controllers', [])
-            //   .controller('PaginatorController', egrid.app.modules.paginator.controllers.PaginatorController);
-            // angular.module('paginator.directives', [])
-            //   .directive('paginator', () => new egrid.app.modules.paginator.directives.PaginatorDirective());
             angular.module('paginator', ['paginator.filters']);
         })(app.modules || (app.modules = {}));
         var modules = app.modules;
@@ -2856,7 +2749,8 @@ var egrid;
                 $scope.itemsPerPage = 2;
                 $scope.currentPage = 1;
                 $scope.predicate = 'created_at';
-                $scope.reverse = true;
+                $scope.reverse = false;
+                $scope.subjects = ['name', 'created_at', 'updated_at'];
 
                 $q.when(egrid.model.Project.query()).then(function (projects) {
                     $scope.projects = projects;
