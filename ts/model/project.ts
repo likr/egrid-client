@@ -24,8 +24,8 @@ module egrid.model {
       if (obj) {
         this.name = obj.name;
         this.note = obj.note;
-        this.created_at = obj.created_at;
-        this.updated_at = obj.updated_at;
+        this.created_at = Date.parse(obj.created_at);
+        this.updated_at = Date.parse(obj.updated_at);
       }
     }
 
