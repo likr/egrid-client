@@ -6,7 +6,7 @@ module egrid.app {
     public predicate = 'created_at';
     public reverse = false;
 
-    constructor($q, $scope) {
+    constructor($q) {
       $q
         .when(model.Project.query())
         .then((projects : model.Project[]) => {
