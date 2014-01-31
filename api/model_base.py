@@ -15,27 +15,27 @@
 from google.appengine.ext import db
 from datetime import datetime
 
-class LogicalDelete(db.Model):
+class DeletableModelBase(db.Model):
     deleted_at = db.DateTimeProperty(default=None)
 
     @classmethod
     def all(cls, **kwds):
-        return super(LogicalDelete, cls).all(**kwds).filter('deleted_at =', None)
+        return super(DeletableModelBase, cls).all(**kwds).filter('deleted_at =', None)
 
     @classmethod
-    def original_all(cls, **kwds):
-        return super(LogicalDelete, cls).all(**kwds)
+    def retrieve(cls, **kwds):
+        return super(DeletableModelBase, cls).all(**kwds)
 
     @classmethod
     def all_deleted(cls):
         return cls.original_all().filter('deleted_at >', None).order('-deleted_at')
 
-    def delete(self):
+    def remove(self):
         self.deleted_at = datetime.now()
         self.put()
 
-    def original_delete(self, **kwds):
-        return super(LogicalDelete, self).delete(**kwds)
+    def delete(self, **kwds):
+        return super(DeletableModelBase, self).delete(**kwds)
 
     def revive(self):
         self.deleted_at = None
