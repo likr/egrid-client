@@ -66,6 +66,8 @@
     "ATTRIBUTES": {
       "NAME": "氏名",
       "NOTE": "備考",
+      "CREATED_AT": "追加日時",
+      "UPDATED_AT": "更新日時",
       "PLACEHOLDERS": {
         "NAME": "実験参加者名",
         "NOTE": "備考"
