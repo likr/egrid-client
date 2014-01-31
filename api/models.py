@@ -48,7 +48,7 @@ class Project(EgridModel):
             'name': self.name,
             'note': self.note,
             'created_at': self.created_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            'updated_at': self.updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")
+            'updated_at': self.updated_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
 
 
@@ -66,6 +66,8 @@ class Participant(EgridModel):
             'project': self.project.to_dict(),
             'projectKey': str(self.project.key()),
             'json': self.json,
+            'created_at': self.created_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            'updated_at': self.updated_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
 
 
