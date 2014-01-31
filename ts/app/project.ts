@@ -16,13 +16,13 @@ module egrid.app {
         ;
     }
 
-    public edit() {
+    public update() {
       this.$q.when(model.Project.get(this.projectKey))
         .then((project: model.Project) => {
           project.name = this.name;
           project.note = this.note;
 
-          return project.edit();
+          return project.save();
         })
         .then((project: model.Project) => {
           // バインドしてるから要らない気はする

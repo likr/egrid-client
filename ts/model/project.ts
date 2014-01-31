@@ -9,8 +9,8 @@ module egrid.model {
 
   interface ApiProjectData extends ProjectData {
     key: string;
-    created_at: string;
-    updated_at: string;
+    createdAt: string;
+    updatedAt: string;
   }
 
 
@@ -23,8 +23,6 @@ module egrid.model {
     private updatedAt_: Date;
     public name: string;
     public note: string;
-    public created_at: number;
-    public updated_at: number;
 
     constructor(obj? : ProjectData) {
       if (obj) {
@@ -39,30 +37,13 @@ module egrid.model {
       return this.key_;
     }
 
-    edit() : JQueryXHR {
+    save() : JQueryXHR {
       return $.ajax({
         url: Project.url(this.key()),
-        type: 'PUT',
+        type: this.key() ? 'PUT' : 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
           key: this.key(),
-          name: this.name,
-          note: this.note,
-        }),
-        dataFilter: data => {
-          var obj : ApiProjectData = JSON.parse(data);
-          this.key_ = obj.key;
-          return this;
-        },
-      });
-    }
-
-    save() : JQueryXHR {
-      return $.ajax({
-        url: Project.url(),
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({
           name: this.name,
           note: this.note,
         }),
@@ -96,8 +77,8 @@ module egrid.model {
     private static load(obj : ApiProjectData) : Project {
       var project = new Project(obj);
       project.key_ = obj.key;
-      project.createdAt_ = new Date(obj.created_at);
-      project.updatedAt_ = new Date(obj.updated_at);
+      project.createdAt_ = new Date(obj.createdAt);
+      project.updatedAt_ = new Date(obj.updatedAt);
       return project;
     }
 

@@ -36,32 +36,14 @@ var egrid;
                 return this.key_;
             };
 
-            Project.prototype.edit = function () {
-                var _this = this;
-                return $.ajax({
-                    url: Project.url(this.key()),
-                    type: 'PUT',
-                    contentType: 'application/json',
-                    data: JSON.stringify({
-                        key: this.key(),
-                        name: this.name,
-                        note: this.note
-                    }),
-                    dataFilter: function (data) {
-                        var obj = JSON.parse(data);
-                        _this.key_ = obj.key;
-                        return _this;
-                    }
-                });
-            };
-
             Project.prototype.save = function () {
                 var _this = this;
                 return $.ajax({
-                    url: Project.url(),
-                    type: 'POST',
+                    url: Project.url(this.key()),
+                    type: this.key() ? 'PUT' : 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
+                        key: this.key(),
                         name: this.name,
                         note: this.note
                     }),
@@ -95,8 +77,8 @@ var egrid;
             Project.load = function (obj) {
                 var project = new Project(obj);
                 project.key_ = obj.key;
-                project.createdAt_ = new Date(obj.created_at);
-                project.updatedAt_ = new Date(obj.updated_at);
+                project.createdAt_ = new Date(obj.createdAt);
+                project.updatedAt_ = new Date(obj.updatedAt);
                 return project;
             };
 
@@ -2611,13 +2593,13 @@ var egrid;
                     _this.note = project.note;
                 });
             }
-            ProjectController.prototype.edit = function () {
+            ProjectController.prototype.update = function () {
                 var _this = this;
                 this.$q.when(egrid.model.Project.get(this.projectKey)).then(function (project) {
                     project.name = _this.name;
                     project.note = _this.note;
 
-                    return project.edit();
+                    return project.save();
                 }).then(function (project) {
                     // バインドしてるから要らない気はする
                     _this.name = project.name;
