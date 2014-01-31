@@ -36,6 +36,25 @@ var egrid;
                 return this.key_;
             };
 
+            Project.prototype.edit = function () {
+                var _this = this;
+                return $.ajax({
+                    url: Project.url(this.key()),
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        key: this.key(),
+                        name: this.name,
+                        note: this.note
+                    }),
+                    dataFilter: function (data) {
+                        var obj = JSON.parse(data);
+                        _this.key_ = obj.key;
+                        return _this;
+                    }
+                });
+            };
+
             Project.prototype.save = function () {
                 var _this = this;
                 return $.ajax({
@@ -2576,14 +2595,28 @@ var egrid;
         var ProjectController = (function () {
             function ProjectController($q, $routeParams) {
                 var _this = this;
+                this.$q = $q;
                 this.projectKey = $routeParams.projectId;
-                $q.when(egrid.model.Project.get(this.projectKey)).then(function (project) {
+                this.$q.when(egrid.model.Project.get(this.projectKey)).then(function (project) {
                     _this.name = project.name;
                     _this.note = project.note;
-                    _this.created_at = project.created_at;
-                    _this.updated_at = project.updated_at;
                 });
             }
+            ProjectController.prototype.edit = function () {
+                var _this = this;
+                this.$q.when(egrid.model.Project.get(this.projectKey)).then(function (project) {
+                    project.name = _this.name;
+                    project.note = _this.note;
+
+                    return project.edit();
+                }).then(function (project) {
+                    // バインドしてるから要らない気はする
+                    _this.name = project.name;
+                    _this.note = project.note;
+                    _this.createdAt = project.createdAt();
+                    _this.updatedAt = project.updatedAt();
+                });
+            };
             return ProjectController;
         })();
         app.ProjectController = ProjectController;

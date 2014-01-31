@@ -5,19 +5,32 @@ module egrid.app {
     projectKey : string;
     name : string;
     note : string;
-    created_at : number;
-    updated_at : number;
 
-    constructor($q, $routeParams) {
+    constructor(private $q, $routeParams) {
       this.projectKey = $routeParams.projectId;
-      $q.when(model.Project.get(this.projectKey))
+      this.$q.when(model.Project.get(this.projectKey))
         .then(project => {
           this.name = project.name;
           this.note = project.note;
-          this.created_at = project.created_at;
-          this.updated_at = project.updated_at;
         })
         ;
+    }
+
+    public edit() {
+      this.$q.when(model.Project.get(this.projectKey))
+        .then((project: model.Project) => {
+          project.name = this.name;
+          project.note = this.note;
+
+          return project.edit();
+        })
+        .then((project: model.Project) => {
+          // バインドしてるから要らない気はする
+          this.name = project.name;
+          this.note = project.note;
+          this.createdAt = project.createdAt();
+          this.updatedAt = project.updatedAt();
+        });
     }
   }
 }

@@ -34,6 +34,14 @@ class ProjectHandler(webapp2.RequestHandler):
         collaborator.put()
         self.response.write(json.dumps(project.to_dict()))
 
+    def put(self, project_id):
+        data = json.loads(self.request.body)
+        project = Project.get(project_id)
+        project.name = data.get('name')
+        project.note = data.get('note')
+        project.put()
+        self.response.write(json.dumps(project.to_dict()))
+
 
 class ProjectGridHandler(webapp2.RequestHandler):
     def get(self, project_id):
