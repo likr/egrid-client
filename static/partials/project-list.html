@@ -6,12 +6,12 @@
   </ol>
 
   <div tabset>
-    <div tab heading="{{ 'ACTION.LIST' | translate }}" ng-controller="ProjectListController">
+    <div tab heading="{{ 'ACTION.LIST' | translate }}" ng-controller="ProjectListController as ctrl">
       <div class="row">
         <nav class="col-sm-4 col-sm-offset-8 search-control">
           <form class="form-inline">
             <div class="input-group">
-              <input type="text" class="form-control" placeholder="{{'ACTION.SEARCH' | translate}}" ng-model="query.name" />
+              <input type="text" class="form-control" placeholder="{{'ACTION.SEARCH' | translate}}" ng-model="ctrl.query.name" />
               <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
             </div>
           </form>
@@ -22,23 +22,23 @@
           <tr>
             <th>#</th>
             <th>
-              <a href ng-click="predicate = 'name'">{{'PROJECT.ATTRIBUTES.NAME' | translate}}</a>
-              (<a href ng-click="predicate = '-name'">^</a>)
+              <a href ng-click="ctrl.predicate = 'name'">{{'PROJECT.ATTRIBUTES.NAME' | translate}}</a>
+              (<a href ng-click="ctrl.predicate = '-name'">^</a>)
             </th>
             <th>
-              <a href ng-click="predicate = 'created_at'">{{'PROJECT.ATTRIBUTES.CREATED_AT' | translate}}</a>
-              (<a href ng-click="predicate = '-created_at'">^</a>)
+              <a href ng-click="ctrl.predicate = 'created_at'">{{'PROJECT.ATTRIBUTES.CREATED_AT' | translate}}</a>
+              (<a href ng-click="ctrl.predicate = '-created_at'">^</a>)
             </th>
             <th>
-              <a href ng-click="predicate = 'updated_at'">{{'PROJECT.ATTRIBUTES.UPDATED_AT' | translate}}</a>
-              (<a href ng-click="predicate = '-updated_at'">^</a>)
+              <a href ng-click="ctrl.predicate = 'updated_at'">{{'PROJECT.ATTRIBUTES.UPDATED_AT' | translate}}</a>
+              (<a href ng-click="ctrl.predicate = '-updated_at'">^</a>)
             </th>
             <th>{{'ACTION.ACTION' | translate}}</th>
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="project in projects | filter:query | orderBy:predicate:reverse | pager:currentPage:itemsPerPage">
-            <td>{{$index + 1 + itemsPerPage * (currentPage - 1)}}</td>
+          <tr ng-repeat="project in ctrl.projects | filter:ctrl.query | orderBy:ctrl.predicate:ctrl.reverse | pager:ctrl.currentPage:ctrl.itemsPerPage">
+            <td>{{$index + 1 + ctrl.itemsPerPage * (ctrl.currentPage - 1)}}</td>
             <td>{{project.name}}</td>
             <td>{{project.created_at | date}}</td>
             <td>{{project.updated_at | date}}</td>
@@ -46,7 +46,7 @@
           </tr>
         </tbody>
       </table>
-      <pagination total-items="projects.length" page="currentPage" items-per-page="itemsPerPage"></pagination>
+      <pagination total-items="ctrl.projects.length" page="ctrl.currentPage" items-per-page="ctrl.itemsPerPage"></pagination>
     </div>
 
     <div tab heading="{{'ACTION.NEW' | translate}}">

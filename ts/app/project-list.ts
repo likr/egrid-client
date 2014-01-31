@@ -1,18 +1,16 @@
-/// <reference path="../model/project.ts"/>
-
 module egrid.app {
   export class ProjectListController {
-    constructor($q, $scope) {
-      $scope.projects = [];
-      $scope.itemsPerPage = 2;
-      $scope.currentPage = 1;
-      $scope.predicate = 'created_at';
-      $scope.reverse = false;
+    public projects: model.Project[] = [];
+    public itemsPerPage = 2;
+    public currentPage = 1;
+    public predicate = 'created_at';
+    public reverse = false;
 
+    constructor($q, $scope) {
       $q
         .when(model.Project.query())
         .then((projects : model.Project[]) => {
-          $scope.projects = projects;
+          this.projects = projects;
         });
     }
   }

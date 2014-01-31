@@ -1,3 +1,21 @@
+/// <reference path="../../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+var egrid;
+(function (egrid) {
+    (function (app) {
+        (function (modules) {
+            angular.module('paginator.filters', []).filter('pager', function () {
+                return function (input, currentPage, itemsPerPage) {
+                    var begin = (currentPage - 1) * itemsPerPage;
+
+                    return input.slice(begin, begin + itemsPerPage);
+                };
+            });
+            angular.module('paginator', ['paginator.filters']);
+        })(app.modules || (app.modules = {}));
+        var modules = app.modules;
+    })(egrid.app || (egrid.app = {}));
+    var app = egrid.app;
+})(egrid || (egrid = {}));
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
 var egrid;
 (function (egrid) {
@@ -84,25 +102,6 @@ var egrid;
         model.Project = Project;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
-})(egrid || (egrid = {}));
-/// <reference path="../../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
-/// <reference path="../../model/project.ts"/>
-var egrid;
-(function (egrid) {
-    (function (app) {
-        (function (modules) {
-            angular.module('paginator.filters', []).filter('pager', function () {
-                return function (input, currentPage, itemsPerPage) {
-                    var begin = (currentPage - 1) * itemsPerPage;
-
-                    return input.slice(begin, begin + itemsPerPage);
-                };
-            });
-            angular.module('paginator', ['paginator.filters']);
-        })(app.modules || (app.modules = {}));
-        var modules = app.modules;
-    })(egrid.app || (egrid.app = {}));
-    var app = egrid.app;
 })(egrid || (egrid = {}));
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
 var egrid;
@@ -2739,20 +2738,19 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../model/project.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
         var ProjectListController = (function () {
             function ProjectListController($q, $scope) {
-                $scope.projects = [];
-                $scope.itemsPerPage = 2;
-                $scope.currentPage = 1;
-                $scope.predicate = 'created_at';
-                $scope.reverse = false;
-
+                var _this = this;
+                this.projects = [];
+                this.itemsPerPage = 2;
+                this.currentPage = 1;
+                this.predicate = 'created_at';
+                this.reverse = false;
                 $q.when(egrid.model.Project.query()).then(function (projects) {
-                    $scope.projects = projects;
+                    _this.projects = projects;
                 });
             }
             return ProjectListController;
