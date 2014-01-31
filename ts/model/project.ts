@@ -39,6 +39,24 @@ module egrid.model {
       return this.key_;
     }
 
+    edit() : JQueryXHR {
+      return $.ajax({
+        url: Project.url(this.key()),
+        type: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          key: this.key(),
+          name: this.name,
+          note: this.note,
+        }),
+        dataFilter: data => {
+          var obj : ApiProjectData = JSON.parse(data);
+          this.key_ = obj.key;
+          return this;
+        },
+      });
+    }
+
     save() : JQueryXHR {
       return $.ajax({
         url: Project.url(),
