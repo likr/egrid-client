@@ -9,6 +9,8 @@ module egrid.model {
 
   interface ApiProjectData extends ProjectData {
     key: string;
+    created_at: string;
+    updated_at: string;
   }
 
 
@@ -17,11 +19,17 @@ module egrid.model {
   */
   export class Project implements ProjectData {
     private key_: string;
+    private createdAt_: Date;
+    private updatedAt_: Date;
     public name: string;
     public note: string;
+    public created_at: number;
+    public updated_at: number;
 
     constructor(obj? : ProjectData) {
       if (obj) {
+        // for-in と hasOwnProperty を組み合わせて書き換えるかもしれない
+        // そのとき値の変換を考えよう
         this.name = obj.name;
         this.note = obj.note;
       }
@@ -48,6 +56,14 @@ module egrid.model {
       });
     }
 
+    public createdAt() : Date {
+      return this.createdAt_;
+    }
+
+    public updatedAt() : Date {
+      return this.updatedAt_;
+    }
+
     private url() : string {
       return Project.url(this.key());
     }
@@ -55,6 +71,8 @@ module egrid.model {
     private static load(obj : ApiProjectData) : Project {
       var project = new Project(obj);
       project.key_ = obj.key;
+      project.createdAt_ = new Date(obj.created_at);
+      project.updatedAt_ = new Date(obj.updated_at);
       return project;
     }
 

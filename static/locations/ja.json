@@ -14,6 +14,7 @@
     "REDO": "やり直し",
     "REMOVE": "削除",
     "SAVE": "保存",
+    "SEARCH": "検索",
     "SELECT": "選択",
     "SHOW": "表示",
     "SUBMIT": "送信",
@@ -68,6 +69,8 @@
     "ATTRIBUTES": {
       "NAME": "氏名",
       "NOTE": "備考",
+      "CREATED_AT": "追加日時",
+      "UPDATED_AT": "更新日時",
       "PLACEHOLDERS": {
         "NAME": "実験参加者名",
         "NOTE": "備考"
@@ -81,6 +84,8 @@
     "ATTRIBUTES": {
       "NAME": "名前",
       "NOTE": "備考",
+      "CREATED_AT": "追加日時",
+      "UPDATED_AT": "更新日時",
       "PLACEHOLDERS": {
         "NAME": "プロジェクト名",
         "NOTE": "備考"

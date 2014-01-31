@@ -1,19 +1,17 @@
 <div>
-  <div class="navbar navbar-fixed-top" style="top: 41px;">
-    <div class="navbar-inner" id="navbar-control">
-      <div class="container">
-        <form class="navbar-form">
-          <a class="btn" id="quitButton" href="/#{{Url.projectUrl(projectGrid.projectKey)}}">{{'ACTION.QUIT' | translate}}</a>
-          <!--<a class="btn" id="exportButton">{{'ACTION.EXPORT' | translate}}</a>-->
-          <a class="btn" id="undoButton"><i class="icon-arrow-left"></i>{{'ACTION.UNDO' | translate}}</a>
-          <a class="btn" id="redoButton"><i class="icon-arrow-right"></i>{{'ACTION.REDO' | translate}}</a>
-          <a class="btn pull-right" id="filterButton">{{'ACTION.FILTER' | translate}}</a>
-          <a class="btn pull-right" id="layoutButton">{{'EGM.APP.LAYOUT_SETTINGS' | translate}}</a>
-        </form>
-      </div>
+  <div class="navbar navbar-default navbar-fixed-top" style="top: 50px;">
+    <div class="container">
+      <form class="navbar-form">
+        <a class="btn" id="quitButton" href="/#{{Url.projectUrl(projectGrid.projectKey)}}">{{'ACTION.QUIT' | translate}}</a>
+        <!--<a class="btn" id="exportButton">{{'ACTION.EXPORT' | translate}}</a>-->
+        <a class="btn" id="undoButton"><i class="icon-arrow-left"></i>{{'ACTION.UNDO' | translate}}</a>
+        <a class="btn" id="redoButton"><i class="icon-arrow-right"></i>{{'ACTION.REDO' | translate}}</a>
+        <a class="btn pull-right" id="filterButton">{{'ACTION.FILTER' | translate}}</a>
+        <a class="btn pull-right" id="layoutButton">{{'EGM.APP.LAYOUT_SETTINGS' | translate}}</a>
+      </form>
     </div>
   </div>
-  <div style="position: absolute; left: 0; top: 82px; overflow: hidden;">
+  <div style="position: absolute; left: 0; top: 100px; overflow: hidden;">
     <svg id="display" style="display: block;"></svg>
     <div id="nodeController" class="btn-group invisible" style="position: absolute; top: 0; left: 0;">
       <button id="removeNodeButton" class="btn" title="{{'ACTION.REMOVE' | translate}}"><i class="icon-remove"></i></button>

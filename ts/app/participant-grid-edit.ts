@@ -14,7 +14,7 @@ module egrid.app {
     overallNodes : model.ProjectGridNodeData[];
     disableCompletion : boolean = false;
 
-    constructor($q, $routeParams, $location, private $dialog, private $scope) {
+    constructor($q, $routeParams, $location, private $modal, private $scope) {
       this.projectKey = $routeParams.projectId;
       this.participantKey = $routeParams.participantId;
       if ($routeParams.disableCompletion) {
@@ -27,7 +27,7 @@ module egrid.app {
       this.egm.options().scalingConnection = false;
       this.egm.options().showGuide = true;
       var calcHeight = () => {
-        return $(window).height() - 82; //XXX
+        return $(window).height() - 100; //XXX
       };
       d3.select("#display")
         .attr({
@@ -166,20 +166,20 @@ module egrid.app {
         });
         texts.sort((t1, t2) => t2.weight - t1.weight);
       }
-      var d = this.$dialog.dialog({
+      var m = this.$modal.open({
         backdrop: true,
         keyboard: true,
         backdropClick: true,
         templateUrl: '/partials/input-text-dialog.html',
-        controller: ($scope, dialog) => {
+        controller: ($scope, $modalInstance) => {
           $scope.result = initialText;
           $scope.texts = texts;
           $scope.close = function(result) {
-            dialog.close(result);
+            $modalInstance.close(result);
           }
         },
       });
-      d.open().then(result => {
+      m.result.then(result => {
         callback(result);
       });
       this.$scope.$apply();
@@ -191,7 +191,7 @@ module egrid.app {
         var controllerWidth = $("#nodeController").width();
         d3.select("#nodeController")
           .classed("invisible", false)
-          .style("top", nodeRect.top + nodeRect.height + 10 - 82 + "px")
+          .style("top", nodeRect.top + nodeRect.height + 10 - 100 + "px")
           .style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px")
           ;
       }

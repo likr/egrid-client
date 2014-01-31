@@ -12,11 +12,15 @@ module egrid.model {
 
   interface ApiParticipantData extends ParticipantData {
     key : string;
+    created_at: string;
+    updated_at: string;
   }
 
 
   export class Participant implements ParticipantData {
     private key_ : string;
+    private createdAt_: Date;
+    private updatedAt_: Date;
     public name : string;
     public note : string;
     public project : ProjectData;
@@ -50,6 +54,14 @@ module egrid.model {
       return this.key_;
     }
 
+    public createdAt() : Date {
+      return this.createdAt_;
+    }
+
+    public updatedAt() : Date {
+      return this.updatedAt_;
+    }
+
     static get(projectKey : string, participantKey : string) : JQueryXHR {
       return $.ajax({
         url: Participant.url(projectKey, participantKey),
@@ -77,6 +89,8 @@ module egrid.model {
     private static load(obj : ApiParticipantData) : Participant {
       var participant = new Participant(obj);
       participant.key_ = obj.key;
+      participant.createdAt_ = new Date(obj.created_at);
+      participant.updatedAt_ = new Date(obj.updated_at);
       return participant;
     }
 

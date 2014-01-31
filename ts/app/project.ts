@@ -5,6 +5,8 @@ module egrid.app {
     projectKey : string;
     name : string;
     note : string;
+    created_at : number;
+    updated_at : number;
 
     constructor($q, $routeParams) {
       this.projectKey = $routeParams.projectId;
@@ -12,6 +14,8 @@ module egrid.app {
         .then(project => {
           this.name = project.name;
           this.note = project.note;
+          this.created_at = project.created_at;
+          this.updated_at = project.updated_at;
         })
         ;
     }

@@ -1,33 +1,32 @@
 <div>
   <h2>{{participant.name}}</h2>
 
-  <ul class="breadcrumb">
+  <ol class="breadcrumb">
     <li>
-      <a href="/#/projects">{{ 'PROJECT.PROJECTS' | translate }}</a> <span class="divider">/</span>
+      <a href="/#/projects">{{ 'PROJECT.PROJECTS' | translate }}</a>
     </li>
     <li>
       <a href="/#/projects/{{participant.project.key}}">{{participant.project.name}}</a>
-      <span class="divider">/</span>
     </li>
     <li class="active">
       {{participant.name}}
     </li>
-  </ul>
+  </ol>
 
   <div tabset>
     <div tab heading="{{ 'ACTION.DETAIL' | translate }}">
       <form class="form-horizontal" ng-submit="createParticipant()">
-        <div class="control-group">
-          <label class="control-label" for="name">{{ 'PARTICIPANT.ATTRIBUTES.NAME' | translate }}</label>
-          <div class="controls">
-            <input type="text" name="name" placeholder="{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NAME' | translate }}" ng-model="participant.name"/>
+        <div class="form-group">
+          <label class="col-sm-2 control-label" for="name">{{ 'PARTICIPANT.ATTRIBUTES.NAME' | translate }}</label>
+          <div class="col-sm-10">
+            <input class="form-control" type="text" name="name" placeholder="{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NAME' | translate }}" ng-model="participant.name"/>
           </div>
         </div>
 
-        <div class="control-group">
-          <label class="control-label" for="note">{{ 'PARTICIPANT.ATTRIBUTES.NOTE' | translate }}</label>
-          <div class="controls">
-            <textarea name="note" rows="3" placeholder="{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate }}" ng-model="participant.note"></textarea>
+        <div class="form-group">
+          <label class="col-sm-2 control-label" for="note">{{ 'PARTICIPANT.ATTRIBUTES.NOTE' | translate }}</label>
+          <div class="col-sm-10">
+            <textarea class="form-control" name="note" rows="3" placeholder="{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate }}" ng-model="participant.note"></textarea>
           </div>
         </div>
       </form>
@@ -36,11 +35,11 @@
     <div tab heading="{{'EGM.EVALUATION_STRUCTURE' | translate}}" select="drawSvg()">
       <div ng-controller="ParticipantGridController as participantGrid">
         <h3>評価構造図</h3>
-        <div class="navbar">
-          <div class="navbar-inner">
+        <div class="navbar navbar-default">
+          <div class="navbar-collapse">
             <form class="navbar-form">
               <a href="/#{{Url.participantGridUrl(participant.projectKey, participant.participantKey)}}" class="btn btn-primary">{{'ACTION.EDIT' | translate}}</a>
-              <a href="/#{{Url.participantGridUrl(participant.projectKey, participant.participantKey)}}?disableCompletion=1" class="btn">{{'ACTION.EDIT' | translate}}(テキスト補完なし)</a>
+              <a href="/#{{Url.participantGridUrl(participant.projectKey, participant.participantKey)}}?disableCompletion=1" class="btn btn-default">{{'ACTION.EDIT' | translate}}(テキスト補完なし)</a>
             </form>
           </div>
         </div>

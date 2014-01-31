@@ -94,3 +94,13 @@ text.measure {
 .invisible {
   visibility: hidden;
 }
+
+
+
+.tab-content {
+  margin-top: 20px; /* @modal-inner-padding */
+}
+
+.search-control {
+  margin-bottom: 20px;
+}

@@ -64,6 +64,8 @@
     "ATTRIBUTES": {
       "NAME": "Name",
       "NOTE": "Note",
+      "CREATED_AT": "Craeted",
+      "UPDATED_AT": "Updated",
       "PLACEHOLDERS": {
         "NAME": "Participant Name",
         "NOTE": "Note"
@@ -77,6 +79,8 @@
     "ATTRIBUTES": {
       "NAME": "Name",
       "NOTE": "Note",
+      "CREATED_AT": "Craeted",
+      "UPDATED_AT": "Updated",
       "PLACEHOLDERS": {
         "NAME": "Project Name",
         "NOTE": "Note"
