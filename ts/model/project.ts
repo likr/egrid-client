@@ -74,6 +74,13 @@ module egrid.model {
       });
     }
 
+    remove() : JQueryXHR {
+      return $.ajax({
+        url: Project.url(this.key()),
+        type: 'DELETE',
+      });
+    }
+
     public createdAt() : Date {
       return this.createdAt_;
     }

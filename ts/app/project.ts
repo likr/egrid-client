@@ -6,7 +6,7 @@ module egrid.app {
     name : string;
     note : string;
 
-    constructor(private $q, $routeParams) {
+    constructor(private $q, $routeParams, private $location, private $scope) {
       this.projectKey = $routeParams.projectId;
       this.$q.when(model.Project.get(this.projectKey))
         .then(project => {
@@ -28,8 +28,17 @@ module egrid.app {
           // バインドしてるから要らない気はする
           this.name = project.name;
           this.note = project.note;
-          this.createdAt = project.createdAt();
-          this.updatedAt = project.updatedAt();
+        });
+    }
+
+    public remove() {
+      this.$q.when(model.Project.get(this.projectKey))
+        .then((project: model.Project) => {
+          return project.remove();
+        })
+        .then(() => {
+          this.$location.path(egrid.app.Url.projectListUrl());
+          this.$scope.$apply();
         });
     }
   }

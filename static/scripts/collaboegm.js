@@ -73,6 +73,13 @@ var egrid;
                 });
             };
 
+            Project.prototype.remove = function () {
+                return $.ajax({
+                    url: Project.url(this.key()),
+                    type: 'DELETE'
+                });
+            };
+
             Project.prototype.createdAt = function () {
                 return this.createdAt_;
             };
@@ -2593,9 +2600,11 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var ProjectController = (function () {
-            function ProjectController($q, $routeParams) {
+            function ProjectController($q, $routeParams, $location, $scope) {
                 var _this = this;
                 this.$q = $q;
+                this.$location = $location;
+                this.$scope = $scope;
                 this.projectKey = $routeParams.projectId;
                 this.$q.when(egrid.model.Project.get(this.projectKey)).then(function (project) {
                     _this.name = project.name;
@@ -2613,8 +2622,16 @@ var egrid;
                     // バインドしてるから要らない気はする
                     _this.name = project.name;
                     _this.note = project.note;
-                    _this.createdAt = project.createdAt();
-                    _this.updatedAt = project.updatedAt();
+                });
+            };
+
+            ProjectController.prototype.remove = function () {
+                var _this = this;
+                this.$q.when(egrid.model.Project.get(this.projectKey)).then(function (project) {
+                    return project.remove();
+                }).then(function () {
+                    _this.$location.path(egrid.app.Url.projectListUrl());
+                    _this.$scope.$apply();
                 });
             };
             return ProjectController;
@@ -3507,7 +3524,7 @@ var egrid;
                     prefix: 'locations/',
                     suffix: '.json'
                 }).fallbackLanguage("en").preferredLanguage("ja");
-            }]).controller('CollaboratorCreateController', ['$q', '$routeParams', '$location', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$routeParams', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$routeParams', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$routeParams', '$location', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$routeParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$routeParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$routeParams', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$routeParams', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$location', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$routeParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$routeParams', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$routeParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$routeParams', '$location', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$routeParams', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$routeParams', egrid.app.SemProjectQuestionnaireEditController]).run([
+            }]).controller('CollaboratorCreateController', ['$q', '$routeParams', '$location', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$routeParams', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$routeParams', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$routeParams', '$location', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$routeParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$routeParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$routeParams', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$routeParams', '$location', '$scope', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$location', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$routeParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$routeParams', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$routeParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$routeParams', '$location', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$routeParams', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$routeParams', egrid.app.SemProjectQuestionnaireEditController]).run([
             '$rootScope', '$translate', '$http', function ($rootScope, $translate, $http) {
                 $rootScope.Url = egrid.app.Url;
 

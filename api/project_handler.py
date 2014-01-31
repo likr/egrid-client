@@ -15,7 +15,7 @@ class ProjectHandler(webapp2.RequestHandler):
             current_user = User.current_user()
             collaborators = Collaborator.all()\
                 .filter('user =', current_user)
-            projects = [c.project for c in collaborators]
+            projects = [c.project for c in collaborators if c.project.deleted_at is None]
             projects.sort(key=lambda a: a.updated_at)
             content = json.dumps([p.to_dict() for p in projects])
             self.response.write(content)
@@ -41,6 +41,10 @@ class ProjectHandler(webapp2.RequestHandler):
         project.note = data.get('note')
         project.put()
         self.response.write(json.dumps(project.to_dict()))
+
+    def delete(self, project_id):
+        project = Project.get(project_id)
+        project.remove()
 
 
 class ProjectGridHandler(webapp2.RequestHandler):

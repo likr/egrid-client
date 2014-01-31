@@ -2,9 +2,10 @@ from google.appengine.api import users
 from google.appengine.ext import db
 import calendar
 from version import VERSION
+from model_base import DeletableModelBase
 
 
-class EgridModel(db.Model):
+class EgridModel(DeletableModelBase):
     created_at = db.DateTimeProperty(auto_now_add=True)
     updated_at = db.DateTimeProperty(auto_now=True)
     version = db.IntegerProperty(default=VERSION)

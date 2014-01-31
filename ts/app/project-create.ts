@@ -5,8 +5,6 @@ module egrid.app {
   export class ProjectCreateController implements model.ProjectData {
     name : string;
     note : string;
-    created_at : number;
-    updated_at : number;
 
     constructor(private $q, private $location) {
     }
