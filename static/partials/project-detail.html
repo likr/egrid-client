@@ -24,8 +24,15 @@
         </div>
 
         <div class="form-group">
-          <div class="col-sm-offset-2 col-sm-10">
+          <div class="col-sm-offset-2 col-sm-1">
             <input type="submit" class="btn btn-default" value="{{'ACTION.SUBMIT' | translate}}"/>
+          </div>
+        </div>
+      </form>
+      <form class="form-horizontal" ng-submit="project.remove()">
+        <div class="form-group">
+          <div class="col-sm-offset-11 col-sm-1">
+            <input type="submit" class="btn btn-danger" value="{{'ACTION.REMOVE' | translate}}"/>
           </div>
         </div>
       </form>
