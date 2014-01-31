@@ -23,9 +23,13 @@ module egrid.model {
     private updatedAt_: Date;
     public name: string;
     public note: string;
+    public created_at: number;
+    public updated_at: number;
 
     constructor(obj? : ProjectData) {
       if (obj) {
+        // for-in と hasOwnProperty を組み合わせて書き換えるかもしれない
+        // そのとき値の変換を考えよう
         this.name = obj.name;
         this.note = obj.note;
       }

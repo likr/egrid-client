@@ -1,15 +1,17 @@
-/// <reference path="../model/project.ts"/>
-
 module egrid.app {
   export class ProjectListController {
-    list : model.Project[];
+    public projects: model.Project[] = [];
+    public itemsPerPage = 2;
+    public currentPage = 1;
+    public predicate = 'created_at';
+    public reverse = false;
 
-    constructor($q) {
-      $q.when(model.Project.query())
+    constructor($q, $scope) {
+      $q
+        .when(model.Project.query())
         .then((projects : model.Project[]) => {
-          this.list = projects;
-        })
-        ;
+          this.projects = projects;
+        });
     }
   }
 }
