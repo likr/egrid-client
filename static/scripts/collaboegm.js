@@ -2552,9 +2552,15 @@ var egrid;
         var ParticipantListController = (function () {
             function ParticipantListController($q, $routeParams) {
                 var _this = this;
+                this.participants = [];
+                this.itemsPerPage = 2;
+                this.currentPage = 1;
+                this.predicate = 'created_at';
+                this.reverse = false;
                 this.projectId = $routeParams.projectId;
+
                 $q.when(egrid.model.Participant.query(this.projectId)).then(function (participants) {
-                    _this.list = participants;
+                    _this.participants = participants;
                 });
             }
             return ParticipantListController;
