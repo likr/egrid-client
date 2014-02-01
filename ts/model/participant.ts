@@ -54,11 +54,11 @@ module egrid.model {
       return this.key_;
     }
 
-    public createdAt() : Date {
+    public get createdAt() : Date {
       return this.createdAt_;
     }
 
-    public updatedAt() : Date {
+    public get updatedAt() : Date {
       return this.updatedAt_;
     }
 

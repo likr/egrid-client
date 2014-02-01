@@ -39,36 +39,33 @@
                 </form>
               </nav>
             </div>
-            <table class="table">
+            <table class="table table-bordered">
               <thead>
                 <tr>
-                  <th>#</th>
-                  <th>
-                    <a href ng-click="ctrl.predicate = 'name'">{{'PARTICIPANT.ATTRIBUTES.NAME' | translate}}</a>
-                    (<a href ng-click="ctrl.predicate = '-name'">^</a>)
+                  <th class="col-sm-1">#</th>
+                  <th class="col-sm-3">
+                    <a href ng-click="ctrl.changeOrder('name')">{{'PARTICIPANT.ATTRIBUTES.NAME' | translate}}</a>
                   </th>
-                  <th>
-                    <a href ng-click="ctrl.predicate = 'created_at'">{{'PARTICIPANT.ATTRIBUTES.CREATED_AT' | translate}}</a>
-                    (<a href ng-click="ctrl.predicate = '-created_at'">^</a>)
+                  <th class="col-sm-3">
+                    <a href ng-click="ctrl.changeOrder('createdAt')">{{'PARTICIPANT.ATTRIBUTES.CREATED_AT' | translate}}</a>
                   </th>
-                  <th>
-                    <a href ng-click="ctrl.predicate = 'updated_at'">{{'PARTICIPANT.ATTRIBUTES.UPDATED_AT' | translate}}</a>
-                    (<a href ng-click="ctrl.predicate = '-updated_at'">^</a>)
+                  <th class="col-sm-3">
+                    <a href ng-click="ctrl.changeOrder('updatedAt')">{{'PARTICIPANT.ATTRIBUTES.UPDATED_AT' | translate}}</a>
                   </th>
-                  <th>{{'ACTION.ACTION' | translate}}</th>
+                  <th class="col-sm-2">{{'ACTION.ACTION' | translate}}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr ng-repeat="participant in ctrl.participants | filter:ctrl.query | orderBy:ctrl.predicate:ctrl.reverse | pager:ctrl.currentPage:ctrl.itemsPerPage">
                   <td>{{$index + 1 + ctrl.itemsPerPage * (ctrl.currentPage - 1)}}</td>
                   <td>{{participant.name}}</td>
-                  <td>{{participant.createdAt() | date}}</td>
-                  <td>{{participant.updatedAt() | date}}</td>
+                  <td>{{participant.createdAt | date:'yyyy/MM/dd HH:mm'}}</td>
+                  <td>{{participant.updatedAt | date:'yyyy/MM/dd HH:mm'}}</td>
                   <td><a href="/#{{Url.participantUrl(participant)}}">{{'ACTION.SHOW' | translate}}</a>
                 </tr>
               </tbody>
             </table>
-            <pagination total-items="ctrl.participants.length" page="ctrl.currentPage" items-per-page="ctrl.itemsPerPage"></pagination>
+            <pagination total-items="ctrl.participants | filter:ctrl.query | count" page="ctrl.currentPage" items-per-page="ctrl.itemsPerPage"></pagination>
           </div>
         </div>
 

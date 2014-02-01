@@ -54,13 +54,21 @@ var egrid;
                 });
             };
 
-            Project.prototype.createdAt = function () {
-                return this.createdAt_;
-            };
+            Object.defineProperty(Project.prototype, "createdAt", {
+                get: function () {
+                    return this.createdAt_;
+                },
+                enumerable: true,
+                configurable: true
+            });
 
-            Project.prototype.updatedAt = function () {
-                return this.updatedAt_;
-            };
+            Object.defineProperty(Project.prototype, "updatedAt", {
+                get: function () {
+                    return this.updatedAt_;
+                },
+                enumerable: true,
+                configurable: true
+            });
 
             Project.prototype.url = function () {
                 return Project.url(this.key());
@@ -223,13 +231,21 @@ var egrid;
                 return this.key_;
             };
 
-            Participant.prototype.createdAt = function () {
-                return this.createdAt_;
-            };
+            Object.defineProperty(Participant.prototype, "createdAt", {
+                get: function () {
+                    return this.createdAt_;
+                },
+                enumerable: true,
+                configurable: true
+            });
 
-            Participant.prototype.updatedAt = function () {
-                return this.updatedAt_;
-            };
+            Object.defineProperty(Participant.prototype, "updatedAt", {
+                get: function () {
+                    return this.updatedAt_;
+                },
+                enumerable: true,
+                configurable: true
+            });
 
             Participant.get = function (projectKey, participantKey) {
                 return $.ajax({
@@ -2663,26 +2679,52 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../model/participant.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
-        var ParticipantListController = (function () {
+        var PaginationController = (function () {
+            function PaginationController() {
+                this.currentPage = 1;
+                this.reverse = false;
+            }
+            PaginationController.prototype.changeOrder = function (predicate) {
+                if (predicate == this.predicate) {
+                    this.reverse = !this.reverse;
+                } else {
+                    this.currentPage = 1;
+                    this.reverse = false;
+                    this.predicate = predicate;
+                }
+            };
+            return PaginationController;
+        })();
+        app.PaginationController = PaginationController;
+    })(egrid.app || (egrid.app = {}));
+    var app = egrid.app;
+})(egrid || (egrid = {}));
+/// <reference path="../model/participant.ts"/>
+/// <reference path="pagination.ts"/>
+var egrid;
+(function (egrid) {
+    (function (app) {
+        var ParticipantListController = (function (_super) {
+            __extends(ParticipantListController, _super);
             function ParticipantListController($q, $routeParams) {
                 var _this = this;
+                _super.call(this);
                 this.participants = [];
-                this.itemsPerPage = 2;
-                this.currentPage = 1;
-                this.predicate = 'created_at';
-                this.reverse = false;
+
                 this.projectId = $routeParams.projectId;
+                this.itemsPerPage = 5;
+                this.predicate = 'updatedAt';
+                this.reverse = true;
 
                 $q.when(egrid.model.Participant.query(this.projectId)).then(function (participants) {
                     _this.participants = participants;
                 });
             }
             return ParticipantListController;
-        })();
+        })(egrid.app.PaginationController);
         app.ParticipantListController = ParticipantListController;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
@@ -2883,23 +2925,28 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../model/project.ts"/>
+/// <reference path="pagination.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
-        var ProjectListController = (function () {
+        var ProjectListController = (function (_super) {
+            __extends(ProjectListController, _super);
             function ProjectListController($q) {
                 var _this = this;
+                _super.call(this);
                 this.projects = [];
-                this.itemsPerPage = 2;
-                this.currentPage = 1;
-                this.predicate = 'created_at';
-                this.reverse = false;
+
+                this.itemsPerPage = 5;
+                this.predicate = 'updatedAt';
+                this.reverse = true;
+
                 $q.when(egrid.model.Project.query()).then(function (projects) {
                     _this.projects = projects;
                 });
             }
             return ProjectListController;
-        })();
+        })(egrid.app.PaginationController);
         app.ProjectListController = ProjectListController;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
@@ -3589,7 +3636,11 @@ var egrid;
                 }).otherwise({
                     redirectTo: egrid.app.Url.projectListUrl()
                 });
-            }]).config([
+            }]).filter('count', function () {
+            return function (input) {
+                return input.length;
+            };
+        }).config([
             "$translateProvider", function ($translateProvider) {
                 $translateProvider.useStaticFilesLoader({
                     prefix: 'locations/',
