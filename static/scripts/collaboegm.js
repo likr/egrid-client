@@ -220,8 +220,8 @@ var egrid;
             Participant.prototype.save = function () {
                 var _this = this;
                 return $.ajax({
-                    url: Participant.url(this.projectKey),
-                    type: 'POST',
+                    url: Participant.url(this.projectKey, this.key()),
+                    type: this.key() ? 'PUT' : 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
                         name: this.name,
@@ -484,14 +484,27 @@ var egrid;
         var ParticipantController = (function () {
             function ParticipantController($q, $routeParams) {
                 var _this = this;
+                this.$q = $q;
                 this.participantKey = $routeParams.participantId;
                 this.projectKey = $routeParams.projectId;
-                $q.when(egrid.model.Participant.get(this.projectKey, this.participantKey)).then(function (participant) {
+                this.$q.when(egrid.model.Participant.get(this.projectKey, this.participantKey)).then(function (participant) {
                     _this.name = participant.name;
                     _this.note = participant.note;
                     _this.project = participant.project;
                 });
             }
+            ParticipantController.prototype.update = function () {
+                var _this = this;
+                this.$q.when(egrid.model.Participant.get(this.projectKey, this.participantKey)).then(function (participant) {
+                    participant.name = _this.name;
+                    participant.note = _this.note;
+
+                    return participant.save();
+                }).then(function (participant) {
+                    _this.name = participant.name;
+                    _this.note = participant.note;
+                });
+            };
             return ParticipantController;
         })();
         app.ParticipantController = ParticipantController;

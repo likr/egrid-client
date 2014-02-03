@@ -35,8 +35,8 @@ module egrid.model {
 
     save() : JQueryXHR {
       return $.ajax({
-        url: Participant.url(this.projectKey),
-        type: 'POST',
+        url: Participant.url(this.projectKey, this.key()),
+        type: this.key() ? 'PUT' : 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
           name: this.name,

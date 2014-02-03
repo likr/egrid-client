@@ -9,16 +9,30 @@ module egrid.app {
     project : model.ProjectData;
     projectKey : string;
 
-    constructor($q, $routeParams) {
+    constructor(private $q, $routeParams) {
       this.participantKey = $routeParams.participantId;
       this.projectKey = $routeParams.projectId;
-      $q.when(model.Participant.get(this.projectKey, this.participantKey))
+      this.$q.when(model.Participant.get(this.projectKey, this.participantKey))
         .then((participant : model.Participant) => {
           this.name = participant.name;
           this.note = participant.note;
           this.project = participant.project;
         })
         ;
+    }
+
+    public update() {
+      this.$q.when(model.Participant.get(this.projectKey, this.participantKey))
+        .then((participant: model.Participant) => {
+          participant.name = this.name;
+          participant.note = this.note;
+
+          return participant.save();
+        })
+        .then((participant: model.Participant) => {
+          this.name = participant.name;
+          this.note = participant.note;
+        });
     }
   }
 }
