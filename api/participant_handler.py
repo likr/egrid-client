@@ -28,6 +28,14 @@ class ParticipantHandler(webapp2.RequestHandler):
         participant.put()
         self.response.write(json.dumps(participant.to_dict()))
 
+    def put(self, project_id, participant_id):
+        data = json.loads(self.request.body)
+        participant = Participant.get(participant_id)
+        participant.name = data.get('name')
+        participant.note = data.get('note')
+        participant.put()
+        self.response.write(json.dumps(participant.to_dict()))
+
 
 class ParticipantGridHandler(webapp2.RequestHandler):
     def get(self, project_id, participant_id):
