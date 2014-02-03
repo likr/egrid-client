@@ -19,7 +19,7 @@
 /// <reference path="url.ts"/>
 
 module egrid.app {
-  angular.module('collaboegm', ['paginator', 'ngRoute', "ui.bootstrap", "pascalprecht.translate"])
+  angular.module('collaboegm', ['paginator', 'ui.router', "ui.bootstrap", "pascalprecht.translate"])
     .directive('focusMe', ['$timeout', function($timeout) {
       return {
          link: function (scope, element, attrs, model) {
@@ -29,45 +29,45 @@ module egrid.app {
           }
       };
     }])
-    .config(['$routeProvider', $routeProvider => {
-      $routeProvider
-        .when(Url.projectGridUrlBase, {
-          controller: 'ProjectGridController',
-          controllerAs: 'projectGrid',
-          templateUrl: '/partials/egm-show-all.html',
-        })
-        .when(Url.participantGridUrlBase, {
-          controller: 'ParticipantGridEditController',
-          controllerAs: 'participantGrid',
-          templateUrl: '/partials/egm-edit.html',
-        })
-        .when(Url.participantUrlBase, {
-          controller: 'ParticipantController',
-          controllerAs: 'participant',
-          templateUrl: '/partials/participant-detail.html',
-        })
-        .when(Url.semProjectUrlBase, {
-          controller: 'SemProjectController',
-          controllerAs: 'semProject',
-          templateUrl: '/partials/sem-project-detail.html',
-        })
-        .when(Url.projectUrlBase, {
-          controller: 'ProjectController',
-          controllerAs: 'project',
+    .config(['$stateProvider', '$urlRouterProvider', ($stateProvider, $urlRouterProvider) => {
+      $stateProvider
+        .state('project', {
+          url: Url.projectUrlBase,
+          controller: 'ProjectController as project',
           templateUrl: '/partials/project-detail.html',
         })
-        .when(Url.projectListUrlBase, {
+        .state('details', {
+          parent: 'project',
+          url: '/details',
+          template: 'Test1',
+        })
+        .state('grid', {
+          url: Url.projectGridUrlBase,
+          controller: 'ProjectGridController as projectGrid',
+          templateUrl: '/partials/egm-show-all.html',
+        })
+        .state('gridedit', {
+          url: Url.participantGridUrlBase,
+          controller: 'ParticipantGridEditController as participantGrid',
+          templateUrl: '/partials/egm-edit.html',
+        })
+        .state('sem', {
+          url: Url.semProjectUrlBase,
+          controller: 'SemProjectController as semProject',
+          templateUrl: '/partials/sem-project-detail.html',
+        })
+        .state('projects', {
+          url: Url.projectListUrlBase,
           templateUrl: '/partials/project-list.html',
         })
-        .when("/help", {
+        .state("/help", {
           templateUrl: '/partials/help.html',
         })
-        .when("/about", {
+        .state("/about", {
           templateUrl: '/partials/about.html',
-        })
-        .otherwise({
-          redirectTo : Url.projectListUrl(),
         });
+      //$urlRouterProvider
+      //  .otherwise(Url.projectListUrlBase);
     }])
     .filter('count', () => {
       return (input : any[]) => input.length;
@@ -81,22 +81,22 @@ module egrid.app {
         .fallbackLanguage("en")
         .preferredLanguage("ja");
     }])
-    .controller('CollaboratorCreateController', ['$q', '$routeParams', '$location', CollaboratorCreateController])
-    .controller('CollaboratorListController', ['$q', '$routeParams', '$scope', '$modal', CollaboratorListController])
-    .controller('ParticipantController', ['$q', '$routeParams', '$scope', '$location', '$modal', ParticipantController])
-    .controller('ParticipantCreateController', ['$q', '$routeParams', '$location', ParticipantCreateController])
-    .controller('ParticipantGridController', ['$q', '$routeParams', '$scope', ParticipantGridController])
-    .controller('ParticipantGridEditController', ['$q', '$routeParams', '$location', '$modal', '$scope', ParticipantGridEditController])
-    .controller('ParticipantListController', ['$q', '$routeParams', ParticipantListController])
-    .controller('ProjectController', ['$q', '$routeParams', '$location', '$scope', '$modal', ProjectController])
+    .controller('CollaboratorCreateController', ['$q', '$stateParams', '$location', CollaboratorCreateController])
+    .controller('CollaboratorListController', ['$q', '$stateParams', '$scope', '$modal', CollaboratorListController])
+    .controller('ParticipantController', ['$q', '$stateParams', '$scope', '$location', '$modal', ParticipantController])
+    .controller('ParticipantCreateController', ['$q', '$stateParams', '$location', ParticipantCreateController])
+    .controller('ParticipantGridController', ['$q', '$stateParams', '$scope', ParticipantGridController])
+    .controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', ParticipantGridEditController])
+    .controller('ParticipantListController', ['$q', '$stateParams', ParticipantListController])
+    .controller('ProjectController', ['$q', '$stateParams', '$location', '$scope', '$modal', ProjectController])
     .controller('ProjectCreateController', ['$q', '$location', ProjectCreateController])
-    .controller('ProjectGridController', ['$q', '$routeParams', '$modal', '$scope', ProjectGridController])
+    .controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', ProjectGridController])
     .controller('ProjectListController', ['$q', ProjectListController])
-    .controller('SemProjectController', ['$q', '$routeParams', SemProjectController])
-    .controller('SemProjectAnalysisController', ['$q', '$routeParams', SemProjectAnalysisController])
-    .controller('SemProjectCreateController', ['$q', '$routeParams', '$location', SemProjectCreateController])
-    .controller('SemProjectListController', ['$q', '$routeParams', SemProjectListController])
-    .controller('SemProjectQuestionnaireEditController', ['$q', '$routeParams', SemProjectQuestionnaireEditController])
+    .controller('SemProjectController', ['$q', '$stateParams', SemProjectController])
+    .controller('SemProjectAnalysisController', ['$q', '$stateParams', SemProjectAnalysisController])
+    .controller('SemProjectCreateController', ['$q', '$stateParams', '$location', SemProjectCreateController])
+    .controller('SemProjectListController', ['$q', '$stateParams', SemProjectListController])
+    .controller('SemProjectQuestionnaireEditController', ['$q', '$stateParams', SemProjectQuestionnaireEditController])
     .run(['$rootScope', '$translate', '$http', ($rootScope, $translate, $http) => {
       $rootScope.Url = Url;
 

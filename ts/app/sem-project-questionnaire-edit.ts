@@ -13,9 +13,9 @@ module egrid.app {
     private egm : EGM;
     private overallEgm : EGM;
 
-    constructor(private $q, $routeParams, private $location) {
-      this.projectKey = $routeParams.projectId;
-      this.semProjectKey = $routeParams.semProjectId;
+    constructor(private $q, $stateParams, private $location) {
+      this.projectKey = $stateParams.projectId;
+      this.semProjectKey = $stateParams.semProjectId;
       this.data = new model.SemProjectQuestionnaire({
         projectKey: this.projectKey,
         semProjectKey: this.semProjectKey,

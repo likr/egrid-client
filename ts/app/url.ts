@@ -39,6 +39,8 @@ module egrid.app {
     static projectUrl(project : any) : string {
       if (project instanceof model.Project) {
         return '/projects/' + project.key();
+      } else if (project.hasOwnProperty('projectKey')) {
+        return '/projects/' + project.projectKey;
       } else {
         return '/projects/' + project;
       }

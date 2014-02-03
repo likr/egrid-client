@@ -5,8 +5,8 @@ module egrid.app {
     projectKey : string;
     list : model.Collaborator[];
 
-    constructor(private $q, $routeParams, private $scope, private $modal) {
-      this.projectKey = $routeParams.projectId;
+    constructor(private $q, $stateParams, private $scope, private $modal) {
+      this.projectKey = $stateParams.projectId;
       this.$q.when(model.Collaborator.query(this.projectKey))
         .then((collaborators : model.Collaborator[]) => {
           this.list = collaborators;

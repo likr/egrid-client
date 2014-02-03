@@ -4,8 +4,8 @@ module egrid.app {
   export class SemProjectListController {
     list : model.SemProject[];
 
-    constructor($q, $routeParams) {
-      var projectId = $routeParams.projectId;
+    constructor($q, $stateParams) {
+      var projectId = $stateParams.projectId;
       $q.when(model.SemProject.query(projectId))
         .then((semProjects : model.SemProject[]) => {
           this.list = semProjects;

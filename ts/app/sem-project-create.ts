@@ -6,8 +6,8 @@ module egrid.app {
     name : string;
     projectKey : string;
 
-    constructor(private $q, $routeParams, private $location) {
-      this.projectKey = $routeParams.projectId;
+    constructor(private $q, $stateParams, private $location) {
+      this.projectKey = $stateParams.projectId;
     }
 
     submit() {
