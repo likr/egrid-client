@@ -217,11 +217,15 @@ var egrid;
                 this.project = obj.project;
                 this.projectKey = obj.projectKey;
             }
+            Participant.prototype.key = function () {
+                return this.key_;
+            };
+
             Participant.prototype.save = function () {
                 var _this = this;
                 return $.ajax({
-                    url: Participant.url(this.projectKey),
-                    type: 'POST',
+                    url: Participant.url(this.projectKey, this.key()),
+                    type: this.key() ? 'PUT' : 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
                         name: this.name,
@@ -235,8 +239,11 @@ var egrid;
                 });
             };
 
-            Participant.prototype.key = function () {
-                return this.key_;
+            Participant.prototype.remove = function () {
+                return $.ajax({
+                    url: Participant.url(this.projectKey, this.key()),
+                    type: 'DELETE'
+                });
             };
 
             Object.defineProperty(Participant.prototype, "createdAt", {
@@ -482,16 +489,60 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var ParticipantController = (function () {
-            function ParticipantController($q, $routeParams) {
+            function ParticipantController($q, $routeParams, $scope, $location, $modal) {
                 var _this = this;
+                this.$q = $q;
+                this.$scope = $scope;
+                this.$location = $location;
+                this.$modal = $modal;
                 this.participantKey = $routeParams.participantId;
                 this.projectKey = $routeParams.projectId;
-                $q.when(egrid.model.Participant.get(this.projectKey, this.participantKey)).then(function (participant) {
+                this.$q.when(egrid.model.Participant.get(this.projectKey, this.participantKey)).then(function (participant) {
                     _this.name = participant.name;
                     _this.note = participant.note;
                     _this.project = participant.project;
                 });
             }
+            ParticipantController.prototype.update = function () {
+                var _this = this;
+                this.$q.when(egrid.model.Participant.get(this.projectKey, this.participantKey)).then(function (participant) {
+                    participant.name = _this.name;
+                    participant.note = _this.note;
+
+                    return participant.save();
+                }).then(function (participant) {
+                    _this.name = participant.name;
+                    _this.note = participant.note;
+                });
+            };
+
+            ParticipantController.prototype.confirm = function () {
+                var _this = this;
+                var modalInstance = this.$modal.open({
+                    templateUrl: '/partials/remove-item-dialog.html',
+                    controller: function ($scope, $modalInstance) {
+                        $scope.ok = function () {
+                            $modalInstance.close();
+                        }, $scope.cancel = function () {
+                            $modalInstance.dismiss();
+                        };
+                    }
+                });
+
+                modalInstance.result.then(function () {
+                    _this.remove();
+                });
+            };
+
+            ParticipantController.prototype.remove = function () {
+                var _this = this;
+                this.$q.when(egrid.model.Participant.get(this.projectKey, this.participantKey)).then(function (participant) {
+                    return participant.remove();
+                }).then(function () {
+                    _this.$location.path(egrid.app.Url.projectUrl(_this.projectKey));
+                    _this.$scope.$apply();
+                });
+            };
             return ParticipantController;
         })();
         app.ParticipantController = ParticipantController;
@@ -3697,7 +3748,7 @@ var egrid;
                     prefix: 'locations/',
                     suffix: '.json'
                 }).fallbackLanguage("en").preferredLanguage("ja");
-            }]).controller('CollaboratorCreateController', ['$q', '$routeParams', '$location', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$routeParams', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$routeParams', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$routeParams', '$location', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$routeParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$routeParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$routeParams', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$routeParams', '$location', '$scope', '$modal', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$location', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$routeParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$routeParams', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$routeParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$routeParams', '$location', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$routeParams', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$routeParams', egrid.app.SemProjectQuestionnaireEditController]).run([
+            }]).controller('CollaboratorCreateController', ['$q', '$routeParams', '$location', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$routeParams', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$routeParams', '$scope', '$location', '$modal', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$routeParams', '$location', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$routeParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$routeParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$routeParams', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$routeParams', '$location', '$scope', '$modal', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$location', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$routeParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$routeParams', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$routeParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$routeParams', '$location', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$routeParams', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$routeParams', egrid.app.SemProjectQuestionnaireEditController]).run([
             '$rootScope', '$translate', '$http', function ($rootScope, $translate, $http) {
                 $rootScope.Url = egrid.app.Url;
 
