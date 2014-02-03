@@ -12,8 +12,8 @@ module egrid.model {
 
   interface ApiParticipantData extends ParticipantData {
     key : string;
-    created_at: string;
-    updated_at: string;
+    createdAt: string;
+    updatedAt: string;
   }
 
 
@@ -89,8 +89,8 @@ module egrid.model {
     private static load(obj : ApiParticipantData) : Participant {
       var participant = new Participant(obj);
       participant.key_ = obj.key;
-      participant.createdAt_ = new Date(obj.created_at);
-      participant.updatedAt_ = new Date(obj.updated_at);
+      participant.createdAt_ = new Date(obj.createdAt);
+      participant.updatedAt_ = new Date(obj.updatedAt);
       return participant;
     }
 

@@ -282,8 +282,8 @@ var egrid;
             Participant.load = function (obj) {
                 var participant = new Participant(obj);
                 participant.key_ = obj.key;
-                participant.createdAt_ = new Date(obj.created_at);
-                participant.updatedAt_ = new Date(obj.updated_at);
+                participant.createdAt_ = new Date(obj.createdAt);
+                participant.updatedAt_ = new Date(obj.updatedAt);
                 return participant;
             };
 
