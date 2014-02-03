@@ -33,6 +33,10 @@ module egrid.model {
       this.projectKey = obj.projectKey;
     }
 
+    key() : string {
+      return this.key_;
+    }
+
     save() : JQueryXHR {
       return $.ajax({
         url: Participant.url(this.projectKey, this.key()),
@@ -50,8 +54,11 @@ module egrid.model {
       });
     }
 
-    key() : string {
-      return this.key_;
+    remove() : JQueryXHR {
+      return $.ajax({
+        url: Participant.url(this.projectKey, this.key()),
+        type: 'DELETE',
+      });
     }
 
     public get createdAt() : Date {
