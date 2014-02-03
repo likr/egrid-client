@@ -62,11 +62,11 @@ module egrid.model {
       });
     }
 
-    public createdAt() : Date {
+    public get createdAt() : Date {
       return this.createdAt_;
     }
 
-    public updatedAt() : Date {
+    public get updatedAt() : Date {
       return this.updatedAt_;
     }
 

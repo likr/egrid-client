@@ -456,7 +456,7 @@ module egrid {
     }
 
 
-    layout(checkActive : boolean = false) : void {
+    layout(checkActive : boolean = false, lineUpTop : boolean = true, lineUpBottom : boolean = true) : void {
       var nodes = this.nodes_;
       var links = this.links_;
       if (checkActive) {
@@ -464,33 +464,25 @@ module egrid {
         links = links.filter(link => link.source.active && link.target.active);
       }
 
-      nodes.forEach(node => {
-        var tmp = node.height;
-        node.height = node.width;
-        node.width = tmp
-      });
-
       dagre.layout()
         .nodes(nodes)
         .edges(links)
+        .lineUpTop(lineUpTop)
+        .lineUpBottom(lineUpBottom)
+        .rankDir("LR")
         .rankSep(200)
         .edgeSep(20)
         .run()
         ;
 
       nodes.forEach(node => {
-        node.x = node.dagre.y;
-        node.y = node.dagre.x;
-        node.width = node.dagre.height;
-        node.height = node.dagre.width;
+        node.x = node.dagre.x;
+        node.y = node.dagre.y;
+        node.width = node.dagre.width;
+        node.height = node.dagre.height;
       });
 
       links.forEach(link => {
-        link.dagre.points.forEach(point => {
-          var tmp = point.x;
-          point.x = point.y;
-          point.y = tmp;
-        });
         link.previousPoints = link.points;
         link.points = link.dagre.points.map(p => p);
         link.points.unshift(link.source.right());

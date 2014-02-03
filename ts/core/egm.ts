@@ -20,12 +20,18 @@ module egrid {
     public viewMode : ViewMode;
     public inactiveNode : InactiveNode;
     public scalingConnection : boolean;
+    public lineUpTop : boolean;
+    public lineUpBottom : boolean;
+    public showGuide : boolean;
 
     static default() : EgmOption {
       var option = new EgmOption;
       option.viewMode = ViewMode.Normal;
       option.inactiveNode = InactiveNode.Transparent;
       option.scalingConnection = true;
+      option.lineUpTop = true;
+      option.lineUpBottom = true;
+      option.showGuide = false;
       return option;
     }
   }
@@ -163,7 +169,11 @@ module egrid {
         })
         ;
 
-      this.grid().layout(this.options_.inactiveNode == InactiveNode.Hidden);
+      this.grid()
+        .layout(
+            this.options_.inactiveNode == InactiveNode.Hidden,
+            this.options_.lineUpTop,
+            this.options_.lineUpBottom);
 
       this.rootSelection.selectAll(".contents .links .link path")
         .filter(link => link.previousPoints.length != link.points.length)
@@ -205,8 +215,8 @@ module egrid {
         .attr("transform", link => {
           return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
         })
-        .attr("opacity", link => {
-          return link.source == selectedNode || link.target == selectedNode ? 1 : 0;
+        .style('visibility', link => {
+          return link.source == selectedNode || link.target == selectedNode ? 'visible' : 'hidden';
         })
         ;
       transition.each("end", () => {
@@ -214,6 +224,8 @@ module egrid {
       });
 
       this.rescale();
+
+      this.drawGuide();
 
       return this;
     }
@@ -239,8 +251,8 @@ module egrid {
           .classed("connected", true)
           ;
        d3.selectAll(".link .removeLinkButton")
-          .attr("opacity", link => {
-            return link.source == d || link.target == d ? 1 : 0;
+          .style('visibility', link => {
+            return link.source == d || link.target == d ? 'visible' : 'hidden';
           })
           ;
       }
@@ -295,7 +307,7 @@ module egrid {
           .attr("transform", link => {
             return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
           })
-          .attr("opacity", 0)
+          .style('visibility', 'hidden')
           .on("click", (d) => {
             this.grid().removeLink(d.index);
             this.draw();
@@ -370,6 +382,16 @@ module egrid {
     }
 
 
+    resize(width : number, height : number) : void {
+      this.displayWidth = width;
+      this.displayHeight = height;
+      this.rootSelection
+        .attr("viewBox", (new Svg.ViewBox(0, 0, this.displayWidth, this.displayHeight)).toString())
+        ;
+      this.drawGuide();
+    }
+
+
     /**
      * Generates a function to init display region.
      * @method display
@@ -398,6 +420,7 @@ module egrid {
         this.contentsSelection = selection.append("g").classed("contents", true);
         this.contentsSelection.append("g").classed("links", true);
         this.contentsSelection.append("g").classed("nodes", true);
+        this.createGuide(selection);
 
         this.contentsZoomBehavior = d3.behavior.zoom()
           .on("zoom", () => {
@@ -410,7 +433,155 @@ module egrid {
           })
           ;
         selection.call(this.contentsZoomBehavior);
+        selection.on('dblclick.zoom', null);
       };
+    }
+
+
+    private createGuide(selection : D3.Selection) : void {
+      var guideSelection = selection.append('g')
+        .classed('guide', true)
+        .style('visibility', 'hidden')
+        ;
+      guideSelection.append('defs')
+        .call(selection => {
+          selection.append('marker')
+            .attr({
+              'id': 'arrow-start-marker',
+              'markerUnits': 'strokeWidth',
+              'markerWidth': 3,
+              'markerHeight': 3,
+              'viewBox': '0 0 10 10',
+              'refX': 5,
+              'refY': 5,
+            })
+            .append('polygon')
+            .attr({
+              'points': '10,0 5,5 10,10 0,5',
+              'fill': 'black',
+            })
+            ;
+          selection.append('marker')
+            .attr({
+              'id': 'arrow-end-marker',
+              'markerUnits': 'strokeWidth',
+              'markerWidth': 3,
+              'markerHeight': 3,
+              'viewBox': '0 0 10 10',
+              'refX': 5,
+              'refY': 5,
+            })
+            .append('polygon')
+            .attr({
+              'points': '0,0 5,5 0,10 10,5',
+              'fill': 'black',
+            })
+            ;
+        })
+        ;
+
+      guideSelection.append('rect')
+        .classed('guide-rect', true)
+        .attr({
+          'opacity': 0.9,
+          'fill': 'lightgray'
+        })
+        ;
+      guideSelection.append('path')
+        .classed('guide-axis', true)
+        .attr({
+          'stroke': 'black',
+          'stroke-width': 5,
+          'marker-start': 'url(#arrow-start-marker)',
+          'marker-end': 'url(#arrow-end-marker)',
+        })
+        ;
+      guideSelection.append('text')
+        .classed('guide-upper-label', true)
+        .text('上位項目')
+        .attr({
+          'y': 25,
+          'text-anchor': 'start',
+          'font-size': '1.5em',
+        })
+        ;
+      guideSelection.append('text')
+        .classed('guide-lower-label', true)
+        .text('下位項目')
+        .attr({
+          'y': 25,
+          'text-anchor': 'end',
+          'font-size': '1.5em',
+        })
+        ;
+      var upperElementTexts = [
+        '○○だと、なぜいいのですか？',
+        '○○が重要な理由は？',
+        '○○だとどのように感じますか？',
+        '○○であることには、どんないい点があるのですか？',
+      ];
+      guideSelection.append('g')
+        .selectAll('text.guide-upper-question')
+        .data(upperElementTexts)
+        .enter()
+        .append('text')
+        .classed('guide-upper-question', true)
+        .text(d => d)
+        .attr({
+          'y': (_, i) => 20 * i + 60,
+          'text-anchor': 'start'
+        })
+        ;
+      var lowerElementTexts = [
+        '○○のどこがいいのですか？',
+        'どういった点で○○が重要なのですか？',
+        '○○であるためには、具体的に何がどうなっていることが必要だと思いますか？',
+      ];
+      guideSelection.append('g')
+        .selectAll('text.guide-lower-question')
+        .data(lowerElementTexts)
+        .enter()
+        .append('text')
+        .classed('guide-lower-question', true)
+        .text(d => d)
+        .attr({
+          'y': (_, i) => 20 * i + 60,
+          'text-anchor': 'end'
+        })
+        ;
+    }
+
+
+    private drawGuide() : void {
+      var guideHeight = 130;
+      var line = d3.svg.line();
+      var axisFrom = [this.displayWidth * 0.1, 35];
+      var axisTo = [this.displayWidth * 0.9, 35];
+      var guideSelection = this.rootSelection.select('.guide')
+        .attr('transform', 'translate(0,' + (this.displayHeight - guideHeight) + ')')
+        .style('visibility', this.options_.showGuide ? 'visible' : 'hidden')
+        ;
+      guideSelection.select('.guide-rect')
+        .attr({
+          'width': this.displayWidth,
+          'height': guideHeight,
+        })
+        ;
+      guideSelection.select('.guide-axis')
+        .attr('d', line([axisFrom, axisTo]))
+        ;
+      guideSelection.select('.guide-upper-label')
+        .attr('x', axisFrom[0])
+        ;
+      guideSelection.select('.guide-lower-label')
+        .attr('x', axisTo[0])
+        ;
+      guideSelection.selectAll('.guide-upper-question')
+        .attr('x', axisFrom[0])
+        ;
+      guideSelection.selectAll('.guide-lower-question')
+        .attr('x', axisTo[0])
+        ;
     }
 
 
@@ -500,7 +671,7 @@ module egrid {
       this.rootSelection.selectAll(".selected").classed("selected", false);
       this.rootSelection.selectAll(".connected").classed("connected", false);
       this.rootSelection.selectAll(".link .removeLinkButton")
-        .attr("opacity", 0)
+        .style('visibility', 'hidden')
         ;
     }
 

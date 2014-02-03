@@ -12,30 +12,41 @@ module egrid.app {
     egm : EGM;
     grid : model.ParticipantGrid;
     overallNodes : model.ProjectGridNodeData[];
+    disableCompletion : boolean = false;
 
     constructor($q, $routeParams, $location, private $modal, private $scope) {
       this.projectKey = $routeParams.projectId;
       this.participantKey = $routeParams.participantId;
+      if ($routeParams.disableCompletion) {
+        this.disableCompletion = true;
+      }
 
       var egmui = egrid.egmui();
       this.egm = egmui.egm();
       this.egm.showRemoveLinkButton(true);
       this.egm.options().scalingConnection = false;
+      this.egm.options().showGuide = true;
+      var calcHeight = () => {
+        return $(window).height() - 100; //XXX
+      };
       d3.select("#display")
         .attr({
           width: $(window).width(),
-          height: $(window).height(),
+          height: calcHeight(),
         })
-        .call(this.egm.display($(window).width(), $(window).height()))
+        .call(this.egm.display($(window).width(), calcHeight()))
         ;
       d3.select(window)
         .on('resize', () => {
+          var width = $(window).width();
+          var height = calcHeight();
           d3.select("#display")
             .attr({
-              width: $(window).width(),
-              height: $(window).height(),
+              width: width,
+              height: height,
             })
             ;
+          this.egm.resize(width, height);
         })
         ;
 
@@ -46,18 +57,18 @@ module egrid.app {
       d3.select("#undoButton")
         .call(egmui.undoButton()
             .onEnable(() => {
-              d3.select("#undoButtonContainer").classed("disabled", false);
+              d3.select("#undoButton").classed("disabled", false);
             })
             .onDisable(() => {
-              d3.select("#undoButtonContainer").classed("disabled", true);
+              d3.select("#undoButton").classed("disabled", true);
             }));
       d3.select("#redoButton")
         .call(egmui.redoButton()
             .onEnable(() => {
-              d3.select("#redoButtonContainer").classed("disabled", false);
+              d3.select("#redoButton").classed("disabled", false);
             })
             .onDisable(() => {
-              d3.select("#redoButtonContainer").classed("disabled", true);
+              d3.select("#redoButton").classed("disabled", true);
             }));
       d3.select("#saveButton")
         .call(egmui.saveButton()
@@ -95,7 +106,10 @@ module egrid.app {
         );
       d3.select("#editNodeButton")
         .call(egmui.editNodeButton()
-            .onClick(callback => this.openInputTextDialog(callback))
+            .onClick(callback => {
+              var node = this.egm.selectedNode();
+              this.openInputTextDialog(callback, node.text)
+            })
             .onEnable(selection => this.showNodeController(selection))
             .onDisable(() => this.hideNodeController())
         );
@@ -121,39 +135,44 @@ module egrid.app {
         ;
     }
 
-    private openInputTextDialog(callback) {
-      var textsDict = {};
-      var texts = this.overallNodes.map(d => {
-        var obj = {
-          text: d.text,
-          weight: d.weight,
-        };
-        d.participants.forEach(p => {
-          if (p == this.participantKey) {
-            obj.weight -= 1;
+    private openInputTextDialog(callback, initialText : string = '') {
+      var texts;
+      if (this.disableCompletion) {
+        texts = [];
+      } else {
+        var textsDict = {};
+        texts = this.overallNodes.map(d => {
+          var obj = {
+            text: d.text,
+            weight: d.weight,
+          };
+          d.participants.forEach(p => {
+            if (p == this.participantKey) {
+              obj.weight -= 1;
+            }
+          });
+          textsDict[d.text] = obj;
+          return obj;
+        });
+        this.egm.nodes().forEach(node => {
+          if (textsDict[node.text]) {
+            textsDict[node.text].weight += 1;
+          } else {
+            texts.push({
+              text: node.text,
+              weight: 1,
+            });
           }
         });
-        textsDict[d.text] = obj;
-        return obj;
-      });
-      this.egm.nodes().forEach(node => {
-        if (textsDict[node.text]) {
-          textsDict[node.text].weight += 1;
-        } else {
-          texts.push({
-            text: node.text,
-            weight: 1,
-          });
-        }
-      });
-      texts.sort((t1, t2) => t2.weight - t1.weight);
+        texts.sort((t1, t2) => t2.weight - t1.weight);
+      }
       var m = this.$modal.open({
         backdrop: true,
         keyboard: true,
         backdropClick: true,
         templateUrl: '/partials/input-text-dialog.html',
         controller: ($scope, $modalInstance) => {
-          $scope.result = "";
+          $scope.result = initialText;
           $scope.texts = texts;
           $scope.close = function(result) {
             $modalInstance.close(result);
@@ -172,7 +191,7 @@ module egrid.app {
         var controllerWidth = $("#nodeController").width();
         d3.select("#nodeController")
           .classed("invisible", false)
-          .style("top", nodeRect.top + nodeRect.height + 10 + "px")
+          .style("top", nodeRect.top + nodeRect.height + 10 - 100 + "px")
           .style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px")
           ;
       }

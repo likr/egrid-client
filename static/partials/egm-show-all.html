@@ -1,30 +1,20 @@
 <div>
-  <div style="position: absolute; left: 0; top: 0; overflow: hidden;">
+  <div class="navbar navbar-default navbar-fixed-top" style="top: 50px;">
+    <div class="container">
+      <form class="navbar-form">
+        <a class="btn btn-default" id="quitButton" href="/#{{Url.projectUrl(projectGrid.projectKey)}}">{{'ACTION.QUIT' | translate}}</a>
+        <a class="btn btn-default" id="undoButton"><i class="icon-arrow-left"></i>{{'ACTION.UNDO' | translate}}</a>
+        <a class="btn btn-default" id="redoButton"><i class="icon-arrow-right"></i>{{'ACTION.REDO' | translate}}</a>
+        <a class="btn btn-default pull-right" id="filterButton">{{'ACTION.FILTER' | translate}}</a>
+        <a class="btn btn-default pull-right" id="layoutButton">{{'EGM.APP.LAYOUT_SETTINGS' | translate}}</a>
+      </form>
+    </div>
+  </div>
+  <div style="position: absolute; left: 0; top: 100px; overflow: hidden;">
     <svg id="display" style="display: block;"></svg>
     <div id="nodeController" class="btn-group invisible" style="position: absolute; top: 0; left: 0;">
       <button id="removeNodeButton" class="btn" title="{{'ACTION.REMOVE' | translate}}"><i class="icon-remove"></i></button>
       <button id="mergeNodeButton" class="btn" title="{{'ACTION.MERGE' | translate}}"><i class="icon-plus"></i></button>
     </div>
   </div>
-  <nav class="navbar navbar-inverse navbar-fixed-bottom">
-    <div class="container">
-      <div class="collapse navbar-collapse">
-        <ul class="nav navbar-nav navbar-right">
-          <li class="dropdown">
-            <a class="dropdown-toggle">{{'ACTION.ACTION' | translate}}<b class="caret"></b></a>
-            <ul class="dropdown-menu">
-              <li><a id="quitButton" href="/#{{Url.projectUrl(projectGrid.projectKey)}}">{{'ACTION.QUIT' | translate}}</a></li>
-              <li><a id="exportButton">{{'ACTION.EXPORT' | translate}}</a></li>
-              <li class="divider"></li>
-              <li id="undoButtonContainer" class="disabled"><a id="undoButton">{{'ACTION.UNDO' | translate}}</a></li>
-              <li id="redoButtonContainer" class="disabled"><a id="redoButton">{{'ACTION.REDO' | translate}}</a></li>
-              <li class="divider"></li>
-              <li><a id="filterButton">{{'ACTION.FILTER' | translate}}</a></li>
-              <li><a id="layoutButton">{{'EGM.APP.LAYOUT_SETTINGS' | translate}}</a></li>
-            </ul>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
 </div>
