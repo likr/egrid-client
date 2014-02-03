@@ -82,7 +82,7 @@ module egrid.app {
         .preferredLanguage("ja");
     }])
     .controller('CollaboratorCreateController', ['$q', '$routeParams', '$location', CollaboratorCreateController])
-    .controller('CollaboratorListController', ['$q', '$routeParams', CollaboratorListController])
+    .controller('CollaboratorListController', ['$q', '$routeParams', '$scope', '$modal', CollaboratorListController])
     .controller('ParticipantController', ['$q', '$routeParams', '$scope', '$location', '$modal', ParticipantController])
     .controller('ParticipantCreateController', ['$q', '$routeParams', '$location', ParticipantCreateController])
     .controller('ParticipantGridController', ['$q', '$routeParams', '$scope', ParticipantGridController])
