@@ -5,19 +5,57 @@ module egrid.app {
     projectKey : string;
     name : string;
     note : string;
-    created_at : number;
-    updated_at : number;
 
-    constructor($q, $routeParams) {
+    constructor(private $q, $routeParams, private $location, private $scope, private $modal) {
       this.projectKey = $routeParams.projectId;
-      $q.when(model.Project.get(this.projectKey))
+      this.$q.when(model.Project.get(this.projectKey))
         .then(project => {
           this.name = project.name;
           this.note = project.note;
-          this.created_at = project.created_at;
-          this.updated_at = project.updated_at;
         })
         ;
+    }
+
+    public update() {
+      this.$q.when(model.Project.get(this.projectKey))
+        .then((project: model.Project) => {
+          project.name = this.name;
+          project.note = this.note;
+
+          return project.save();
+        })
+        .then((project: model.Project) => {
+          // バインドしてるから要らない気はする
+          this.name = project.name;
+          this.note = project.note;
+        });
+    }
+
+    public confirm() {
+      var modalInstance = this.$modal.open({
+        templateUrl: '/partials/remove-item-dialog.html',
+        controller: ($scope, $modalInstance) => {
+          $scope.ok = () => {
+            $modalInstance.close();
+          },
+          $scope.cancel = () => {
+            $modalInstance.dismiss();
+          }
+        }
+      });
+
+      modalInstance.result.then(() => { this.remove(); });
+    }
+
+    private remove() {
+      this.$q.when(model.Project.get(this.projectKey))
+        .then((project: model.Project) => {
+          return project.remove();
+        })
+        .then(() => {
+          this.$location.path(egrid.app.Url.projectListUrl());
+          this.$scope.$apply();
+        });
     }
   }
 }

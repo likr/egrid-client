@@ -12,12 +12,24 @@ indexes:
 
 - kind: Participant
   properties:
+  - name: deleted_at
+  - name: project
+  - name: created_at
+
+- kind: Participant
+  properties:
   - name: project
   - name: created_at
 
 - kind: Project
   properties:
   - name: owner
+  - name: created_at
+
+- kind: SemProject
+  properties:
+  - name: deleted_at
+  - name: project
   - name: created_at
 
 - kind: SemProject
