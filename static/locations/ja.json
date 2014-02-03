@@ -18,7 +18,14 @@
     "SELECT": "選択",
     "SHOW": "表示",
     "SUBMIT": "送信",
-    "UNDO": "元に戻す"
+    "UNDO": "元に戻す",
+    "DIALOG": {
+      "REMOVE": {
+        "HEADING": "削除しますか",
+        "OK": "はい",
+        "CANCEL": "いいえ"
+      }
+    }
   },
   "COLLABORATOR": {
     "ATTRIBUTES": {

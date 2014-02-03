@@ -6,7 +6,7 @@ module egrid.app {
     name : string;
     note : string;
 
-    constructor(private $q, $routeParams, private $location, private $scope) {
+    constructor(private $q, $routeParams, private $location, private $scope, private $modal) {
       this.projectKey = $routeParams.projectId;
       this.$q.when(model.Project.get(this.projectKey))
         .then(project => {
@@ -31,7 +31,23 @@ module egrid.app {
         });
     }
 
-    public remove() {
+    public confirm() {
+      var modalInstance = this.$modal.open({
+        templateUrl: '/partials/remove-item-dialog.html',
+        controller: ($scope, $modalInstance) => {
+          $scope.ok = () => {
+            $modalInstance.close();
+          },
+          $scope.cancel = () => {
+            $modalInstance.dismiss();
+          }
+        }
+      });
+
+      modalInstance.result.then(() => { this.remove(); });
+    }
+
+    private remove() {
       this.$q.when(model.Project.get(this.projectKey))
         .then((project: model.Project) => {
           return project.remove();
