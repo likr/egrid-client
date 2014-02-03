@@ -36,6 +36,13 @@
           </div>
         </div>
       </form>
+      <form class="form-horizontal" ng-submit="participant.confirm()">
+        <div class="form-group">
+          <div class="col-sm-offset-11 col-sm-1">
+            <input type="submit" class="btn btn-danger" value="{{'ACTION.REMOVE' | translate}}"/>
+          </div>
+        </div>
+      </form>
     </div>
 
     <div tab heading="{{'EGM.EVALUATION_STRUCTURE' | translate}}" select="drawSvg()">

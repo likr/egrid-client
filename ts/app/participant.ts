@@ -9,7 +9,7 @@ module egrid.app {
     project : model.ProjectData;
     projectKey : string;
 
-    constructor(private $q, $routeParams) {
+    constructor(private $q, $routeParams, private $scope, private $location, private $modal) {
       this.participantKey = $routeParams.participantId;
       this.projectKey = $routeParams.projectId;
       this.$q.when(model.Participant.get(this.projectKey, this.participantKey))
@@ -32,6 +32,33 @@ module egrid.app {
         .then((participant: model.Participant) => {
           this.name = participant.name;
           this.note = participant.note;
+        });
+    }
+
+    public confirm() {
+      var modalInstance = this.$modal.open({
+        templateUrl: '/partials/remove-item-dialog.html',
+        controller: ($scope, $modalInstance) => {
+          $scope.ok = () => {
+            $modalInstance.close();
+          },
+          $scope.cancel = () => {
+            $modalInstance.dismiss();
+          }
+        }
+      });
+
+      modalInstance.result.then(() => { this.remove(); });
+    }
+
+    private remove() {
+      this.$q.when(model.Participant.get(this.projectKey, this.participantKey))
+        .then((participant: model.Participant) => {
+          return participant.remove();
+        })
+        .then(() => {
+          this.$location.path(egrid.app.Url.projectUrl(this.projectKey));
+          this.$scope.$apply();
         });
     }
   }
