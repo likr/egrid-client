@@ -69,6 +69,9 @@ module egrid.app {
           redirectTo : Url.projectListUrl(),
         });
     }])
+    .filter('count', () => {
+      return (input : any[]) => input.length;
+    })
     .config(["$translateProvider", $translateProvider => {
       $translateProvider
         .useStaticFilesLoader({

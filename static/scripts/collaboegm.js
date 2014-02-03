@@ -54,13 +54,21 @@ var egrid;
                 });
             };
 
-            Project.prototype.createdAt = function () {
-                return this.createdAt_;
-            };
+            Object.defineProperty(Project.prototype, "createdAt", {
+                get: function () {
+                    return this.createdAt_;
+                },
+                enumerable: true,
+                configurable: true
+            });
 
-            Project.prototype.updatedAt = function () {
-                return this.updatedAt_;
-            };
+            Object.defineProperty(Project.prototype, "updatedAt", {
+                get: function () {
+                    return this.updatedAt_;
+                },
+                enumerable: true,
+                configurable: true
+            });
 
             Project.prototype.url = function () {
                 return Project.url(this.key());
@@ -223,13 +231,21 @@ var egrid;
                 return this.key_;
             };
 
-            Participant.prototype.createdAt = function () {
-                return this.createdAt_;
-            };
+            Object.defineProperty(Participant.prototype, "createdAt", {
+                get: function () {
+                    return this.createdAt_;
+                },
+                enumerable: true,
+                configurable: true
+            });
 
-            Participant.prototype.updatedAt = function () {
-                return this.updatedAt_;
-            };
+            Object.defineProperty(Participant.prototype, "updatedAt", {
+                get: function () {
+                    return this.updatedAt_;
+                },
+                enumerable: true,
+                configurable: true
+            });
 
             Participant.get = function (projectKey, participantKey) {
                 return $.ajax({
@@ -1042,8 +1058,10 @@ var egrid;
             }
         };
 
-        Grid.prototype.layout = function (checkActive) {
+        Grid.prototype.layout = function (checkActive, lineUpTop, lineUpBottom) {
             if (typeof checkActive === "undefined") { checkActive = false; }
+            if (typeof lineUpTop === "undefined") { lineUpTop = true; }
+            if (typeof lineUpBottom === "undefined") { lineUpBottom = true; }
             var nodes = this.nodes_;
             var links = this.links_;
             if (checkActive) {
@@ -1055,27 +1073,16 @@ var egrid;
                 });
             }
 
-            nodes.forEach(function (node) {
-                var tmp = node.height;
-                node.height = node.width;
-                node.width = tmp;
-            });
-
-            dagre.layout().nodes(nodes).edges(links).rankSep(200).edgeSep(20).run();
+            dagre.layout().nodes(nodes).edges(links).lineUpTop(lineUpTop).lineUpBottom(lineUpBottom).rankDir("LR").rankSep(200).edgeSep(20).run();
 
             nodes.forEach(function (node) {
-                node.x = node.dagre.y;
-                node.y = node.dagre.x;
-                node.width = node.dagre.height;
-                node.height = node.dagre.width;
+                node.x = node.dagre.x;
+                node.y = node.dagre.y;
+                node.width = node.dagre.width;
+                node.height = node.dagre.height;
             });
 
             links.forEach(function (link) {
-                link.dagre.points.forEach(function (point) {
-                    var tmp = point.x;
-                    point.x = point.y;
-                    point.y = tmp;
-                });
                 link.previousPoints = link.points;
                 link.points = link.dagre.points.map(function (p) {
                     return p;
@@ -1352,6 +1359,9 @@ var egrid;
             option.viewMode = 0 /* Normal */;
             option.inactiveNode = 1 /* Transparent */;
             option.scalingConnection = true;
+            option.lineUpTop = true;
+            option.lineUpBottom = true;
+            option.showGuide = false;
             return option;
         };
         return EgmOption;
@@ -1451,7 +1461,7 @@ var egrid;
                 }
             });
 
-            this.grid().layout(this.options_.inactiveNode == 0 /* Hidden */);
+            this.grid().layout(this.options_.inactiveNode == 0 /* Hidden */, this.options_.lineUpTop, this.options_.lineUpBottom);
 
             this.rootSelection.selectAll(".contents .links .link path").filter(function (link) {
                 return link.previousPoints.length != link.points.length;
@@ -1483,14 +1493,16 @@ var egrid;
             });
             transition.selectAll(".link .removeLinkButton").attr("transform", function (link) {
                 return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
-            }).attr("opacity", function (link) {
-                return link.source == selectedNode || link.target == selectedNode ? 1 : 0;
+            }).style('visibility', function (link) {
+                return link.source == selectedNode || link.target == selectedNode ? 'visible' : 'hidden';
             });
             transition.each("end", function () {
                 _this.notify();
             });
 
             this.rescale();
+
+            this.drawGuide();
 
             return this;
         };
@@ -1506,8 +1518,8 @@ var egrid;
                 d3.selectAll(".link").filter(function (link) {
                     return (_this.grid().hasPath(d.index, link.source.index) && _this.grid().hasPath(d.index, link.target.index)) || (_this.grid().hasPath(link.source.index, d.index) && _this.grid().hasPath(link.target.index, d.index));
                 }).classed("connected", true);
-                d3.selectAll(".link .removeLinkButton").attr("opacity", function (link) {
-                    return link.source == d || link.target == d ? 1 : 0;
+                d3.selectAll(".link .removeLinkButton").style('visibility', function (link) {
+                    return link.source == d || link.target == d ? 'visible' : 'hidden';
                 });
             }
         };
@@ -1548,7 +1560,7 @@ var egrid;
             return function (selection) {
                 selection.append("g").classed("removeLinkButton", true).attr("transform", function (link) {
                     return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
-                }).attr("opacity", 0).on("click", function (d) {
+                }).style('visibility', 'hidden').on("click", function (d) {
                     _this.grid().removeLink(d.index);
                     _this.draw();
                 }).call(function (selection) {
@@ -1597,6 +1609,13 @@ var egrid;
             this.contentsZoomBehavior.scaleExtent([s, 1]);
         };
 
+        EGM.prototype.resize = function (width, height) {
+            this.displayWidth = width;
+            this.displayHeight = height;
+            this.rootSelection.attr("viewBox", (new Svg.ViewBox(0, 0, this.displayWidth, this.displayHeight)).toString());
+            this.drawGuide();
+        };
+
         /**
         * Generates a function to init display region.
         * @method display
@@ -1621,6 +1640,7 @@ var egrid;
                 _this.contentsSelection = selection.append("g").classed("contents", true);
                 _this.contentsSelection.append("g").classed("links", true);
                 _this.contentsSelection.append("g").classed("nodes", true);
+                _this.createGuide(selection);
 
                 _this.contentsZoomBehavior = d3.behavior.zoom().on("zoom", function () {
                     var translate = new Svg.Transform.Translate(d3.event.translate[0], d3.event.translate[1]);
@@ -1630,7 +1650,103 @@ var egrid;
                     _this.notify();
                 });
                 selection.call(_this.contentsZoomBehavior);
+                selection.on('dblclick.zoom', null);
             };
+        };
+
+        EGM.prototype.createGuide = function (selection) {
+            var guideSelection = selection.append('g').classed('guide', true).style('visibility', 'hidden');
+            guideSelection.append('defs').call(function (selection) {
+                selection.append('marker').attr({
+                    'id': 'arrow-start-marker',
+                    'markerUnits': 'strokeWidth',
+                    'markerWidth': 3,
+                    'markerHeight': 3,
+                    'viewBox': '0 0 10 10',
+                    'refX': 5,
+                    'refY': 5
+                }).append('polygon').attr({
+                    'points': '10,0 5,5 10,10 0,5',
+                    'fill': 'black'
+                });
+                selection.append('marker').attr({
+                    'id': 'arrow-end-marker',
+                    'markerUnits': 'strokeWidth',
+                    'markerWidth': 3,
+                    'markerHeight': 3,
+                    'viewBox': '0 0 10 10',
+                    'refX': 5,
+                    'refY': 5
+                }).append('polygon').attr({
+                    'points': '0,0 5,5 0,10 10,5',
+                    'fill': 'black'
+                });
+            });
+
+            guideSelection.append('rect').classed('guide-rect', true).attr({
+                'opacity': 0.9,
+                'fill': 'lightgray'
+            });
+            guideSelection.append('path').classed('guide-axis', true).attr({
+                'stroke': 'black',
+                'stroke-width': 5,
+                'marker-start': 'url(#arrow-start-marker)',
+                'marker-end': 'url(#arrow-end-marker)'
+            });
+            guideSelection.append('text').classed('guide-upper-label', true).text('上位項目').attr({
+                'y': 25,
+                'text-anchor': 'start',
+                'font-size': '1.5em'
+            });
+            guideSelection.append('text').classed('guide-lower-label', true).text('下位項目').attr({
+                'y': 25,
+                'text-anchor': 'end',
+                'font-size': '1.5em'
+            });
+            var upperElementTexts = [
+                '○○だと、なぜいいのですか？',
+                '○○が重要な理由は？',
+                '○○だとどのように感じますか？',
+                '○○であることには、どんないい点があるのですか？'
+            ];
+            guideSelection.append('g').selectAll('text.guide-upper-question').data(upperElementTexts).enter().append('text').classed('guide-upper-question', true).text(function (d) {
+                return d;
+            }).attr({
+                'y': function (_, i) {
+                    return 20 * i + 60;
+                },
+                'text-anchor': 'start'
+            });
+            var lowerElementTexts = [
+                '○○のどこがいいのですか？',
+                'どういった点で○○が重要なのですか？',
+                '○○であるためには、具体的に何がどうなっていることが必要だと思いますか？'
+            ];
+            guideSelection.append('g').selectAll('text.guide-lower-question').data(lowerElementTexts).enter().append('text').classed('guide-lower-question', true).text(function (d) {
+                return d;
+            }).attr({
+                'y': function (_, i) {
+                    return 20 * i + 60;
+                },
+                'text-anchor': 'end'
+            });
+        };
+
+        EGM.prototype.drawGuide = function () {
+            var guideHeight = 130;
+            var line = d3.svg.line();
+            var axisFrom = [this.displayWidth * 0.1, 35];
+            var axisTo = [this.displayWidth * 0.9, 35];
+            var guideSelection = this.rootSelection.select('.guide').attr('transform', 'translate(0,' + (this.displayHeight - guideHeight) + ')').style('visibility', this.options_.showGuide ? 'visible' : 'hidden');
+            guideSelection.select('.guide-rect').attr({
+                'width': this.displayWidth,
+                'height': guideHeight
+            });
+            guideSelection.select('.guide-axis').attr('d', line([axisFrom, axisTo]));
+            guideSelection.select('.guide-upper-label').attr('x', axisFrom[0]);
+            guideSelection.select('.guide-lower-label').attr('x', axisTo[0]);
+            guideSelection.selectAll('.guide-upper-question').attr('x', axisFrom[0]);
+            guideSelection.selectAll('.guide-lower-question').attr('x', axisTo[0]);
         };
 
         EGM.prototype.createNode = function (text) {
@@ -1704,7 +1820,7 @@ var egrid;
         EGM.prototype.unselectElement = function () {
             this.rootSelection.selectAll(".selected").classed("selected", false);
             this.rootSelection.selectAll(".connected").classed("connected", false);
-            this.rootSelection.selectAll(".link .removeLinkButton").attr("opacity", 0);
+            this.rootSelection.selectAll(".link .removeLinkButton").style('visibility', 'hidden');
         };
 
         EGM.prototype.dragNode = function () {
@@ -2388,36 +2504,47 @@ var egrid;
                 var _this = this;
                 this.$modal = $modal;
                 this.$scope = $scope;
+                this.disableCompletion = false;
                 this.projectKey = $routeParams.projectId;
                 this.participantKey = $routeParams.participantId;
+                if ($routeParams.disableCompletion) {
+                    this.disableCompletion = true;
+                }
 
                 var egmui = egrid.egmui();
                 this.egm = egmui.egm();
                 this.egm.showRemoveLinkButton(true);
                 this.egm.options().scalingConnection = false;
+                this.egm.options().showGuide = true;
+                var calcHeight = function () {
+                    return $(window).height() - 100;
+                };
                 d3.select("#display").attr({
                     width: $(window).width(),
-                    height: $(window).height()
-                }).call(this.egm.display($(window).width(), $(window).height()));
+                    height: calcHeight()
+                }).call(this.egm.display($(window).width(), calcHeight()));
                 d3.select(window).on('resize', function () {
+                    var width = $(window).width();
+                    var height = calcHeight();
                     d3.select("#display").attr({
-                        width: $(window).width(),
-                        height: $(window).height()
+                        width: width,
+                        height: height
                     });
+                    _this.egm.resize(width, height);
                 });
 
                 d3.select("#appendNodeButton").call(egmui.appendNodeButton().onClick(function (callback) {
                     return _this.openInputTextDialog(callback);
                 }));
                 d3.select("#undoButton").call(egmui.undoButton().onEnable(function () {
-                    d3.select("#undoButtonContainer").classed("disabled", false);
+                    d3.select("#undoButton").classed("disabled", false);
                 }).onDisable(function () {
-                    d3.select("#undoButtonContainer").classed("disabled", true);
+                    d3.select("#undoButton").classed("disabled", true);
                 }));
                 d3.select("#redoButton").call(egmui.redoButton().onEnable(function () {
-                    d3.select("#redoButtonContainer").classed("disabled", false);
+                    d3.select("#redoButton").classed("disabled", false);
                 }).onDisable(function () {
-                    d3.select("#redoButtonContainer").classed("disabled", true);
+                    d3.select("#redoButton").classed("disabled", true);
                 }));
                 d3.select("#saveButton").call(egmui.saveButton().save(function (data) {
                     _this.grid.nodes = data.nodes;
@@ -2452,7 +2579,8 @@ var egrid;
                     return _this.hideNodeController();
                 }));
                 d3.select("#editNodeButton").call(egmui.editNodeButton().onClick(function (callback) {
-                    return _this.openInputTextDialog(callback);
+                    var node = _this.egm.selectedNode();
+                    _this.openInputTextDialog(callback, node.text);
                 }).onEnable(function (selection) {
                     return _this.showNodeController(selection);
                 }).onDisable(function () {
@@ -2474,42 +2602,48 @@ var egrid;
                     _this.overallNodes = grid.nodes;
                 });
             }
-            ParticipantGridEditController.prototype.openInputTextDialog = function (callback) {
+            ParticipantGridEditController.prototype.openInputTextDialog = function (callback, initialText) {
+                if (typeof initialText === "undefined") { initialText = ''; }
                 var _this = this;
-                var textsDict = {};
-                var texts = this.overallNodes.map(function (d) {
-                    var obj = {
-                        text: d.text,
-                        weight: d.weight
-                    };
-                    d.participants.forEach(function (p) {
-                        if (p == _this.participantKey) {
-                            obj.weight -= 1;
+                var texts;
+                if (this.disableCompletion) {
+                    texts = [];
+                } else {
+                    var textsDict = {};
+                    texts = this.overallNodes.map(function (d) {
+                        var obj = {
+                            text: d.text,
+                            weight: d.weight
+                        };
+                        d.participants.forEach(function (p) {
+                            if (p == _this.participantKey) {
+                                obj.weight -= 1;
+                            }
+                        });
+                        textsDict[d.text] = obj;
+                        return obj;
+                    });
+                    this.egm.nodes().forEach(function (node) {
+                        if (textsDict[node.text]) {
+                            textsDict[node.text].weight += 1;
+                        } else {
+                            texts.push({
+                                text: node.text,
+                                weight: 1
+                            });
                         }
                     });
-                    textsDict[d.text] = obj;
-                    return obj;
-                });
-                this.egm.nodes().forEach(function (node) {
-                    if (textsDict[node.text]) {
-                        textsDict[node.text].weight += 1;
-                    } else {
-                        texts.push({
-                            text: node.text,
-                            weight: 1
-                        });
-                    }
-                });
-                texts.sort(function (t1, t2) {
-                    return t2.weight - t1.weight;
-                });
+                    texts.sort(function (t1, t2) {
+                        return t2.weight - t1.weight;
+                    });
+                }
                 var m = this.$modal.open({
                     backdrop: true,
                     keyboard: true,
                     backdropClick: true,
                     templateUrl: '/partials/input-text-dialog.html',
                     controller: function ($scope, $modalInstance) {
-                        $scope.result = "";
+                        $scope.result = initialText;
                         $scope.texts = texts;
                         $scope.close = function (result) {
                             $modalInstance.close(result);
@@ -2526,7 +2660,7 @@ var egrid;
                 if (!selection.empty()) {
                     var nodeRect = selection.node().getBoundingClientRect();
                     var controllerWidth = $("#nodeController").width();
-                    d3.select("#nodeController").classed("invisible", false).style("top", nodeRect.top + nodeRect.height + 10 + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
+                    d3.select("#nodeController").classed("invisible", false).style("top", nodeRect.top + nodeRect.height + 10 - 100 + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
                 }
             };
 
@@ -2545,26 +2679,52 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../model/participant.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
-        var ParticipantListController = (function () {
+        var PaginationController = (function () {
+            function PaginationController() {
+                this.currentPage = 1;
+                this.reverse = false;
+            }
+            PaginationController.prototype.changeOrder = function (predicate) {
+                if (predicate == this.predicate) {
+                    this.reverse = !this.reverse;
+                } else {
+                    this.currentPage = 1;
+                    this.reverse = false;
+                    this.predicate = predicate;
+                }
+            };
+            return PaginationController;
+        })();
+        app.PaginationController = PaginationController;
+    })(egrid.app || (egrid.app = {}));
+    var app = egrid.app;
+})(egrid || (egrid = {}));
+/// <reference path="../model/participant.ts"/>
+/// <reference path="pagination.ts"/>
+var egrid;
+(function (egrid) {
+    (function (app) {
+        var ParticipantListController = (function (_super) {
+            __extends(ParticipantListController, _super);
             function ParticipantListController($q, $routeParams) {
                 var _this = this;
+                _super.call(this);
                 this.participants = [];
-                this.itemsPerPage = 2;
-                this.currentPage = 1;
-                this.predicate = 'created_at';
-                this.reverse = false;
+
                 this.projectId = $routeParams.projectId;
+                this.itemsPerPage = 5;
+                this.predicate = 'updatedAt';
+                this.reverse = true;
 
                 $q.when(egrid.model.Participant.query(this.projectId)).then(function (participants) {
                     _this.participants = participants;
                 });
             }
             return ParticipantListController;
-        })();
+        })(egrid.app.PaginationController);
         app.ParticipantListController = ParticipantListController;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
@@ -2633,26 +2793,29 @@ var egrid;
                 this.egm = egmui.egm();
                 this.egm.showRemoveLinkButton(true);
                 this.egm.options().scalingConnection = false;
+                var calcHeight = function () {
+                    return $(window).height() - 100;
+                };
                 d3.select("#display").attr({
                     width: $(window).width(),
-                    height: $(window).height()
-                }).call(this.egm.display($(window).width(), $(window).height()));
+                    height: calcHeight()
+                }).call(this.egm.display($(window).width(), calcHeight()));
                 d3.select(window).on('resize', function () {
                     d3.select("#display").attr({
                         width: $(window).width(),
-                        height: $(window).height()
+                        height: calcHeight()
                     });
                 });
 
                 d3.select("#undoButton").call(egmui.undoButton().onEnable(function () {
-                    d3.select("#undoButtonContainer").classed("disabled", false);
+                    d3.select("#undoButton").classed("disabled", false);
                 }).onDisable(function () {
-                    d3.select("#undoButtonContainer").classed("disabled", true);
+                    d3.select("#undoButton").classed("disabled", true);
                 }));
                 d3.select("#redoButton").call(egmui.redoButton().onEnable(function () {
-                    d3.select("#redoButtonContainer").classed("disabled", false);
+                    d3.select("#redoButton").classed("disabled", false);
                 }).onDisable(function () {
-                    d3.select("#redoButtonContainer").classed("disabled", true);
+                    d3.select("#redoButton").classed("disabled", true);
                 }));
 
                 d3.select("#removeNodeButton").call(egmui.removeNodeButton().onEnable(function (selection) {
@@ -2743,7 +2906,7 @@ var egrid;
                 if (!selection.empty()) {
                     var nodeRect = selection.node().getBoundingClientRect();
                     var controllerWidth = $("#nodeController").width();
-                    d3.select("#nodeController").classed("invisible", false).style("top", nodeRect.top + nodeRect.height + 10 + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
+                    d3.select("#nodeController").classed("invisible", false).style("top", nodeRect.top + nodeRect.height + 10 - 100 + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
                 }
             };
 
@@ -2762,23 +2925,28 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../model/project.ts"/>
+/// <reference path="pagination.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
-        var ProjectListController = (function () {
+        var ProjectListController = (function (_super) {
+            __extends(ProjectListController, _super);
             function ProjectListController($q) {
                 var _this = this;
+                _super.call(this);
                 this.projects = [];
-                this.itemsPerPage = 2;
-                this.currentPage = 1;
-                this.predicate = 'created_at';
-                this.reverse = false;
+
+                this.itemsPerPage = 5;
+                this.predicate = 'updatedAt';
+                this.reverse = true;
+
                 $q.when(egrid.model.Project.query()).then(function (projects) {
                     _this.projects = projects;
                 });
             }
             return ProjectListController;
-        })();
+        })(egrid.app.PaginationController);
         app.ProjectListController = ProjectListController;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
@@ -3468,7 +3636,11 @@ var egrid;
                 }).otherwise({
                     redirectTo: egrid.app.Url.projectListUrl()
                 });
-            }]).config([
+            }]).filter('count', function () {
+            return function (input) {
+                return input.length;
+            };
+        }).config([
             "$translateProvider", function ($translateProvider) {
                 $translateProvider.useStaticFilesLoader({
                     prefix: 'locations/',

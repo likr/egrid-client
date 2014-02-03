@@ -19,19 +19,22 @@ module egrid.app {
       this.egm = egmui.egm();
       this.egm.showRemoveLinkButton(true);
       this.egm.options().scalingConnection = false;
+      var calcHeight = () => {
+        return $(window).height() - 100; //XXX
+      };
       d3.select("#display")
         .attr({
           width: $(window).width(),
-          height: $(window).height(),
+          height: calcHeight(),
         })
-        .call(this.egm.display($(window).width(), $(window).height()))
+        .call(this.egm.display($(window).width(), calcHeight()))
         ;
       d3.select(window)
         .on('resize', () => {
           d3.select("#display")
             .attr({
               width: $(window).width(),
-              height: $(window).height(),
+              height: calcHeight(),
             })
             ;
         })
@@ -40,18 +43,18 @@ module egrid.app {
       d3.select("#undoButton")
         .call(egmui.undoButton()
             .onEnable(() => {
-              d3.select("#undoButtonContainer").classed("disabled", false);
+              d3.select("#undoButton").classed("disabled", false);
             })
             .onDisable(() => {
-              d3.select("#undoButtonContainer").classed("disabled", true);
+              d3.select("#undoButton").classed("disabled", true);
             }));
       d3.select("#redoButton")
         .call(egmui.redoButton()
             .onEnable(() => {
-              d3.select("#redoButtonContainer").classed("disabled", false);
+              d3.select("#redoButton").classed("disabled", false);
             })
             .onDisable(() => {
-              d3.select("#redoButtonContainer").classed("disabled", true);
+              d3.select("#redoButton").classed("disabled", true);
             }));
 
       d3.select("#removeNodeButton")
@@ -155,7 +158,7 @@ module egrid.app {
         var controllerWidth = $("#nodeController").width();
         d3.select("#nodeController")
           .classed("invisible", false)
-          .style("top", nodeRect.top + nodeRect.height + 10 + "px")
+          .style("top", nodeRect.top + nodeRect.height + 10 - 100 + "px")
           .style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px")
           ;
       }
