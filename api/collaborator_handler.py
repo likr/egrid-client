@@ -35,3 +35,7 @@ class CollaboratorHandler(webapp2.RequestHandler):
 
         content = json.dumps(collaborator.to_dict())
         self.response.write(content)
+
+    def delete(self, project_id, collaborator_id):
+        collaborator = Collaborator.get(collaborator_id)
+        collaborator.remove()
