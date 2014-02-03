@@ -176,6 +176,7 @@
                   <th>#</th>
                   <th>{{'COLLABORATOR.ATTRIBUTES.USER' | translate}}</th>
                   <th>{{'COLLABORATOR.ROLE.ROLE' | translate}}</th>
+                  <th>{{'ACTION.ACTION' | translate}}</th>
                 </tr>
               </thead>
               <tbody>
@@ -183,6 +184,7 @@
                   <td>{{ $index + 1 }}</td>
                   <td>{{collaborator.user.nickname}}</td>
                   <td>{{collaborator.isManager}}</td>
+                  <td><a href ng-click="collaborators.confirm($index)">{{'ACTION.REMOVE' | translate}}</td>
                 </tr>
               </tbody>
             </table>
@@ -195,7 +197,7 @@
               <div class="form-group">
                 <label class="col-sm-2 control-label" for="name">{{'COLLABORATOR.ATTRIBUTES.USER' | translate}}</label>
                 <div class="col-sm-10">
-                  <input class="col-sm-10" type="text" name="name" placeholder="{{'COLLABORATOR.ATTRIBUTES.PLACEHOLDERS.USER' | translate }}" ng-model="newCollaborator.data.userEmail"/>
+                  <input class="col-sm-10 form-control" type="text" name="name" placeholder="{{'COLLABORATOR.ATTRIBUTES.PLACEHOLDERS.USER' | translate }}" ng-model="newCollaborator.data.userEmail"/>
                 </div>
               </div>
 

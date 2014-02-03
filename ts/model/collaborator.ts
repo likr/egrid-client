@@ -33,6 +33,10 @@ module egrid.model {
       this.userEmail = obj.userEmail;
     }
 
+    key() : string {
+      return this.key_;
+    }
+
     save() : JQueryXHR {
       return $.ajax({
         url: Collaborator.url(this.projectKey),
@@ -47,6 +51,24 @@ module egrid.model {
           var obj : ApiCollaboratorData = JSON.parse(data);
           this.key_ = obj.key;
           return this;
+        },
+      });
+    }
+
+    remove() : JQueryXHR {
+      return $.ajax({
+        url: Collaborator.url(this.projectKey, this.key()),
+        type: 'DELETE',
+      });
+    }
+
+    static get(key : string) : JQueryXHR {
+      return $.ajax({
+        url: Collaborator.url(key),
+        type: 'GET',
+        dataFilter: data => {
+          var obj : ApiCollaboratorData = JSON.parse(data);
+          return Collaborator.load(obj);
         },
       });
     }
@@ -72,7 +94,7 @@ module egrid.model {
 
     private static url(projectKey : string, key? : string) : string {
       if (key) {
-        return '/api/projects/'  + projectKey + '/collaborators' + key;
+        return '/api/projects/'  + projectKey + '/collaborators/' + key;
       } else {
         return '/api/projects/'  + projectKey + '/collaborators';
       }
