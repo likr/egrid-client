@@ -3,29 +3,29 @@
 </div>
 <div class="modal-body">
   <form class="form-horizontal">
-    <div class="control-group">
-      <label class="control-label">{{ 'EGM.APP.VIEWS.VIEWS' | translate }}</label>
-      <div class="controls">
+    <div class="form-group">
+      <label class="col-sm-4 control-label">{{ 'EGM.APP.VIEWS.VIEWS' | translate }}</label>
+      <div class="col-sm-8">
         <label class="radio"><input type="radio" ng-model="options.viewMode" ng-value="ViewMode.Normal"/>{{ 'EGM.APP.VIEWS.NORMAL' | translate }}</label>
         <label class="radio"><input type="radio" ng-model="options.viewMode" ng-value="ViewMode.Edge"/>{{ 'EGM.APP.VIEWS.EDGE' | translate }}</label>
       </div>
     </div>
-    <div class="control-group">
-      <label class="control-label">{{ 'EGM.APP.INACTIVE_NODE.INACTIVE_NODE' | translate }}</label>
-      <div class="controls">
+    <div class="form-group">
+      <label class="col-sm-4 control-label">{{ 'EGM.APP.INACTIVE_NODE.INACTIVE_NODE' | translate }}</label>
+      <div class="col-sm-8">
         <label class="radio"><input type="radio" ng-model="options.inactiveNode" ng-value="InactiveNode.Hidden"/>{{ 'EGM.APP.INACTIVE_NODE.HIDDEN' | translate }}</label>
         <label class="radio"><input type="radio" ng-model="options.inactiveNode" ng-value="InactiveNode.Transparent"/>{{ 'EGM.APP.INACTIVE_NODE.TRANSPARENT' | translate }}</label>
       </div>
     </div>
-    <div class="control-group">
-      <label class="control-label">{{ 'EGM.APP.SCALING.SCALING' | translate }}</label>
-      <div class="controls">
+    <div class="form-group">
+      <label class="col-sm-4 control-label">{{ 'EGM.APP.SCALING.SCALING' | translate }}</label>
+      <div class="col-sm-8">
         <label class="checkbox"><input type="checkbox" ng-model="options.scalingConnection"/>{{ 'EGM.APP.SCALING.CONNECTION' | translate }}</label>
       </div>
     </div>
-    <div class="control-group">
-      <label class="control-label">{{'EGM.APP.LINE_UP' | translate}}</label>
-      <div class="controls">
+    <div class="form-group">
+      <label class="col-sm-4 control-label">{{'EGM.APP.LINE_UP' | translate}}</label>
+      <div class="col-sm-8">
         <label class="checkbox"><input type="checkbox" ng-model="options.lineUpTop"/>{{'EGM.UPPERMOST_EVALUATION_ITEM' | translate}}</label>
         <label class="checkbox"><input type="checkbox" ng-model="options.lineUpBottom"/>{{'EGM.LOWERMOST_EVALUATION_ITEM' | translate}}</label>
       </div>
@@ -33,5 +33,5 @@
   </form>
 </div>
 <div class="modal-footer">
-  <button class="btn" ng-click="close()">{{ 'ACTION.CLOSE' | translate }}</button>
+  <button class="btn btn-default" ng-click="close()">{{ 'ACTION.CLOSE' | translate }}</button>
 </div>
