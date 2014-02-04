@@ -473,7 +473,7 @@ module egrid {
     layout(options : LayoutOption) : void {
       var checkActive = options.checkActive === undefined ? false : options.checkActive;
       var lineUpTop = options.lineUpTop === undefined ? true : options.lineUpTop;
-      var lineUpBottom = options.lineUpBottom === undefined ? true : options.lineUpTop;
+      var lineUpBottom = options.lineUpBottom === undefined ? true : options.lineUpBottom;
       var rankDirection = options.rankDirection === undefined || options.rankDirection == RankDirection.LR ? 'LR' : 'TB';
 
       var nodes = this.nodes_;
