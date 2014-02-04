@@ -109,7 +109,9 @@ module egrid {
         })
         ;
 
-      this.grid().layout(true);
+      this.grid().layout({
+        checkActive: true,
+      });
 
       this.rootSelection.selectAll(".contents .links .link path")
         .filter(link => link.previousPoints.length != link.points.length)

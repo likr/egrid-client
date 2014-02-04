@@ -30,6 +30,13 @@
         <label class="checkbox"><input type="checkbox" ng-model="options.lineUpBottom"/>{{'EGM.LOWERMOST_EVALUATION_ITEM' | translate}}</label>
       </div>
     </div>
+    <div class="form-group">
+      <label class="col-sm-4 control-label">{{'EGM.APP.RANK_DIRECTION.RANK_DIRECTION' | translate}}</label>
+      <div class="col-sm-8">
+        <label class="radio"><input type="radio" ng-model="options.rankDirection" ng-value="RankDirection.LR"/>{{'EGM.APP.RANK_DIRECTION.LR' | translate}}</label>
+        <label class="radio"><input type="radio" ng-model="options.rankDirection" ng-value="RankDirection.TB"/>{{'EGM.APP.RANK_DIRECTION.TB' | translate}}</label>
+      </div>
+    </div>
   </form>
 </div>
 <div class="modal-footer">

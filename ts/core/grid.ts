@@ -156,6 +156,20 @@ module egrid {
   }
 
 
+  export enum RankDirection {
+    LR,
+    TB,
+  }
+
+
+  export interface LayoutOption {
+    checkActive? : boolean;
+    lineUpTop? : boolean;
+    lineUpBottom? : boolean;
+    rankDirection? : RankDirection;
+  }
+
+
   /**
   @class egrid.Grid
   */
@@ -456,7 +470,12 @@ module egrid {
     }
 
 
-    layout(checkActive : boolean = false, lineUpTop : boolean = true, lineUpBottom : boolean = true) : void {
+    layout(options : LayoutOption) : void {
+      var checkActive = options.checkActive === undefined ? false : options.checkActive;
+      var lineUpTop = options.lineUpTop === undefined ? true : options.lineUpTop;
+      var lineUpBottom = options.lineUpBottom === undefined ? true : options.lineUpTop;
+      var rankDirection = options.rankDirection === undefined || options.rankDirection == RankDirection.LR ? 'LR' : 'TB';
+
       var nodes = this.nodes_;
       var links = this.links_;
       if (checkActive) {
@@ -469,7 +488,7 @@ module egrid {
         .edges(links)
         .lineUpTop(lineUpTop)
         .lineUpBottom(lineUpBottom)
-        .rankDir("LR")
+        .rankDir(rankDirection)
         .rankSep(200)
         .edgeSep(20)
         .run()
@@ -485,8 +504,8 @@ module egrid {
       links.forEach(link => {
         link.previousPoints = link.points;
         link.points = link.dagre.points.map(p => p);
-        link.points.unshift(link.source.right());
-        link.points.push(link.target.left());
+        link.points.unshift(link.source.center());
+        link.points.push(link.target.center());
       });
     }
 

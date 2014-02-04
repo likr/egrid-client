@@ -116,6 +116,7 @@ module egrid.app {
               $scope.options = this.egm.options();
               $scope.ViewMode = egrid.ViewMode;
               $scope.InactiveNode = egrid.InactiveNode;
+              $scope.RankDirection = egrid.RankDirection;
               $scope.close = () => {
                 $modalInstance.close();
               }

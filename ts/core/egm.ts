@@ -23,6 +23,7 @@ module egrid {
     public lineUpTop : boolean;
     public lineUpBottom : boolean;
     public showGuide : boolean;
+    public rankDirection : RankDirection;
 
     static default() : EgmOption {
       var option = new EgmOption;
@@ -32,6 +33,7 @@ module egrid {
       option.lineUpTop = true;
       option.lineUpBottom = true;
       option.showGuide = false;
+      option.rankDirection = RankDirection.LR;
       return option;
     }
   }
@@ -159,7 +161,7 @@ module egrid {
         .append("g")
         .classed("link", true)
         .each(link => {
-          link.points = [link.source.right(), link.target.left()];
+          link.points = [link.source.center(), link.target.center()];
         })
         .call(selection => {
           selection.append("path");
@@ -170,10 +172,12 @@ module egrid {
         ;
 
       this.grid()
-        .layout(
-            this.options_.inactiveNode == InactiveNode.Hidden,
-            this.options_.lineUpTop,
-            this.options_.lineUpBottom);
+        .layout({
+          checkActive: this.options_.inactiveNode == InactiveNode.Hidden,
+          lineUpTop: this.options_.lineUpTop,
+          lineUpBottom: this.options_.lineUpBottom,
+          rankDirection: this.options_.rankDirection,
+        });
 
       this.rootSelection.selectAll(".contents .links .link path")
         .filter(link => link.previousPoints.length != link.points.length)

@@ -45,6 +45,11 @@
       "INPUT_EVALUATION_FACTOR": "評価項目を入力してください",
       "LAYOUT_SETTINGS": "レイアウト設定",
       "LINE_UP": "整列",
+      "RANK_DIRECTION": {
+        "LR": "左右",
+        "RANK_DIRECTION": "方向",
+        "TB": "上下"
+      },
       "SCALING": {
         "CONNECTION": "接続数",
         "SCALING": "評価項目の拡大"
