@@ -587,11 +587,7 @@ module egrid {
 
       this.pathMatrix = this.nodes_.map((_, fromIndex) => {
         return this.nodes_.map((_, toIndex) => {
-          if (this.linkMatrix[fromIndex][toIndex]) {
-            return true;
-          } else {
-            return false;
-          }
+          return fromIndex == toIndex || this.linkMatrix[fromIndex][toIndex];
         });
       });
       var i, j, k, n = this.nodes_.length;
