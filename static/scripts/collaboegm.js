@@ -3602,7 +3602,7 @@ var egrid;
                     link: function (scope, element, attrs, model) {
                         $timeout(function () {
                             element[0].focus();
-                        });
+                        }, 10);
                     }
                 };
             }]).config([

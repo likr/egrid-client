@@ -25,7 +25,7 @@ module egrid.app {
          link: function (scope, element, attrs, model) {
             $timeout(function () {
               element[0].focus();
-            });
+            }, 10);
           }
       };
     }])
