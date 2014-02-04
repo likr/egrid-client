@@ -579,33 +579,31 @@ module egrid {
       this.links_.forEach(link => {
         this.linkMatrix[link.source.index][link.target.index] = true;
       });
-      this.nodes_.forEach(node => {
-        node.isTop = node.isBottom = true;
+
+      this.nodes_.forEach((node, index1) => {
+        node.isTop = this.nodes_.every((_, index2) => !this.linkMatrix[index2][index1]);
+        node.isBottom = this.nodes_.every((_, index2) => !this.linkMatrix[index1][index2]);
       });
-      this.pathMatrix = this.nodes_.map((fromNode, fromIndex) => {
-        return this.nodes_.map((toNode, toIndex) => {
-          var checkedFlags : boolean[] = this.nodes_.map(_ => false);
-          var front : number[] = [fromIndex];
-          while (front.length > 0) {
-            var nodeIndex = front.pop();
-            if (nodeIndex == toIndex) {
-              if (nodeIndex != fromIndex) {
-                fromNode.isBottom = false;
-                toNode.isTop = false;
-              }
-              return true;
-            }
-            if (!checkedFlags[nodeIndex]) {
-              this.nodes_.forEach((_, j) => {
-                if (this.linkMatrix[nodeIndex][j]) {
-                  front.push(j);
-                }
-              });
-            }
+
+      this.pathMatrix = this.nodes_.map((_, fromIndex) => {
+        return this.nodes_.map((_, toIndex) => {
+          if (this.linkMatrix[fromIndex][toIndex]) {
+            return true;
+          } else {
+            return false;
           }
-          return false
         });
       });
+      var i, j, k, n = this.nodes_.length;
+      for (k = 0; k < n; ++k) {
+        for (i = 0; i < n; ++i) {
+          for (j = 0; j < n; ++j) {
+            if (this.pathMatrix[i][k] && this.pathMatrix[k][j]) {
+              this.pathMatrix[i][j] = true;
+            }
+          }
+        }
+      }
     }
 
 
