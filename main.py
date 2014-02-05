@@ -5,6 +5,7 @@ from api.participant_handler import ParticipantHandler
 from api.participant_handler import ParticipantGridHandler
 from api.project_handler import ProjectHandler
 from api.project_handler import ProjectGridHandler
+from api.project_handler import ProjectGridCurrentHandler
 from api.sem_project_handler import SemProjectHandler
 from api.sem_project_handler import SemProjectListHandler
 from api.sem_project_handler import SemProjectQuestionnaireHandler
@@ -17,6 +18,8 @@ app = webapp2.WSGIApplication([
     Route('/api/projects/<project_id:[\w\-]+>', ProjectHandler),
     Route('/api/projects/<project_id:[\w\-]+>/collaborators', CollaboratorHandler),
     Route('/api/projects/<project_id:[\w\-]+>/grid', ProjectGridHandler),
+    Route('/api/projects/<project_id:[\w\-]+>/grid/current', ProjectGridCurrentHandler),
+    Route('/api/projects/<project_id:[\w\-]+>/grid/<project_grid_id:[\w\-]+>', ProjectGridHandler),
     Route('/api/projects/<project_id:[\w\-]+>/participants', ParticipantHandler),
     Route('/api/projects/<project_id:[\w\-]+>/participants/<participant_id:[\w\-]+>', ParticipantHandler),
     Route('/api/projects/<project_id:[\w\-]+>/participants/<participant_id:[\w\-]+>/grid', ParticipantGridHandler),

@@ -20,6 +20,11 @@ indexes:
   - name: owner
   - name: created_at
 
+- kind: ProjectGrid
+  properties:
+  - name: project
+  - name: created_at
+
 - kind: SemProject
   properties:
   - name: project

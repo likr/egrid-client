@@ -102,6 +102,16 @@
       }
     }
   },
+  "PROJECT_GRID": {
+    "ATTRIBUTES": {
+      "NAME": "メモ",
+      "CREATED_AT": "追加日時",
+      "UPDATED_AT": "更新日時",
+      "PLACEHOLDERS": {
+        "NAME": "メモ"
+      }
+    }
+  },
   "SEM": {
     "ANALYSIS": "分析",
     "QUESTIONNAIRE": {

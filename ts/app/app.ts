@@ -9,7 +9,9 @@
 /// <reference path="participant-list.ts"/>
 /// <reference path="project.ts"/>
 /// <reference path="project-create.ts"/>
-/// <reference path="project-grid.ts"/>
+/// <reference path="project-grid-create.ts"/>
+/// <reference path="project-grid-edit.ts"/>
+/// <reference path="project-grid-list.ts"/>
 /// <reference path="project-list.ts"/>
 /// <reference path="sem-project.ts"/>
 /// <reference path="sem-project-analysis.ts"/>
@@ -32,9 +34,9 @@ module egrid.app {
     .config(['$routeProvider', $routeProvider => {
       $routeProvider
         .when(Url.projectGridUrlBase, {
-          controller: 'ProjectGridController',
+          controller: 'ProjectGridEditController',
           controllerAs: 'projectGrid',
-          templateUrl: '/partials/egm-show-all.html',
+          templateUrl: '/partials/project-grid-edit.html',
         })
         .when(Url.participantGridUrlBase, {
           controller: 'ParticipantGridEditController',
@@ -90,7 +92,9 @@ module egrid.app {
     .controller('ParticipantListController', ['$q', '$routeParams', ParticipantListController])
     .controller('ProjectController', ['$q', '$routeParams', ProjectController])
     .controller('ProjectCreateController', ['$q', '$location', ProjectCreateController])
-    .controller('ProjectGridController', ['$q', '$routeParams', '$modal', '$scope', ProjectGridController])
+    .controller('ProjectGridCreateController', ['$q', '$routeParams', '$location', ProjectGridCreateController])
+    .controller('ProjectGridEditController', ['$q', '$routeParams', '$modal', '$scope', '$location', ProjectGridEditController])
+    .controller('ProjectGridListController', ['$q', '$routeParams', ProjectGridListController])
     .controller('ProjectListController', ['$q', ProjectListController])
     .controller('SemProjectController', ['$q', '$routeParams', SemProjectController])
     .controller('SemProjectAnalysisController', ['$q', '$routeParams', SemProjectAnalysisController])

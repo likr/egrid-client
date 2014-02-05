@@ -192,8 +192,11 @@ module egrid {
     constructor() {
       this.nodes_ = [];
       this.links_ = [];
+      this.paths = [];
       this.undoStack = [];
       this.redoStack = [];
+      this.linkMatrix = [];
+      this.pathMatrix = [];
     }
 
 

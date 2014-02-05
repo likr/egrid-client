@@ -3,17 +3,19 @@
 /// <reference path="../core/egm-ui.ts"/>
 /// <reference path="../model/participant.ts"/>
 /// <reference path="../model/project-grid.ts"/>
+/// <reference path="url.ts"/>
 
 module egrid.app {
   export class ProjectGridEditController {
     projectKey : string;
     projectGridKey : string;
+    grid : model.ProjectGrid;
     egm : EGM;
     filter : {} = {};
     participants : model.Participant[];
     participantState : {} = {};
 
-    constructor($q, $routeParams, $modal, private $scope) {
+    constructor(private $q, $routeParams, private $modal, private $scope, private $location) {
       this.projectKey = $routeParams.projectKey;
       this.projectGridKey = $routeParams.projectGridKey;
 
@@ -65,6 +67,15 @@ module egrid.app {
         );
       d3.select("#mergeNodeButton")
         .call(egmui.mergeNodeButton()
+            .onEnable(selection => this.showNodeController(selection))
+            .onDisable(() => this.hideNodeController())
+        );
+      d3.select("#editNodeButton")
+        .call(egmui.editNodeButton()
+            .onClick(callback => {
+              var node = this.egm.selectedNode();
+              this.openInputTextDialog(callback, node.text)
+            })
             .onEnable(selection => this.showNodeController(selection))
             .onDisable(() => this.hideNodeController())
         );
@@ -134,8 +145,9 @@ module egrid.app {
         })
         ;
 
-      $q.when(model.ProjectGrid.get(this.projectKey))
+      this.$q.when(model.ProjectGrid.get(this.projectKey, this.projectGridKey))
         .then((grid : model.ProjectGrid) => {
+          this.grid = grid;
           var nodes = grid.nodes.map(d => new Node(d.text, d.weight, d.original, d.participants));
           var links = grid.links.map(d => new Link(nodes[d.source], nodes[d.target], d.weight));
           this.egm
@@ -147,7 +159,7 @@ module egrid.app {
         })
         ;
 
-      $q.when(model.Participant.query(this.projectKey))
+      this.$q.when(model.Participant.query(this.projectKey))
         .then((participants : model.Participant[]) => {
           this.participants = participants;
           this.participants.forEach(participant => {
@@ -156,6 +168,43 @@ module egrid.app {
           });
         })
         ;
+    }
+
+    save() {
+      this.grid.nodes = this.egm.grid().nodes();
+      this.grid.links = this.egm.grid().links().map(link => {
+        return {
+          source: link.source.index,
+          target: link.target.index,
+          weight: link.weight,
+        };
+      });
+      this.$q.when(this.grid.save())
+        .then(grid => {
+          this.$location.path(Url.projectUrl(grid.projectKey));
+        })
+        ;
+    }
+
+    private openInputTextDialog(callback, initialText : string = '') {
+      var texts = [];
+      var m = this.$modal.open({
+        backdrop: true,
+        keyboard: true,
+        backdropClick: true,
+        templateUrl: '/partials/input-text-dialog.html',
+        controller: ($scope, $modalInstance) => {
+          $scope.result = initialText;
+          $scope.texts = texts;
+          $scope.close = function(result) {
+            $modalInstance.close(result);
+          }
+        },
+      });
+      m.result.then(result => {
+        callback(result);
+      });
+      this.$scope.$apply();
     }
 
     private showNodeController(selection) {
