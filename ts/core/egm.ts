@@ -312,6 +312,7 @@ module egrid {
           .on("click", (d) => {
             this.grid().removeLink(d.index);
             this.draw();
+            this.drawNodeConnection();
           })
           .call(selection => {
             selection.append("circle")
@@ -915,6 +916,7 @@ module egrid {
         this.unselectElement();
         this.grid().removeNode(node.index);
         this.draw();
+        this.unselectElement();
         this.notify();
       }
       return this;
