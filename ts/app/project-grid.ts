@@ -94,7 +94,7 @@ module egrid.app {
           });
           m.result.then(result => {
             this.egm.nodes().forEach(d => {
-              m.active = m.participants.some(key => result[key]);
+              d.active = d.participants.some(key => result[key]);
             });
             this.egm
               .draw()
@@ -123,7 +123,10 @@ module egrid.app {
             },
           });
           m.result.then(() => {
-            this.egm.draw();
+            this.egm
+              .draw()
+              .focusCenter()
+              ;
           });
           $scope.$apply();
         })

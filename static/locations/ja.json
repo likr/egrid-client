@@ -45,6 +45,7 @@
       "INPUT_EVALUATION_FACTOR": "評価項目を入力してください",
       "LAYOUT_SETTINGS": "レイアウト設定",
       "LINE_UP": "整列",
+      "MINIMUM_WEIGHT": "最小数",
       "RANK_DIRECTION": {
         "LR": "左右",
         "RANK_DIRECTION": "方向",

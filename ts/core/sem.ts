@@ -56,7 +56,7 @@ module egrid {
       var nodeSizeScale = this.nodeSizeScale();
       nodesSelection.each(node => {
         var rect = this.calcRect(node.text);
-        var n = this.grid().numConnectedNodes(node.index, true);
+        var n = this.grid().numConnectedNodes(node.index);
         node.baseWidth = rect.width;
         node.baseHeight = rect.height;
         node.width = node.baseWidth * nodeSizeScale(n);
@@ -136,7 +136,7 @@ module egrid {
         .attr("transform", (node : egrid.Node) : string => {
           return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString()
             + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString()
-            + (new Svg.Transform.Scale(nodeSizeScale(this.grid().numConnectedNodes(node.index, true)))).toString();
+            + (new Svg.Transform.Scale(nodeSizeScale(this.grid().numConnectedNodes(node.index)))).toString();
         })
         ;
       transition.selectAll(".link path")
@@ -269,7 +269,7 @@ module egrid {
       return d3.scale
         .linear()
         .domain(d3.extent(this.nodes(), node => {
-          return this.grid().numConnectedNodes(node.index, true);
+          return this.grid().numConnectedNodes(node.index);
         }))
         .range([1, 1])
         ;

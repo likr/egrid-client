@@ -163,7 +163,6 @@ module egrid {
 
 
   export interface LayoutOption {
-    checkActive? : boolean;
     lineUpTop? : boolean;
     lineUpBottom? : boolean;
     rankDirection? : RankDirection;
@@ -176,11 +175,14 @@ module egrid {
   export class Grid {
     private nodes_ : Node[];
     private links_ : Link[];
+    private paths : Link[];
     private linkMatrix : boolean[][];
     private pathMatrix : boolean[][];
     private undoStack : CommandTransaction[];
     private redoStack : CommandTransaction[];
     private transaction : CommandTransaction;
+    private checkActive_ : boolean;
+    private minimumWeight_ : number;
 
 
     /**
@@ -429,6 +431,13 @@ module egrid {
     }
 
 
+    activeNodes() : Node[] {
+      return this.nodes().filter(node => {
+        return (!this.checkActive_ || node.active) && node.weight >= this.minimumWeight_;
+      });
+    }
+
+
     findNode(text : string) : Node {
       var result = null;
       this.nodes_.forEach(node => {
@@ -453,6 +462,31 @@ module egrid {
     }
 
 
+    activeLinks() : Link[] {
+      var removeNodes = this.nodes().filter(node => {
+        return node.weight < this.minimumWeight_;
+      });
+      var newPathMatrix = this.linkMatrix.map(row => row.map(v => v));
+      removeNodes.forEach(node => {
+        var i, j, k = node.index, n = this.nodes_.length;
+        for (i = 0; i < n; ++i) {
+          for (j = 0; j < n; ++j) {
+            if (newPathMatrix[i][k] && newPathMatrix[k][j]) {
+              newPathMatrix[i][j] = true;
+            }
+          }
+        }
+      });
+      return this.paths.filter(link => {
+        return newPathMatrix[link.source.index][link.target.index]
+          && (!this.checkActive_ || link.source.active)
+          && link.source.weight >= this.minimumWeight_
+          && (!this.checkActive_ || link.target.active)
+          && link.target.weight >= this.minimumWeight_;
+      });
+    }
+
+
     link(linkIndex : number) : Link;
     link(fromNodeIndex : number, toNodeIndex : number) : Link;
     link(index1 : number, index2 : number=undefined) : Link {
@@ -471,17 +505,12 @@ module egrid {
 
 
     layout(options : LayoutOption) : void {
-      var checkActive = options.checkActive === undefined ? false : options.checkActive;
       var lineUpTop = options.lineUpTop === undefined ? true : options.lineUpTop;
       var lineUpBottom = options.lineUpBottom === undefined ? true : options.lineUpBottom;
       var rankDirection = options.rankDirection === undefined || options.rankDirection == RankDirection.LR ? 'LR' : 'TB';
 
-      var nodes = this.nodes_;
-      var links = this.links_;
-      if (checkActive) {
-        nodes = nodes.filter(node => node.active);
-        links = links.filter(link => link.source.active && link.target.active);
-      }
+      var nodes = this.activeNodes();
+      var links = this.activeLinks();
 
       dagre.layout()
         .nodes(nodes)
@@ -520,16 +549,38 @@ module egrid {
     }
 
 
-    numConnectedNodes(index : number, checkActive : boolean = false) : number {
+    numConnectedNodes(index : number) : number {
       var result = 0;
-      this.nodes_.forEach((node, j) => {
-        if (!checkActive || (checkActive && node.active)) {
-          if (this.pathMatrix[index][j] || this.pathMatrix[j][index]) {
-            result += 1;
-          }
+      this.activeNodes().forEach((node, j) => {
+        if (this.pathMatrix[index][j] || this.pathMatrix[j][index]) {
+          result += 1;
         }
       })
       return result;
+    }
+
+
+    checkActive() : boolean;
+    checkActive(flag : boolean) : Grid;
+    checkActive(arg? : boolean) : any {
+      if (arg === undefined) {
+        return this.checkActive_;
+      } else {
+        this.checkActive_ = arg;
+        return this;
+      }
+    }
+
+
+    minimumWeight() : number;
+    minimumWeight(value : number) : Grid;
+    minimumWeight(arg? : number) : any {
+      if (arg === undefined) {
+        return this.minimumWeight_;
+      } else {
+        this.minimumWeight_ = arg;
+        return this;
+      }
     }
 
 
@@ -597,6 +648,15 @@ module egrid {
             if (this.pathMatrix[i][k] && this.pathMatrix[k][j]) {
               this.pathMatrix[i][j] = true;
             }
+          }
+        }
+      }
+
+      this.paths = this.links_.map(link => link);
+      for (i = 0; i < n; ++i) {
+        for (j = 0; j < n; ++j) {
+          if (this.pathMatrix[i][j] && !this.linkMatrix[i][j]) {
+            this.paths.push(new Link(this.nodes_[i], this.nodes_[j]));
           }
         }
       }

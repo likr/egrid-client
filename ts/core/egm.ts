@@ -17,25 +17,14 @@ module egrid {
 
 
   export class EgmOption {
-    public viewMode : ViewMode;
-    public inactiveNode : InactiveNode;
-    public scalingConnection : boolean;
-    public lineUpTop : boolean;
-    public lineUpBottom : boolean;
-    public showGuide : boolean;
-    public rankDirection : RankDirection;
-
-    static default() : EgmOption {
-      var option = new EgmOption;
-      option.viewMode = ViewMode.Normal;
-      option.inactiveNode = InactiveNode.Transparent;
-      option.scalingConnection = true;
-      option.lineUpTop = true;
-      option.lineUpBottom = true;
-      option.showGuide = false;
-      option.rankDirection = RankDirection.LR;
-      return option;
-    }
+    public viewMode : ViewMode = ViewMode.Normal;
+    public inactiveNode : InactiveNode = InactiveNode.Transparent;
+    public scalingConnection : boolean = true;
+    public lineUpTop : boolean = true;
+    public lineUpBottom : boolean = true;
+    public showGuide : boolean = false;
+    public rankDirection : RankDirection = RankDirection.LR;
+    public minimumWeight : number = 1;
   }
 
 
@@ -75,7 +64,7 @@ module egrid {
      */
     constructor () {
       super();
-      this.options_ = EgmOption.default();
+      this.options_ = new EgmOption;
     }
 
 
@@ -103,12 +92,12 @@ module egrid {
         .interpolate("basis")
         ;
 
+      this.grid()
+        .checkActive(this.options().inactiveNode == InactiveNode.Hidden)
+        .minimumWeight(this.options().minimumWeight)
+        ;
       var nodes = this.nodes();
       var links = this.links();
-      if (this.options_.inactiveNode == InactiveNode.Hidden) {
-        nodes = nodes.filter(d => d.active);
-        links = links.filter(d => d.source.active && d.target.active);
-      }
 
       var nodesSelection = this.contentsSelection
         .select(".nodes")
@@ -128,7 +117,7 @@ module egrid {
       var nodeSizeScale = this.nodeSizeScale();
       nodesSelection.each(node => {
         var rect = this.calcRect(node.text);
-        var n = this.grid().numConnectedNodes(node.index, true);
+        var n = this.grid().numConnectedNodes(node.index);
         node.baseWidth = rect.width;
         node.baseHeight = rect.height;
         node.width = node.baseWidth * nodeSizeScale(n);
@@ -173,7 +162,6 @@ module egrid {
 
       this.grid()
         .layout({
-          checkActive: this.options_.inactiveNode == InactiveNode.Hidden,
           lineUpTop: this.options_.lineUpTop,
           lineUpBottom: this.options_.lineUpBottom,
           rankDirection: this.options_.rankDirection,
@@ -203,7 +191,7 @@ module egrid {
         .attr("transform", (node : egrid.Node) : string => {
           return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString()
             + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString()
-            + (new Svg.Transform.Scale(nodeSizeScale(this.grid().numConnectedNodes(node.index, true)))).toString();
+            + (new Svg.Transform.Scale(nodeSizeScale(this.grid().numConnectedNodes(node.index)))).toString();
         })
         ;
       transition.selectAll(".link path")
@@ -339,7 +327,7 @@ module egrid {
       return d3.scale
         .linear()
         .domain(d3.extent(this.nodes(), node => {
-          return this.grid().numConnectedNodes(node.index, true);
+          return this.grid().numConnectedNodes(node.index);
         }))
         .range([1, this.options_.scalingConnection ? 3 : 1])
         ;
@@ -358,9 +346,7 @@ module egrid {
 
 
     private rescale() : void {
-      var filterdNodes = this.options_.inactiveNode == InactiveNode.Hidden
-        ? this.nodes().filter(node => node.active)
-        : this.nodes()
+      var filterdNodes = this.nodes();
       var left = d3.min(filterdNodes, node => {
         return node.left().x;
       });
