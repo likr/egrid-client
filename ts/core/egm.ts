@@ -6,7 +6,8 @@
 module egrid {
   export enum ViewMode {
     Normal,
-    Edge
+    Edge,
+    EdgeAndOriginal,
   }
 
 

@@ -291,7 +291,6 @@ module egrid {
     updateNodeWeight(nodeIndex : number, newWeight : number) : void {
       var node = this.nodes_[nodeIndex];
       var oldWeight = node.weight;
-      console.log(newWeight, oldWeight);
       this.execute({
         execute: () => {
           node.weight = newWeight;
