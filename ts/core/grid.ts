@@ -288,6 +288,21 @@ module egrid {
     }
 
 
+    updateNodeWeight(nodeIndex : number, newWeight : number) : void {
+      var node = this.nodes_[nodeIndex];
+      var oldWeight = node.weight;
+      console.log(newWeight, oldWeight);
+      this.execute({
+        execute: () => {
+          node.weight = newWeight;
+        },
+        revert: () => {
+          node.weight = oldWeight;
+        },
+      });
+    }
+
+
     updateLinkWeight(linkIndex : number, newWeight : number) : void {
       var link = this.links_[linkIndex];
       var oldWeight = link.weight;
@@ -329,6 +344,7 @@ module egrid {
         });
       this.transactionWith(() => {
         this.updateNodeText(toIndex, toNode.text + ", " + fromNode.text);
+        this.updateNodeWeight(toIndex, toNode.weight + fromNode.weight);
         this.removeNode(fromIndex);
         this.execute({
           execute : () => {
