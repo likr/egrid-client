@@ -24,7 +24,7 @@ module egrid.app {
       var egmui = egrid.egmui();
       this.egm = egmui.egm();
       this.egm.showRemoveLinkButton(true);
-      this.egm.options().scalingConnection = false;
+      this.egm.options().maxScale = 1;
       this.egm.options().showGuide = true;
       var calcHeight = () => {
         return $(window).height() - 100; //XXX

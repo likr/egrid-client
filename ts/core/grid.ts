@@ -566,8 +566,8 @@ module egrid {
 
     numConnectedNodes(index : number) : number {
       var result = 0;
-      this.activeNodes().forEach((node, j) => {
-        if (this.pathMatrix[index][j] || this.pathMatrix[j][index]) {
+      this.activeNodes().forEach(node => {
+        if (this.pathMatrix[index][node.index] || this.pathMatrix[node.index][index]) {
           result += 1;
         }
       })

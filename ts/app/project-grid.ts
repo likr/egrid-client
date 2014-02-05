@@ -18,7 +18,6 @@ module egrid.app {
       var egmui = egrid.egmui();
       this.egm = egmui.egm();
       this.egm.showRemoveLinkButton(true);
-      this.egm.options().scalingConnection = false;
       var calcHeight = () => {
         return $(window).height() - 100; //XXX
       };
@@ -117,6 +116,7 @@ module egrid.app {
               $scope.ViewMode = egrid.ViewMode;
               $scope.InactiveNode = egrid.InactiveNode;
               $scope.RankDirection = egrid.RankDirection;
+              $scope.ScaleType = egrid.ScaleType;
               $scope.close = () => {
                 $modalInstance.close();
               }

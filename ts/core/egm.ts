@@ -17,10 +17,18 @@ module egrid {
   }
 
 
+  export enum ScaleType {
+    Connection,
+    None,
+    Weight,
+  }
+
+
   export class EgmOption {
     public viewMode : ViewMode = ViewMode.Normal;
     public inactiveNode : InactiveNode = InactiveNode.Transparent;
-    public scalingConnection : boolean = true;
+    public maxScale : number = 3;
+    public scaleType : ScaleType = ScaleType.Weight;
     public lineUpTop : boolean = true;
     public lineUpBottom : boolean = true;
     public showGuide : boolean = false;
@@ -118,7 +126,7 @@ module egrid {
       var nodeSizeScale = this.nodeSizeScale();
       nodesSelection.each(node => {
         var rect = this.calcRect(node.text);
-        var n = this.grid().numConnectedNodes(node.index);
+        var n = this.scaleValue(node);
         node.baseWidth = rect.width;
         node.baseHeight = rect.height;
         node.width = node.baseWidth * nodeSizeScale(n);
@@ -192,7 +200,7 @@ module egrid {
         .attr("transform", (node : egrid.Node) : string => {
           return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString()
             + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString()
-            + (new Svg.Transform.Scale(nodeSizeScale(this.grid().numConnectedNodes(node.index)))).toString();
+            + (new Svg.Transform.Scale(nodeSizeScale(this.scaleValue(node)))).toString();
         })
         ;
       transition.selectAll(".link path")
@@ -324,13 +332,24 @@ module egrid {
     }
 
 
+    private scaleValue(node : Node) : number {
+      switch (this.options_.scaleType) {
+        case ScaleType.Connection:
+          return this.grid().numConnectedNodes(node.index);
+        case ScaleType.Weight:
+          return node.weight;
+        case ScaleType.None:
+        default:
+          return 1;
+      }
+    }
+
+
     private nodeSizeScale() : D3.Scale.Scale {
       return d3.scale
         .linear()
-        .domain(d3.extent(this.nodes(), node => {
-          return this.grid().numConnectedNodes(node.index);
-        }))
-        .range([1, this.options_.scalingConnection ? 3 : 1])
+        .domain(d3.extent(this.nodes(), node => this.scaleValue(node)))
+        .range([1, this.options_.maxScale])
         ;
     }
 
