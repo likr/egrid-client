@@ -1,4 +1,4 @@
-<div>
+<div class="tab-pane active">
   <h2>{{project.name}}</h2>
 
   <ol class="breadcrumb">
@@ -7,11 +7,11 @@
   </ol>
 
   <ul class="nav nav-tabs">
-    <li><a href ui-sref="projects.get.detail">{{'ACTION.DETAIL' | translate}}</a></li>
-    <li><a href ui-sref="projects.get.participants">{{'PARTICIPANT.PARTICIPANTS' | translate }}</a></li>
-    <li><a href ui-sref="projects.get.evaluation">{{'EGM.EVALUATION_STRUCTURE' | translate }}</a></li>
-    <li><a href ui-sref="projects.get.analysis">{{'EGM.ANALYSIS' | translate }}</a></li>
-    <li><a href ui-sref="projects.get.collaborators.list">{{'COLLABORATOR.COLLABORATOR' | translate }}</a></li>
+    <li class="active"><a data-toggle="tab" href ui-sref="projects.get.detail">{{'ACTION.DETAIL' | translate}}</a></li>
+    <li><a data-toggle="tab" ui-sref="projects.get.participants.all.list">{{'PARTICIPANT.PARTICIPANTS' | translate }}</a></li>
+    <li><a data-toggle="tab" ui-sref="projects.get.evaluation">{{'EGM.EVALUATION_STRUCTURE' | translate }}</a></li>
+    <li><a data-toggle="tab" ui-sref="projects.get.analysis">{{'EGM.ANALYSIS' | translate }}</a></li>
+    <li><a data-toggle="tab" ui-sref="projects.get.collaborators.all.list">{{'COLLABORATOR.COLLABORATOR' | translate }}</a></li>
   </ul>
 
   <div class="tab-content" ui-view="content"></div>

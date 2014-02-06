@@ -31,15 +31,138 @@ module egrid.app {
     }])
     .config(['$stateProvider', '$urlRouterProvider', ($stateProvider, $urlRouterProvider) => {
       $stateProvider
-        .state('project', {
-          url: Url.projectUrlBase,
-          controller: 'ProjectController as project',
-          templateUrl: '/partials/project-detail.html',
+        .state('projects', {
+          abstract: true,
         })
-        .state('details', {
-          parent: 'project',
-          url: '/details',
-          template: 'Test1',
+        .state('projects.all', {
+          abstract: true,
+          url: Url.projectListUrlBase,
+          views: {
+            '@': {
+              templateUrl: '/partials/projects/projects.html',
+            },
+          },
+        })
+        .state('projects.all.create', {
+          url: '/create',
+          views: {
+            'content@projects.all': {
+              controller: 'ProjectCreateController as newProject',
+              templateUrl: '/partials/projects/create.html',
+            },
+          },
+        })
+        .state('projects.all.list', {
+          url: '/list',
+          views: {
+            'content@projects.all': {
+              controller: 'ProjectListController as ctrl',
+              templateUrl: '/partials/projects/list.html',
+            },
+          },
+        })
+        .state('projects.get', {
+          abstract: true,
+          url: Url.projectUrlBase,
+          views: {
+            '@': {
+              controller: 'ProjectController as project',
+              templateUrl: '/partials/project/project.html',
+            },
+          },
+        })
+        .state('projects.get.collaborators', {
+          abstract: true,
+          url: '/collaborators',
+          views: {
+            'content@projects.get': {
+              templateUrl: '/partials/project/collaborators/collaborators.html',
+            },
+          },
+        })
+        .state('projects.get.collaborators.all', {
+          abstract: true,
+          url: '/all',
+          views: {
+            'content@projects.get': {
+              templateUrl: '/partials/project/collaborators/collaborators.html',
+            },
+          },
+        })
+        .state('projects.get.collaborators.all.create', {
+          url: '/create',
+          views: {
+            'c@projects.get.collaborators.all': {
+              controller: 'CollaboratorCreateController as newCollaborator',
+              templateUrl: '/partials/project/collaborators/create.html',
+            },
+          },
+        })
+        .state('projects.get.collaborators.all.list', {
+          url: '/list',
+          views: {
+            'c@projects.get.collaborators.all': {
+              controller: 'CollaboratorListController as collaborators',
+              templateUrl: '/partials/project/collaborators/list.html',
+            },
+          },
+        })
+        .state('projects.get.detail', {
+          url: '/detail',
+          views: {
+            'content@projects.get': {
+              templateUrl: '/partials/project/detail.html',
+            },
+          },
+        })
+        .state('projects.get.participants', {
+          abstract: true,
+          url: '/participants/:participantId',
+        })
+        .state('projects.get.participants.all', {
+          abstract: true,
+          url: '/all',
+          views: {
+            'content@projects.get': {
+              templateUrl: '/partials/participants/participants.html',
+            },
+          },
+        })
+        .state('projects.get.participants.all.create', {
+          url: '/create',
+          views: {
+            'content@projects.get.participants.all': {
+              controller: 'ParticipantCreateController as newParticipant',
+              templateUrl: '/partials/participants/create.html',
+            },
+          },
+        })
+        .state('projects.get.participants.all.list', {
+          url: '/list',
+          views: {
+            'content@projects.get.participants.all': {
+              controller: 'ParticipantListController as ctrl',
+              templateUrl: '/partials/participants/list.html',
+            },
+          },
+        })
+        .state('projects.get.participants.get', {
+          abstract: true,
+          url: '',
+          views: {
+            'content@projects.get': {
+              templateUrl: '/partials/participant/participant.html',
+              controller: 'ParticipantController as participant',
+            },
+          },
+        })
+        .state('projects.get.participants.get.detail', {
+          url: '/detail',
+          views: {
+            'content@projects.get.participants.get': {
+              templateUrl: '/partials/participant/detail.html',
+            },
+          },
         })
         .state('grid', {
           url: Url.projectGridUrlBase,
@@ -56,18 +179,12 @@ module egrid.app {
           controller: 'SemProjectController as semProject',
           templateUrl: '/partials/sem-project-detail.html',
         })
-        .state('projects', {
-          url: Url.projectListUrlBase,
-          templateUrl: '/partials/project-list.html',
-        })
         .state("/help", {
           templateUrl: '/partials/help.html',
         })
         .state("/about", {
           templateUrl: '/partials/about.html',
         });
-      //$urlRouterProvider
-      //  .otherwise(Url.projectListUrlBase);
     }])
     .filter('count', () => {
       return (input : any[]) => input.length;
