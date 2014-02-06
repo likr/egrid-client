@@ -23,7 +23,7 @@ module egrid.app {
         projectKey = arg;
       }
 
-      return '/projects/' + projectKey + '/participants/' + participantKey + '/detail';
+      return '/projects/' + projectKey + '/participants/' + participantKey;
     }
 
     static participantGridUrl(projectKey : string, participantKey : string) : string;
@@ -39,15 +39,11 @@ module egrid.app {
     static projectUrl(projectKey : string) : string;
     static projectUrl(project : model.Project) : string;
     static projectUrl(project : any) : string {
-      var result: string;
-
       if (project instanceof model.Project) {
-        result = '/projects/' + project.key();
+        return '/projects/' + project.key();
       } else {
-        result = '/projects/' + project;
+        return '/projects/' + project;
       }
-
-      return result + '/detail';
     }
 
     static projectGridUrl(projectKey : string) : string;

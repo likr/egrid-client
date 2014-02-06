@@ -423,7 +423,7 @@ var egrid;
                     projectKey = arg;
                 }
 
-                return '/projects/' + projectKey + '/participants/' + participantKey + '/detail';
+                return '/projects/' + projectKey + '/participants/' + participantKey;
             };
 
             Url.participantGridUrl = function (arg, participantKey) {
@@ -435,15 +435,11 @@ var egrid;
             };
 
             Url.projectUrl = function (project) {
-                var result;
-
                 if (project instanceof egrid.model.Project) {
-                    result = '/projects/' + project.key();
+                    return '/projects/' + project.key();
                 } else {
-                    result = '/projects/' + project;
+                    return '/projects/' + project;
                 }
-
-                return result + '/detail';
             };
 
             Url.projectGridUrl = function (project) {
@@ -3799,6 +3795,28 @@ var egrid;
                             templateUrl: '/partials/project/project.html'
                         }
                     }
+                }).state('projects.get.analysis', {
+                    abstract: true,
+                    url: '/analysis',
+                    views: {
+                        'content@projects.get': {
+                            templateUrl: '/partials/project/analysis/analysis.html'
+                        }
+                    }
+                }).state('projects.get.analysis.create', {
+                    url: '/create',
+                    views: {
+                        'content@projects.get.analysis': {
+                            templateUrl: '/partials/project/analysis/create.html'
+                        }
+                    }
+                }).state('projects.get.analysis.list', {
+                    url: '/list',
+                    views: {
+                        'content@projects.get.analysis': {
+                            templateUrl: '/partials/project/analysis/list.html'
+                        }
+                    }
                 }).state('projects.get.collaborators', {
                     abstract: true,
                     url: '/collaborators',
@@ -3836,6 +3854,13 @@ var egrid;
                     views: {
                         'content@projects.get': {
                             templateUrl: '/partials/project/detail.html'
+                        }
+                    }
+                }).state('projects.get.evaluation', {
+                    url: '/evaluation',
+                    views: {
+                        'content@projects.get': {
+                            templateUrl: '/partials/project/evaluation.html'
                         }
                     }
                 }).state('projects.get.participants', {
@@ -3898,6 +3923,7 @@ var egrid;
                 }).state("/about", {
                     templateUrl: '/partials/about.html'
                 });
+                $urlRouterProvider.otherwise(egrid.app.Url.projectListUrlBase);
             }]).filter('count', function () {
             return function (input) {
                 return input.length;

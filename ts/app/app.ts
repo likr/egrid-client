@@ -71,6 +71,31 @@ module egrid.app {
             },
           },
         })
+        .state('projects.get.analysis', {
+          abstract: true,
+          url: '/analysis',
+          views: {
+            'content@projects.get': {
+              templateUrl: '/partials/project/analysis/analysis.html',
+            },
+          },
+        })
+        .state('projects.get.analysis.create', {
+          url: '/create',
+          views: {
+            'content@projects.get.analysis': {
+              templateUrl: '/partials/project/analysis/create.html',
+            },
+          },
+        })
+        .state('projects.get.analysis.list', {
+          url: '/list',
+          views: {
+            'content@projects.get.analysis': {
+              templateUrl: '/partials/project/analysis/list.html',
+            },
+          },
+        })
         .state('projects.get.collaborators', {
           abstract: true,
           url: '/collaborators',
@@ -112,6 +137,14 @@ module egrid.app {
           views: {
             'content@projects.get': {
               templateUrl: '/partials/project/detail.html',
+            },
+          },
+        })
+        .state('projects.get.evaluation', {
+          url: '/evaluation',
+          views: {
+            'content@projects.get': {
+              templateUrl: '/partials/project/evaluation.html',
             },
           },
         })
@@ -185,6 +218,8 @@ module egrid.app {
         .state("/about", {
           templateUrl: '/partials/about.html',
         });
+      $urlRouterProvider
+        .otherwise(Url.projectListUrlBase);
     }])
     .filter('count', () => {
       return (input : any[]) => input.length;

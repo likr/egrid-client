@@ -6,8 +6,12 @@
   </ol>
 
   <ul class="nav nav-tabs">
-    <li><a data-target="ui-sref" data-toggle="tab" href ui-sref="projects.all.list">{{'ACTION.LIST' | translate}}</a></li>
-    <li><a data-target="ui-sref" data-toggle="tab" href ui-sref="projects.all.create">{{'ACTION.NEW' | translate}}</a></li>
+    <li ui-sref-active="active">
+      <a data-target="ui-sref" data-toggle="tab" href ui-sref="projects.all.list">{{'ACTION.LIST' | translate}}</a>
+    </li>
+    <li ui-sref-active="active">
+      <a data-target="ui-sref" data-toggle="tab" href ui-sref="projects.all.create">{{'ACTION.NEW' | translate}}</a>
+    </li>
   </ul>
 
   <div class="tab-content" ui-view="content"></div>

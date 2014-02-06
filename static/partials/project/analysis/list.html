@@ -1,0 +1,18 @@
+<div class="tab-pane active" ng-controller="SemProjectListController as semProjects">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>{{ 'SEM_PROJECT.ATTRIBUTES.NAME' | translate }}</th>
+        <th>{{ 'ACTION.ACTION' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="semProject in semProjects.list">
+        <td>{{ $index + 1 }}</td>
+        <td>{{ semProject.name }}</td>
+        <td><a href="/#{{Url.semProjectUrl(semProject)}}">{{ 'ACTION.SHOW' | translate }}</a>
+      </tr>
+    </tbody>
+  </table>
+</div>
