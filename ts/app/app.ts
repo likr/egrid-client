@@ -117,14 +117,14 @@ module egrid.app {
         })
         .state('projects.get.participants', {
           abstract: true,
-          url: '/participants/:participantId',
+          url: '/participants',
         })
         .state('projects.get.participants.all', {
           abstract: true,
           url: '/all',
           views: {
             'content@projects.get': {
-              templateUrl: '/partials/participants/participants.html',
+              templateUrl: '/partials/project/participants/participants.html',
             },
           },
         })
@@ -133,7 +133,7 @@ module egrid.app {
           views: {
             'content@projects.get.participants.all': {
               controller: 'ParticipantCreateController as newParticipant',
-              templateUrl: '/partials/participants/create.html',
+              templateUrl: '/partials/project/participants/create.html',
             },
           },
         })
@@ -142,16 +142,16 @@ module egrid.app {
           views: {
             'content@projects.get.participants.all': {
               controller: 'ParticipantListController as ctrl',
-              templateUrl: '/partials/participants/list.html',
+              templateUrl: '/partials/project/participants/list.html',
             },
           },
         })
         .state('projects.get.participants.get', {
           abstract: true,
-          url: '',
+          url: '/:participantId',
           views: {
-            'content@projects.get': {
-              templateUrl: '/partials/participant/participant.html',
+            '@': {
+              templateUrl: '/partials/project/participants/participant/participant.html',
               controller: 'ParticipantController as participant',
             },
           },
@@ -160,7 +160,7 @@ module egrid.app {
           url: '/detail',
           views: {
             'content@projects.get.participants.get': {
-              templateUrl: '/partials/participant/detail.html',
+              templateUrl: '/partials/project/participants/participant/detail.html',
             },
           },
         })

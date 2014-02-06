@@ -1,6 +1,10 @@
 <ul class="nav nav-tabs">
-  <li class="active"><a href ui-sref="projects.get.collaborators.all.list">{{ 'ACTION.LIST' | translate }}</a></li>
-  <li><a href ui-sref="projects.get.collaborators.all.create">{{ 'ACTION.NEW' | translate }}</a></li>
+  <li ui-sref-active="active">
+    <a data-target="ui-sref" data-toggle="tab" ui-sref="projects.get.collaborators.all.list">{{ 'ACTION.LIST' | translate }}</a>
+  </li>
+  <li ui-sref-active="active">
+    <a data-target="ui-sref" data-toggle="tab" ui-sref="projects.get.collaborators.all.create">{{ 'ACTION.NEW' | translate }}</a>
+  </li>
 </ul>
 
 <div class="tab-content" ui-view="c"></div>
