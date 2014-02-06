@@ -1,0 +1,20 @@
+<div ng-controller="CollaboratorListController as collaborators">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>{{'COLLABORATOR.ATTRIBUTES.USER' | translate}}</th>
+        <th>{{'COLLABORATOR.ROLE.ROLE' | translate}}</th>
+        <th>{{'ACTION.ACTION' | translate}}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="collaborator in collaborators.list">
+        <td>{{ $index + 1 }}</td>
+        <td>{{collaborator.user.nickname}}</td>
+        <td>{{collaborator.isManager}}</td>
+        <td><a href ng-click="collaborators.confirm($index)">{{'ACTION.REMOVE' | translate}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
