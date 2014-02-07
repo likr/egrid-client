@@ -3,10 +3,10 @@
 
   <ol class="breadcrumb">
     <li>
-      <a href="/#/projects">{{ 'PROJECT.PROJECTS' | translate }}</a>
+      <a ui-sref="projects.all.list">{{'PROJECT.PROJECTS' | translate}}</a>
     </li>
     <li>
-      <a href="/#/projects/{{participant.project.key}}">{{participant.project.name}}</a>
+      <a href="/#{{Url.projectUrl(participant.project.key, 'detail')}}">{{participant.project.name}}</a>
     </li>
     <li class="active">
       {{participant.name}}
@@ -14,8 +14,12 @@
   </ol>
 
   <ul class="nav nav-tabs">
-    <li class="active"><a data-toggle="tab" href ui-sref="projects.get.participants.get.detail">{{'ACTION.DETAIL' | translate}}</a></li>
-    <li><a data-toggle="tab" ui-sref="projects.get.participants.get.evaluation">{{'EGM.EVALUATION_STRUCTURE' | translate}}</a></li>
+    <li ui-sref-active="active">
+      <a data-target="ui-sref" data-toggle="tab" ui-sref="projects.get.participants.get.detail">{{'ACTION.DETAIL' | translate}}</a>
+    </li>
+    <li ui-sref-active="active">
+      <a data-target="ui-sref" data-toggle="tab" ui-sref="projects.get.participants.get.evaluation">{{'EGM.EVALUATION_STRUCTURE' | translate}}</a>
+    </li>
   </ul>
 
   <div class="tab-content" ui-view="content"></div>
