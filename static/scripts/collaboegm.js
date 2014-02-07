@@ -448,8 +448,8 @@ var egrid;
                 return Url.projectUrl(project) + '/grid';
             };
 
-            Url.semProjectUrl = function (semProject) {
-                return '/projects/' + semProject.projectKey + '/sem-projects/' + semProject.key();
+            Url.semProjectUrl = function (semProject, action) {
+                return action ? '/projects/' + semProject.projectKey + '/sem-projects/' + semProject.key() + '/' + action : '/projects/' + semProject.projectKey + '/sem-projects/' + semProject.key();
             };
             Url.participantUrlBase = '/projects/:projectId/participants/:participantId';
             Url.participantGridUrlBase = '/projects/:projectId/participants/:participantId/grid';
@@ -469,9 +469,10 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var CollaboratorCreateController = (function () {
-            function CollaboratorCreateController($q, $stateParams, $location) {
+            function CollaboratorCreateController($q, $stateParams, $state, $timeout) {
                 this.$q = $q;
-                this.$location = $location;
+                this.$state = $state;
+                this.$timeout = $timeout;
                 this.projectKey = $stateParams.projectId;
                 this.data = new egrid.model.Collaborator({
                     projectKey: this.projectKey
@@ -480,7 +481,9 @@ var egrid;
             CollaboratorCreateController.prototype.submit = function () {
                 var _this = this;
                 this.$q.when(this.data.save()).then((function () {
-                    _this.$location.path(egrid.app.Url.projectUrl(_this.projectKey));
+                    _this.$timeout(function () {
+                        _this.$state.go('projects.get.collaborators.all.list');
+                    }, 200);
                 }), (function () {
                     console.log('error');
                 }));
@@ -608,16 +611,16 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var ParticipantCreateController = (function () {
-            function ParticipantCreateController($q, $stateParams, $location) {
+            function ParticipantCreateController($q, $stateParams, $state) {
                 this.$q = $q;
-                this.$location = $location;
+                this.$state = $state;
                 this.projectKey = $stateParams.projectId;
             }
             ParticipantCreateController.prototype.submit = function () {
                 var _this = this;
                 var participant = new egrid.model.Participant(this);
                 this.$q.when(participant.save()).then(function () {
-                    _this.$location.path(egrid.app.Url.participantUrl(participant));
+                    _this.$state.go('projects.get.participants.get.detail', { participantId: participant.key() });
                 });
             };
             return ParticipantCreateController;
@@ -2904,15 +2907,15 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var ProjectCreateController = (function () {
-            function ProjectCreateController($q, $location) {
+            function ProjectCreateController($q, $state) {
                 this.$q = $q;
-                this.$location = $location;
+                this.$state = $state;
             }
             ProjectCreateController.prototype.submit = function () {
                 var _this = this;
                 var project = new egrid.model.Project(this);
                 this.$q.when(project.save()).then(function () {
-                    _this.$location.path(egrid.app.Url.projectUrl(project));
+                    _this.$state.go('projects.get.detail', { projectId: project.key() });
                 });
             };
             return ProjectCreateController;
@@ -3553,16 +3556,20 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var SemProjectCreateController = (function () {
-            function SemProjectCreateController($q, $stateParams, $location) {
+            function SemProjectCreateController($q, $stateParams, $location, $state, $timeout) {
                 this.$q = $q;
                 this.$location = $location;
+                this.$state = $state;
+                this.$timeout = $timeout;
                 this.projectKey = $stateParams.projectId;
             }
             SemProjectCreateController.prototype.submit = function () {
                 var _this = this;
                 var semProject = new egrid.model.SemProject(this);
                 this.$q.when(semProject.save()).then(function () {
-                    _this.$location.path(egrid.app.Url.semProjectUrl(semProject));
+                    _this.$timeout(function () {
+                        _this.$state.go('projects.get.analysis.list');
+                    }, 200);
                 });
             };
             return SemProjectCreateController;
@@ -3790,36 +3797,67 @@ var egrid;
                             templateUrl: '/partials/project/project.html'
                         }
                     }
-                }).state('projects.get.analysis', {
+                }).state('projects.get.analyses', {
                     abstract: true,
-                    url: '/analysis',
+                    url: '/sem-projects'
+                }).state('projects.get.analyses.all', {
+                    abstract: true,
+                    url: '/all',
                     views: {
                         'content@projects.get': {
-                            templateUrl: '/partials/project/analysis/analysis.html'
+                            templateUrl: '/partials/project/analyses/analyses.html'
                         }
                     }
-                }).state('projects.get.analysis.create', {
+                }).state('projects.get.analyses.all.create', {
                     url: '/create',
                     views: {
-                        'content@projects.get.analysis': {
-                            templateUrl: '/partials/project/analysis/create.html'
+                        'content@projects.get.analyses.all': {
+                            templateUrl: '/partials/project/analyses/create.html'
                         }
                     }
-                }).state('projects.get.analysis.list', {
+                }).state('projects.get.analyses.all.list', {
                     url: '/list',
                     views: {
-                        'content@projects.get.analysis': {
-                            templateUrl: '/partials/project/analysis/list.html'
+                        'content@projects.get.analyses.all': {
+                            templateUrl: '/partials/project/analyses/list.html'
+                        }
+                    }
+                }).state('projects.get.analyses.get', {
+                    abstract: true,
+                    url: '/:semProjectId',
+                    views: {
+                        '@': {
+                            controller: 'SemProjectController as semProject',
+                            templateUrl: '/partials/project/analyses/analysis/analysis.html'
+                        },
+                        'content@projects.get.analyses.get': {
+                            controller: 'SemProjectQuestionnaireEditController as questionnaire'
+                        }
+                    }
+                }).state('projects.get.analyses.get.analysis', {
+                    url: '/analysis',
+                    views: {
+                        'content@projects.get.analyses.get': {
+                            templateUrl: '/partials/project/analyses/analysis/analyses.html'
+                        }
+                    }
+                }).state('projects.get.analyses.get.design', {
+                    url: '/design',
+                    views: {
+                        'content@projects.get.analyses.get': {
+                            templateUrl: '/partials/project/analyses/analysis/design.html'
+                        }
+                    }
+                }).state('projects.get.analyses.get.questionnaire', {
+                    url: '/questionnaire',
+                    views: {
+                        'content@projects.get.analyses.get': {
+                            templateUrl: '/partials/project/analyses/analysis/questionnaire.html'
                         }
                     }
                 }).state('projects.get.collaborators', {
                     abstract: true,
-                    url: '/collaborators',
-                    views: {
-                        'content@projects.get': {
-                            templateUrl: '/partials/project/collaborators/collaborators.html'
-                        }
-                    }
+                    url: '/collaborators'
                 }).state('projects.get.collaborators.all', {
                     abstract: true,
                     url: '/all',
@@ -3890,8 +3928,8 @@ var egrid;
                     url: '/:participantId',
                     views: {
                         '@': {
-                            templateUrl: '/partials/project/participants/participant/participant.html',
-                            controller: 'ParticipantController as participant'
+                            controller: 'ParticipantController as participant',
+                            templateUrl: '/partials/project/participants/participant/participant.html'
                         }
                     }
                 }).state('projects.get.participants.get.detail', {
@@ -3916,16 +3954,13 @@ var egrid;
                     url: egrid.app.Url.participantGridUrlBase,
                     controller: 'ParticipantGridEditController as participantGrid',
                     templateUrl: '/partials/egm-edit.html'
-                }).state('sem', {
-                    url: egrid.app.Url.semProjectUrlBase,
-                    controller: 'SemProjectController as semProject',
-                    templateUrl: '/partials/sem-project-detail.html'
                 }).state("/help", {
                     templateUrl: '/partials/help.html'
                 }).state("/about", {
                     templateUrl: '/partials/about.html'
                 });
-                $urlRouterProvider.otherwise(egrid.app.Url.projectListUrlBase + '/all/list');
+                // $urlRouterProvider
+                //   .otherwise(Url.projectListUrlBase + '/all/list');
             }]).filter('count', function () {
             return function (input) {
                 return input.length;
@@ -3936,7 +3971,7 @@ var egrid;
                     prefix: 'locations/',
                     suffix: '.json'
                 }).fallbackLanguage("en").preferredLanguage("ja");
-            }]).controller('CollaboratorCreateController', ['$q', '$stateParams', '$location', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$stateParams', '$scope', '$modal', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$stateParams', '$scope', '$location', '$modal', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$stateParams', '$location', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$stateParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$stateParams', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$stateParams', '$location', '$scope', '$modal', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$location', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$stateParams', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$stateParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$stateParams', '$location', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$stateParams', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$stateParams', egrid.app.SemProjectQuestionnaireEditController]).run([
+            }]).controller('CollaboratorCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$stateParams', '$scope', '$modal', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$stateParams', '$scope', '$location', '$modal', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$stateParams', '$state', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$stateParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$stateParams', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$stateParams', '$location', '$scope', '$modal', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$state', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$stateParams', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$stateParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$stateParams', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$stateParams', egrid.app.SemProjectQuestionnaireEditController]).run([
             '$rootScope', '$translate', '$http', function ($rootScope, $translate, $http) {
                 $rootScope.Url = egrid.app.Url;
 

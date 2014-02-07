@@ -56,8 +56,10 @@ module egrid.app {
       return Url.projectUrl(project) + '/grid';
     }
 
-    static semProjectUrl(semProject : model.SemProject) : string {
-      return '/projects/' + semProject.projectKey + '/sem-projects/' + semProject.key();
+    static semProjectUrl(semProject : model.SemProject, action?: string) : string {
+      return action
+        ? '/projects/' + semProject.projectKey + '/sem-projects/' + semProject.key() + '/' + action
+        : '/projects/' + semProject.projectKey + '/sem-projects/' + semProject.key();
     }
   }
 }

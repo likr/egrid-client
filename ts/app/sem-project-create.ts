@@ -6,7 +6,7 @@ module egrid.app {
     name : string;
     projectKey : string;
 
-    constructor(private $q, $stateParams, private $location) {
+    constructor(private $q, $stateParams, private $location, private $state, private $timeout) {
       this.projectKey = $stateParams.projectId;
     }
 
@@ -14,7 +14,9 @@ module egrid.app {
       var semProject = new model.SemProject(this);
       this.$q.when(semProject.save())
         .then(() => {
-          this.$location.path(Url.semProjectUrl(semProject));
+          this.$timeout(() => {
+            this.$state.go('projects.get.analysis.list');
+          }, 200);
         })
         ;
     }

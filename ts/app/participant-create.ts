@@ -8,7 +8,7 @@ module egrid.app {
     note : string;
 
 
-    constructor(private $q, $stateParams, private $location) {
+    constructor(private $q, $stateParams, private $state) {
       this.projectKey = $stateParams.projectId;
     }
 
@@ -16,7 +16,7 @@ module egrid.app {
       var participant = new model.Participant(this);
       this.$q.when(participant.save())
         .then(() => {
-          this.$location.path(Url.participantUrl(participant));
+          this.$state.go('projects.get.participants.get.detail', { participantId: participant.key() });
         })
         ;
     }

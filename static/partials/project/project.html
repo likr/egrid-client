@@ -16,8 +16,8 @@
     <li ui-sref-active="active">
       <a data-target="ui-sref" data-toggle="tab" ui-sref="projects.get.evaluation">{{'EGM.EVALUATION_STRUCTURE' | translate }}</a>
     </li>
-    <li>
-      <a data-target="ui-sref" data-toggle="tab" ui-sref="projects.get.analysis.list">{{'EGM.ANALYSIS' | translate }}</a>
+    <li ng-class="{active: {{'projects.get.analyses'|includedByState}}}">
+      <a data-target="ui-sref" data-toggle="tab" ui-sref="projects.get.analyses.all.list">{{'EGM.ANALYSIS' | translate }}</a>
     </li>
     <li ng-class="{active: {{'projects.get.collaborators'|includedByState}}}">
       <a data-target="ui-sref" data-toggle="tab" ui-sref="projects.get.collaborators.all.list">{{'COLLABORATOR.COLLABORATOR' | translate }}</a>

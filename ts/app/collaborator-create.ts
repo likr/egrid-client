@@ -6,7 +6,7 @@ module egrid.app {
     public projectKey : string;
     public data : model.Collaborator;
 
-    constructor(private $q, $stateParams, private $location) {
+    constructor(private $q, $stateParams, private $state, private $timeout) {
       this.projectKey = $stateParams.projectId;
       this.data = new model.Collaborator({
         projectKey: this.projectKey,
@@ -17,7 +17,9 @@ module egrid.app {
       this.$q.when(this.data.save())
         .then(
             (() => {
-              this.$location.path(Url.projectUrl(this.projectKey));
+              this.$timeout(() => {
+                this.$state.go('projects.get.collaborators.all.list');
+              }, 200);
             }),
             (() => {
               console.log('error');

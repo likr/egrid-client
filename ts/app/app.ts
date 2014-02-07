@@ -71,39 +71,75 @@ module egrid.app {
             },
           },
         })
-        .state('projects.get.analysis', {
+        .state('projects.get.analyses', {
           abstract: true,
-          url: '/analysis',
+          url: '/sem-projects',
+        })
+        .state('projects.get.analyses.all', {
+          abstract: true,
+          url: '/all',
           views: {
             'content@projects.get': {
-              templateUrl: '/partials/project/analysis/analysis.html',
+              templateUrl: '/partials/project/analyses/analyses.html',
             },
           },
         })
-        .state('projects.get.analysis.create', {
+        .state('projects.get.analyses.all.create', {
           url: '/create',
           views: {
-            'content@projects.get.analysis': {
-              templateUrl: '/partials/project/analysis/create.html',
+            'content@projects.get.analyses.all': {
+              templateUrl: '/partials/project/analyses/create.html',
             },
           },
         })
-        .state('projects.get.analysis.list', {
+        .state('projects.get.analyses.all.list', {
           url: '/list',
           views: {
-            'content@projects.get.analysis': {
-              templateUrl: '/partials/project/analysis/list.html',
+            'content@projects.get.analyses.all': {
+              templateUrl: '/partials/project/analyses/list.html',
+            },
+          },
+        })
+        .state('projects.get.analyses.get', {
+          abstract: true,
+          url: '/:semProjectId',
+          views: {
+            '@': {
+              controller: 'SemProjectController as semProject',
+              templateUrl: '/partials/project/analyses/analysis/analysis.html',
+            },
+            'content@projects.get.analyses.get': {
+              controller: 'SemProjectQuestionnaireEditController as questionnaire',
+            },
+          },
+        })
+        .state('projects.get.analyses.get.analysis', {
+          url: '/analysis',
+          views: {
+            'content@projects.get.analyses.get': {
+              templateUrl: '/partials/project/analyses/analysis/analyses.html',
+            },
+          },
+        })
+        .state('projects.get.analyses.get.design', {
+          url: '/design',
+          views: {
+            'content@projects.get.analyses.get': {
+              templateUrl: '/partials/project/analyses/analysis/design.html',
+            },
+          },
+        })
+        .state('projects.get.analyses.get.questionnaire', {
+          url: '/questionnaire',
+          views: {
+            'content@projects.get.analyses.get': {
+              templateUrl: '/partials/project/analyses/analysis/questionnaire.html',
             },
           },
         })
         .state('projects.get.collaborators', {
           abstract: true,
           url: '/collaborators',
-          views: {
-            'content@projects.get': {
-              templateUrl: '/partials/project/collaborators/collaborators.html',
-            },
-          },
         })
         .state('projects.get.collaborators.all', {
           abstract: true,
@@ -184,8 +220,8 @@ module egrid.app {
           url: '/:participantId',
           views: {
             '@': {
-              templateUrl: '/partials/project/participants/participant/participant.html',
               controller: 'ParticipantController as participant',
+              templateUrl: '/partials/project/participants/participant/participant.html',
             },
           },
         })
@@ -215,19 +251,14 @@ module egrid.app {
           controller: 'ParticipantGridEditController as participantGrid',
           templateUrl: '/partials/egm-edit.html',
         })
-        .state('sem', {
-          url: Url.semProjectUrlBase,
-          controller: 'SemProjectController as semProject',
-          templateUrl: '/partials/sem-project-detail.html',
-        })
         .state("/help", {
           templateUrl: '/partials/help.html',
         })
         .state("/about", {
           templateUrl: '/partials/about.html',
         });
-      $urlRouterProvider
-        .otherwise(Url.projectListUrlBase + '/all/list');
+      // $urlRouterProvider
+      //   .otherwise(Url.projectListUrlBase + '/all/list');
     }])
     .filter('count', () => {
       return (input : any[]) => input.length;
@@ -241,20 +272,20 @@ module egrid.app {
         .fallbackLanguage("en")
         .preferredLanguage("ja");
     }])
-    .controller('CollaboratorCreateController', ['$q', '$stateParams', '$location', CollaboratorCreateController])
+    .controller('CollaboratorCreateController', ['$q', '$stateParams', '$state', '$timeout', CollaboratorCreateController])
     .controller('CollaboratorListController', ['$q', '$stateParams', '$scope', '$modal', CollaboratorListController])
     .controller('ParticipantController', ['$q', '$stateParams', '$scope', '$location', '$modal', ParticipantController])
-    .controller('ParticipantCreateController', ['$q', '$stateParams', '$location', ParticipantCreateController])
+    .controller('ParticipantCreateController', ['$q', '$stateParams', '$state', ParticipantCreateController])
     .controller('ParticipantGridController', ['$q', '$stateParams', '$scope', ParticipantGridController])
     .controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', ParticipantGridEditController])
     .controller('ParticipantListController', ['$q', '$stateParams', ParticipantListController])
     .controller('ProjectController', ['$q', '$stateParams', '$location', '$scope', '$modal', ProjectController])
-    .controller('ProjectCreateController', ['$q', '$location', ProjectCreateController])
+    .controller('ProjectCreateController', ['$q', '$state', ProjectCreateController])
     .controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', ProjectGridController])
     .controller('ProjectListController', ['$q', ProjectListController])
     .controller('SemProjectController', ['$q', '$stateParams', SemProjectController])
     .controller('SemProjectAnalysisController', ['$q', '$stateParams', SemProjectAnalysisController])
-    .controller('SemProjectCreateController', ['$q', '$stateParams', '$location', SemProjectCreateController])
+    .controller('SemProjectCreateController', ['$q', '$stateParams', '$state', '$timeout', SemProjectCreateController])
     .controller('SemProjectListController', ['$q', '$stateParams', SemProjectListController])
     .controller('SemProjectQuestionnaireEditController', ['$q', '$stateParams', SemProjectQuestionnaireEditController])
     .run(['$rootScope', '$translate', '$http', ($rootScope, $translate, $http) => {
