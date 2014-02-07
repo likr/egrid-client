@@ -36,7 +36,7 @@ module egrid.app {
         })
         .state('projects.all', {
           abstract: true,
-          url: Url.projectListUrlBase,
+          url: Url.projectListUrlBase + '/all',
           views: {
             '@': {
               templateUrl: '/partials/projects/projects.html',
@@ -219,7 +219,7 @@ module egrid.app {
           templateUrl: '/partials/about.html',
         });
       $urlRouterProvider
-        .otherwise(Url.projectListUrlBase);
+        .otherwise(Url.projectListUrlBase + '/all/list');
     }])
     .filter('count', () => {
       return (input : any[]) => input.length;

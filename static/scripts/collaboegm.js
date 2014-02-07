@@ -413,17 +413,15 @@ var egrid;
         var Url = (function () {
             function Url() {
             }
-            Url.participantUrl = function (arg, participantKey) {
+            Url.participantUrl = function (arg, participantKey, action) {
                 var projectKey;
-
-                if (participantKey === undefined) {
+                if (typeof participantKey !== 'string') {
                     projectKey = arg.projectKey;
                     participantKey = arg.key();
                 } else {
                     projectKey = arg;
                 }
-
-                return '/projects/' + projectKey + '/participants/' + participantKey;
+                return action ? '/projects/' + projectKey + '/participants/' + participantKey + '/' + action : '/projects/' + projectKey + '/participants/' + participantKey;
             };
 
             Url.participantGridUrl = function (arg, participantKey) {
@@ -434,12 +432,16 @@ var egrid;
                 return Url.projectListUrlBase;
             };
 
-            Url.projectUrl = function (project) {
+            Url.projectUrl = function (project, action) {
+                var result;
+
                 if (project instanceof egrid.model.Project) {
-                    return '/projects/' + project.key();
+                    result = '/projects/' + project.key();
                 } else {
-                    return '/projects/' + project;
+                    result = '/projects/' + project;
                 }
+
+                return action ? result + '/' + action : result;
             };
 
             Url.projectGridUrl = function (project) {
@@ -453,7 +455,7 @@ var egrid;
             Url.participantGridUrlBase = '/projects/:projectId/participants/:participantId/grid';
             Url.projectUrlBase = '/projects/:projectId';
             Url.projectGridUrlBase = '/projects/:projectId/grid';
-            Url.projectListUrlBase = '/projects/all';
+            Url.projectListUrlBase = '/projects';
             Url.semProjectUrlBase = '/projects/:projectId/sem-projects/:semProjectId';
             return Url;
         })();
@@ -3764,7 +3766,7 @@ var egrid;
                     abstract: true
                 }).state('projects.all', {
                     abstract: true,
-                    url: egrid.app.Url.projectListUrlBase,
+                    url: egrid.app.Url.projectListUrlBase + '/all',
                     views: {
                         '@': {
                             templateUrl: '/partials/projects/projects.html'
@@ -3923,7 +3925,7 @@ var egrid;
                 }).state("/about", {
                     templateUrl: '/partials/about.html'
                 });
-                $urlRouterProvider.otherwise(egrid.app.Url.projectListUrlBase);
+                $urlRouterProvider.otherwise(egrid.app.Url.projectListUrlBase + '/all/list');
             }]).filter('count', function () {
             return function (input) {
                 return input.length;
