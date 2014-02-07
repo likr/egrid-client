@@ -2203,15 +2203,8 @@ var egrid;
                         return new egrid.Link(nodes[d.source], nodes[d.target], d.weight);
                     });
                     _this.egm.nodes(nodes).links(links);
+                    _this.draw();
                 });
-
-                var initialized = false;
-                $scope.$parent.drawSvg = function () {
-                    if (!initialized) {
-                        _this.draw();
-                        initialized = true;
-                    }
-                };
             }
             ParticipantGridController.prototype.draw = function () {
                 d3.select("#display").call(this.egm.display($("#display").width(), $("#display").height()));
@@ -3906,6 +3899,13 @@ var egrid;
                     views: {
                         'content@projects.get.participants.get': {
                             templateUrl: '/partials/project/participants/participant/detail.html'
+                        }
+                    }
+                }).state('projects.get.participants.get.evaluation', {
+                    url: '/evaluation',
+                    views: {
+                        'content@projects.get.participants.get': {
+                            templateUrl: '/partials/project/participants/participant/evaluation.html'
                         }
                     }
                 }).state('grid', {

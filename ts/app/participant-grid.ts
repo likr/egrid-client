@@ -22,16 +22,9 @@ module egrid.app {
             .nodes(nodes)
             .links(links)
             ;
+          this.draw();
         })
         ;
-
-      var initialized = false;
-      $scope.$parent.drawSvg = () => {
-        if (!initialized) {
-          this.draw();
-          initialized = true;
-        }
-      };
     }
 
     draw() {

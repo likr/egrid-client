@@ -197,6 +197,14 @@ module egrid.app {
             },
           },
         })
+        .state('projects.get.participants.get.evaluation', {
+          url: '/evaluation',
+          views: {
+            'content@projects.get.participants.get': {
+              templateUrl: '/partials/project/participants/participant/evaluation.html',
+            },
+          },
+        })
         .state('grid', {
           url: Url.projectGridUrlBase,
           controller: 'ProjectGridController as projectGrid',
