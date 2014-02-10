@@ -257,8 +257,10 @@ module egrid.app {
         .state("/about", {
           templateUrl: '/partials/about.html',
         });
-      // $urlRouterProvider
-      //   .otherwise(Url.projectListUrlBase + '/all/list');
+
+      // ほんとは $state.go にしたい
+      $urlRouterProvider
+        .otherwise(Url.projectListUrlBase + '/all/list');
     }])
     .filter('count', () => {
       return (input : any[]) => input.length;

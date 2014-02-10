@@ -3556,9 +3556,8 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var SemProjectCreateController = (function () {
-            function SemProjectCreateController($q, $stateParams, $location, $state, $timeout) {
+            function SemProjectCreateController($q, $stateParams, $state, $timeout) {
                 this.$q = $q;
-                this.$location = $location;
                 this.$state = $state;
                 this.$timeout = $timeout;
                 this.projectKey = $stateParams.projectId;
@@ -3568,7 +3567,7 @@ var egrid;
                 var semProject = new egrid.model.SemProject(this);
                 this.$q.when(semProject.save()).then(function () {
                     _this.$timeout(function () {
-                        _this.$state.go('projects.get.analysis.list');
+                        _this.$state.go('projects.get.analyses.all.list');
                     }, 200);
                 });
             };
@@ -3959,8 +3958,9 @@ var egrid;
                 }).state("/about", {
                     templateUrl: '/partials/about.html'
                 });
-                // $urlRouterProvider
-                //   .otherwise(Url.projectListUrlBase + '/all/list');
+
+                // ほんとは $state.go にしたい
+                $urlRouterProvider.otherwise(egrid.app.Url.projectListUrlBase + '/all/list');
             }]).filter('count', function () {
             return function (input) {
                 return input.length;
