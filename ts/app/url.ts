@@ -11,17 +11,19 @@ module egrid.app {
     static projectListUrlBase = '/projects';
     static semProjectUrlBase = '/projects/:projectId/sem-projects/:semProjectId';
 
-    static participantUrl(projectKey : string, participantKey : string) : string;
-    static participantUrl(participant : model.Participant) : string;
-    static participantUrl(arg : any, participantKey? : string) : string{
+    static participantUrl(projectKey : string, participantKey : string, action?: string) : string;
+    static participantUrl(participant : model.Participant, action?: string) : string;
+    static participantUrl(arg : any, participantKey? : string, action?: string) : string{
       var projectKey;
-      if (participantKey === undefined) {
+      if (typeof participantKey !== 'string') {
         projectKey = arg.projectKey;
         participantKey = arg.key();
       } else {
         projectKey = arg;
       }
-      return '/projects/' + projectKey + '/participants/' + participantKey;
+      return action
+        ? '/projects/' + projectKey + '/participants/' + participantKey + '/' + action
+        : '/projects/' + projectKey + '/participants/' + participantKey;
     }
 
     static participantGridUrl(projectKey : string, participantKey : string) : string;
@@ -34,14 +36,18 @@ module egrid.app {
       return Url.projectListUrlBase;
     }
 
-    static projectUrl(projectKey : string) : string;
-    static projectUrl(project : model.Project) : string;
-    static projectUrl(project : any) : string {
+    static projectUrl(projectKey : string, action?: string) : string;
+    static projectUrl(project : model.Project, action?: string) : string;
+    static projectUrl(project : any, action?: string) : string {
+      var result: string;
+
       if (project instanceof model.Project) {
-        return '/projects/' + project.key();
+        result = '/projects/' + project.key();
       } else {
-        return '/projects/' + project;
+        result = '/projects/' + project;
       }
+
+      return action ? result + '/' + action : result;
     }
 
     static projectGridUrl(projectKey : string) : string;
@@ -50,8 +56,10 @@ module egrid.app {
       return Url.projectUrl(project) + '/grid';
     }
 
-    static semProjectUrl(semProject : model.SemProject) : string {
-      return '/projects/' + semProject.projectKey + '/sem-projects/' + semProject.key();
+    static semProjectUrl(semProject : model.SemProject, action?: string) : string {
+      return action
+        ? '/projects/' + semProject.projectKey + '/sem-projects/' + semProject.key() + '/' + action
+        : '/projects/' + semProject.projectKey + '/sem-projects/' + semProject.key();
     }
   }
 }

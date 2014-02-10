@@ -8,9 +8,9 @@ module egrid.app {
     projectKey : string;
     semProjectKey : string;
 
-    constructor($q, $routeParams) {
-      this.projectKey = $routeParams.projectId;
-      this.semProjectKey = $routeParams.semProjectId;
+    constructor($q, $stateParams) {
+      this.projectKey = $stateParams.projectId;
+      this.semProjectKey = $stateParams.semProjectId;
       $q.when(model.SemProject.get(this.projectKey, this.semProjectKey))
         .then((semProject : model.SemProject) => {
           this.name = semProject.name;

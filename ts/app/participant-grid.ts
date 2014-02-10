@@ -9,9 +9,9 @@ module egrid.app {
     participantKey : string;
     egm : EGM;
 
-    constructor($q, $routeParams, $scope) {
-      this.projectKey = $routeParams.projectId;
-      this.participantKey = $routeParams.participantId;
+    constructor($q, $stateParams, $scope) {
+      this.projectKey = $stateParams.projectId;
+      this.participantKey = $stateParams.participantId;
       this.egm = new EGM;
 
       $q.when(model.ParticipantGrid.get(this.projectKey, this.participantKey))
@@ -22,16 +22,9 @@ module egrid.app {
             .nodes(nodes)
             .links(links)
             ;
+          this.draw();
         })
         ;
-
-      var initialized = false;
-      $scope.$parent.drawSvg = () => {
-        if (!initialized) {
-          this.draw();
-          initialized = true;
-        }
-      };
     }
 
     draw() {

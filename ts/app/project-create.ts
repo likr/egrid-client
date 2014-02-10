@@ -6,14 +6,14 @@ module egrid.app {
     name : string;
     note : string;
 
-    constructor(private $q, private $location) {
+    constructor(private $q, private $state) {
     }
 
     submit() {
       var project = new model.Project(this);
       this.$q.when(project.save())
         .then(() => {
-          this.$location.path(Url.projectUrl(project));
+          this.$state.go('projects.get.detail', { projectId: project.key() });
         })
         ;
     }

@@ -14,10 +14,10 @@ module egrid.app {
     overallNodes : model.ProjectGridNodeData[];
     disableCompletion : boolean = false;
 
-    constructor($q, $routeParams, $location, private $modal, private $scope) {
-      this.projectKey = $routeParams.projectId;
-      this.participantKey = $routeParams.participantId;
-      if ($routeParams.disableCompletion) {
+    constructor($q, $stateParams, $location, private $modal, private $scope) {
+      this.projectKey = $stateParams.projectId;
+      this.participantKey = $stateParams.participantId;
+      if ($stateParams.disableCompletion) {
         this.disableCompletion = true;
       }
 

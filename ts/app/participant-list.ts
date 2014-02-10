@@ -6,10 +6,10 @@ module egrid.app {
     public projectId : string;
     public participants: model.Participant[] = [];
 
-    constructor($q, $routeParams) {
+    constructor($q, $stateParams) {
       super();
 
-      this.projectId = $routeParams.projectId;
+      this.projectId = $stateParams.projectId;
       this.itemsPerPage = 5;
       this.predicate = 'updatedAt';
       this.reverse = true;

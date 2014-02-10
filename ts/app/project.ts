@@ -6,8 +6,8 @@ module egrid.app {
     name : string;
     note : string;
 
-    constructor(private $q, $routeParams, private $location, private $scope, private $modal) {
-      this.projectKey = $routeParams.projectId;
+    constructor(private $q, $stateParams, private $location, private $scope, private $modal) {
+      this.projectKey = $stateParams.projectId;
       this.$q.when(model.Project.get(this.projectKey))
         .then(project => {
           this.name = project.name;

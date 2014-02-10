@@ -8,15 +8,15 @@ module egrid.app {
     note : string;
 
 
-    constructor(private $q, $routeParams, private $location) {
-      this.projectKey = $routeParams.projectId;
+    constructor(private $q, $stateParams, private $state) {
+      this.projectKey = $stateParams.projectId;
     }
 
     submit() {
       var participant = new model.Participant(this);
       this.$q.when(participant.save())
         .then(() => {
-          this.$location.path(Url.participantUrl(participant));
+          this.$state.go('projects.get.participants.get.detail', { participantId: participant.key() });
         })
         ;
     }

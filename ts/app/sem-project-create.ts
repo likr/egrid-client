@@ -6,15 +6,17 @@ module egrid.app {
     name : string;
     projectKey : string;
 
-    constructor(private $q, $routeParams, private $location) {
-      this.projectKey = $routeParams.projectId;
+    constructor(private $q, $stateParams, private $state, private $timeout) {
+      this.projectKey = $stateParams.projectId;
     }
 
     submit() {
       var semProject = new model.SemProject(this);
       this.$q.when(semProject.save())
         .then(() => {
-          this.$location.path(Url.semProjectUrl(semProject));
+          this.$timeout(() => {
+            this.$state.go('projects.get.analyses.all.list');
+          }, 200);
         })
         ;
     }

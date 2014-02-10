@@ -9,9 +9,9 @@ module egrid.app {
     project : model.ProjectData;
     projectKey : string;
 
-    constructor(private $q, $routeParams, private $scope, private $location, private $modal) {
-      this.participantKey = $routeParams.participantId;
-      this.projectKey = $routeParams.projectId;
+    constructor(private $q, $stateParams, private $scope, private $location, private $modal) {
+      this.participantKey = $stateParams.participantId;
+      this.projectKey = $stateParams.projectId;
       this.$q.when(model.Participant.get(this.projectKey, this.participantKey))
         .then((participant : model.Participant) => {
           this.name = participant.name;

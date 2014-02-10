@@ -12,8 +12,8 @@ module egrid.app {
     participants : model.Participant[];
     participantState : {} = {};
 
-    constructor($q, $routeParams, $modal, private $scope) {
-      this.projectKey = $routeParams.projectId;
+    constructor($q, $stateParams, $modal, private $scope) {
+      this.projectKey = $stateParams.projectId;
 
       var egmui = egrid.egmui();
       this.egm = egmui.egm();

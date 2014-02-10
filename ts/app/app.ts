@@ -19,7 +19,7 @@
 /// <reference path="url.ts"/>
 
 module egrid.app {
-  angular.module('collaboegm', ['paginator', 'ngRoute', "ui.bootstrap", "pascalprecht.translate"])
+  angular.module('collaboegm', ['paginator', 'ui.router', "ui.bootstrap", "pascalprecht.translate"])
     .directive('focusMe', ['$timeout', function($timeout) {
       return {
          link: function (scope, element, attrs, model) {
@@ -29,45 +29,238 @@ module egrid.app {
           }
       };
     }])
-    .config(['$routeProvider', $routeProvider => {
-      $routeProvider
-        .when(Url.projectGridUrlBase, {
-          controller: 'ProjectGridController',
-          controllerAs: 'projectGrid',
+    .config(['$stateProvider', '$urlRouterProvider', ($stateProvider, $urlRouterProvider) => {
+      $stateProvider
+        .state('projects', {
+          abstract: true,
+        })
+        .state('projects.all', {
+          abstract: true,
+          url: Url.projectListUrlBase + '/all',
+          views: {
+            '@': {
+              templateUrl: '/partials/projects/projects.html',
+            },
+          },
+        })
+        .state('projects.all.create', {
+          url: '/create',
+          views: {
+            'content@projects.all': {
+              controller: 'ProjectCreateController as newProject',
+              templateUrl: '/partials/projects/create.html',
+            },
+          },
+        })
+        .state('projects.all.list', {
+          url: '/list',
+          views: {
+            'content@projects.all': {
+              controller: 'ProjectListController as ctrl',
+              templateUrl: '/partials/projects/list.html',
+            },
+          },
+        })
+        .state('projects.get', {
+          abstract: true,
+          url: Url.projectUrlBase,
+          views: {
+            '@': {
+              controller: 'ProjectController as project',
+              templateUrl: '/partials/project/project.html',
+            },
+          },
+        })
+        .state('projects.get.analyses', {
+          abstract: true,
+          url: '/sem-projects',
+        })
+        .state('projects.get.analyses.all', {
+          abstract: true,
+          url: '/all',
+          views: {
+            'content@projects.get': {
+              templateUrl: '/partials/project/analyses/analyses.html',
+            },
+          },
+        })
+        .state('projects.get.analyses.all.create', {
+          url: '/create',
+          views: {
+            'content@projects.get.analyses.all': {
+              templateUrl: '/partials/project/analyses/create.html',
+            },
+          },
+        })
+        .state('projects.get.analyses.all.list', {
+          url: '/list',
+          views: {
+            'content@projects.get.analyses.all': {
+              templateUrl: '/partials/project/analyses/list.html',
+            },
+          },
+        })
+        .state('projects.get.analyses.get', {
+          abstract: true,
+          url: '/:semProjectId',
+          views: {
+            '@': {
+              controller: 'SemProjectController as semProject',
+              templateUrl: '/partials/project/analyses/analysis/analysis.html',
+            },
+            'content@projects.get.analyses.get': {
+              controller: 'SemProjectQuestionnaireEditController as questionnaire',
+            },
+          },
+        })
+        .state('projects.get.analyses.get.analysis', {
+          url: '/analysis',
+          views: {
+            'content@projects.get.analyses.get': {
+              templateUrl: '/partials/project/analyses/analysis/analyses.html',
+            },
+          },
+        })
+        .state('projects.get.analyses.get.design', {
+          url: '/design',
+          views: {
+            'content@projects.get.analyses.get': {
+              templateUrl: '/partials/project/analyses/analysis/design.html',
+            },
+          },
+        })
+        .state('projects.get.analyses.get.questionnaire', {
+          url: '/questionnaire',
+          views: {
+            'content@projects.get.analyses.get': {
+              templateUrl: '/partials/project/analyses/analysis/questionnaire.html',
+            },
+          },
+        })
+        .state('projects.get.collaborators', {
+          abstract: true,
+          url: '/collaborators',
+        })
+        .state('projects.get.collaborators.all', {
+          abstract: true,
+          url: '/all',
+          views: {
+            'content@projects.get': {
+              templateUrl: '/partials/project/collaborators/collaborators.html',
+            },
+          },
+        })
+        .state('projects.get.collaborators.all.create', {
+          url: '/create',
+          views: {
+            'c@projects.get.collaborators.all': {
+              controller: 'CollaboratorCreateController as newCollaborator',
+              templateUrl: '/partials/project/collaborators/create.html',
+            },
+          },
+        })
+        .state('projects.get.collaborators.all.list', {
+          url: '/list',
+          views: {
+            'c@projects.get.collaborators.all': {
+              controller: 'CollaboratorListController as collaborators',
+              templateUrl: '/partials/project/collaborators/list.html',
+            },
+          },
+        })
+        .state('projects.get.detail', {
+          url: '/detail',
+          views: {
+            'content@projects.get': {
+              templateUrl: '/partials/project/detail.html',
+            },
+          },
+        })
+        .state('projects.get.evaluation', {
+          url: '/evaluation',
+          views: {
+            'content@projects.get': {
+              templateUrl: '/partials/project/evaluation.html',
+            },
+          },
+        })
+        .state('projects.get.participants', {
+          abstract: true,
+          url: '/participants',
+        })
+        .state('projects.get.participants.all', {
+          abstract: true,
+          url: '/all',
+          views: {
+            'content@projects.get': {
+              templateUrl: '/partials/project/participants/participants.html',
+            },
+          },
+        })
+        .state('projects.get.participants.all.create', {
+          url: '/create',
+          views: {
+            'content@projects.get.participants.all': {
+              controller: 'ParticipantCreateController as newParticipant',
+              templateUrl: '/partials/project/participants/create.html',
+            },
+          },
+        })
+        .state('projects.get.participants.all.list', {
+          url: '/list',
+          views: {
+            'content@projects.get.participants.all': {
+              controller: 'ParticipantListController as ctrl',
+              templateUrl: '/partials/project/participants/list.html',
+            },
+          },
+        })
+        .state('projects.get.participants.get', {
+          abstract: true,
+          url: '/:participantId',
+          views: {
+            '@': {
+              controller: 'ParticipantController as participant',
+              templateUrl: '/partials/project/participants/participant/participant.html',
+            },
+          },
+        })
+        .state('projects.get.participants.get.detail', {
+          url: '/detail',
+          views: {
+            'content@projects.get.participants.get': {
+              templateUrl: '/partials/project/participants/participant/detail.html',
+            },
+          },
+        })
+        .state('projects.get.participants.get.evaluation', {
+          url: '/evaluation',
+          views: {
+            'content@projects.get.participants.get': {
+              templateUrl: '/partials/project/participants/participant/evaluation.html',
+            },
+          },
+        })
+        .state('grid', {
+          url: Url.projectGridUrlBase,
+          controller: 'ProjectGridController as projectGrid',
           templateUrl: '/partials/egm-show-all.html',
         })
-        .when(Url.participantGridUrlBase, {
-          controller: 'ParticipantGridEditController',
-          controllerAs: 'participantGrid',
+        .state('gridedit', {
+          url: Url.participantGridUrlBase,
+          controller: 'ParticipantGridEditController as participantGrid',
           templateUrl: '/partials/egm-edit.html',
         })
-        .when(Url.participantUrlBase, {
-          controller: 'ParticipantController',
-          controllerAs: 'participant',
-          templateUrl: '/partials/participant-detail.html',
-        })
-        .when(Url.semProjectUrlBase, {
-          controller: 'SemProjectController',
-          controllerAs: 'semProject',
-          templateUrl: '/partials/sem-project-detail.html',
-        })
-        .when(Url.projectUrlBase, {
-          controller: 'ProjectController',
-          controllerAs: 'project',
-          templateUrl: '/partials/project-detail.html',
-        })
-        .when(Url.projectListUrlBase, {
-          templateUrl: '/partials/project-list.html',
-        })
-        .when("/help", {
+        .state("/help", {
           templateUrl: '/partials/help.html',
         })
-        .when("/about", {
+        .state("/about", {
           templateUrl: '/partials/about.html',
-        })
-        .otherwise({
-          redirectTo : Url.projectListUrl(),
         });
+
+      // ほんとは $state.go にしたい
+      $urlRouterProvider
+        .otherwise(Url.projectListUrlBase + '/all/list');
     }])
     .filter('count', () => {
       return (input : any[]) => input.length;
@@ -81,22 +274,22 @@ module egrid.app {
         .fallbackLanguage("en")
         .preferredLanguage("ja");
     }])
-    .controller('CollaboratorCreateController', ['$q', '$routeParams', '$location', CollaboratorCreateController])
-    .controller('CollaboratorListController', ['$q', '$routeParams', '$scope', '$modal', CollaboratorListController])
-    .controller('ParticipantController', ['$q', '$routeParams', '$scope', '$location', '$modal', ParticipantController])
-    .controller('ParticipantCreateController', ['$q', '$routeParams', '$location', ParticipantCreateController])
-    .controller('ParticipantGridController', ['$q', '$routeParams', '$scope', ParticipantGridController])
-    .controller('ParticipantGridEditController', ['$q', '$routeParams', '$location', '$modal', '$scope', ParticipantGridEditController])
-    .controller('ParticipantListController', ['$q', '$routeParams', ParticipantListController])
-    .controller('ProjectController', ['$q', '$routeParams', '$location', '$scope', '$modal', ProjectController])
-    .controller('ProjectCreateController', ['$q', '$location', ProjectCreateController])
-    .controller('ProjectGridController', ['$q', '$routeParams', '$modal', '$scope', ProjectGridController])
+    .controller('CollaboratorCreateController', ['$q', '$stateParams', '$state', '$timeout', CollaboratorCreateController])
+    .controller('CollaboratorListController', ['$q', '$stateParams', '$scope', '$modal', CollaboratorListController])
+    .controller('ParticipantController', ['$q', '$stateParams', '$scope', '$location', '$modal', ParticipantController])
+    .controller('ParticipantCreateController', ['$q', '$stateParams', '$state', ParticipantCreateController])
+    .controller('ParticipantGridController', ['$q', '$stateParams', '$scope', ParticipantGridController])
+    .controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', ParticipantGridEditController])
+    .controller('ParticipantListController', ['$q', '$stateParams', ParticipantListController])
+    .controller('ProjectController', ['$q', '$stateParams', '$location', '$scope', '$modal', ProjectController])
+    .controller('ProjectCreateController', ['$q', '$state', ProjectCreateController])
+    .controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', ProjectGridController])
     .controller('ProjectListController', ['$q', ProjectListController])
-    .controller('SemProjectController', ['$q', '$routeParams', SemProjectController])
-    .controller('SemProjectAnalysisController', ['$q', '$routeParams', SemProjectAnalysisController])
-    .controller('SemProjectCreateController', ['$q', '$routeParams', '$location', SemProjectCreateController])
-    .controller('SemProjectListController', ['$q', '$routeParams', SemProjectListController])
-    .controller('SemProjectQuestionnaireEditController', ['$q', '$routeParams', SemProjectQuestionnaireEditController])
+    .controller('SemProjectController', ['$q', '$stateParams', SemProjectController])
+    .controller('SemProjectAnalysisController', ['$q', '$stateParams', SemProjectAnalysisController])
+    .controller('SemProjectCreateController', ['$q', '$stateParams', '$state', '$timeout', SemProjectCreateController])
+    .controller('SemProjectListController', ['$q', '$stateParams', SemProjectListController])
+    .controller('SemProjectQuestionnaireEditController', ['$q', '$stateParams', SemProjectQuestionnaireEditController])
     .run(['$rootScope', '$translate', '$http', ($rootScope, $translate, $http) => {
       $rootScope.Url = Url;
 
