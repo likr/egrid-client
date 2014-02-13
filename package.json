@@ -11,5 +11,11 @@
     "typescript": "0.9.5",
     "tsd": "0.3.1",
     "bower": "1.2.8"
+  },
+  "devDependencies": {
+    "grunt": "*",
+    "grunt-angular-templates": "*",
+    "grunt-contrib-watch": "*",
+    "grunt-ts": "*"
   }
 }
