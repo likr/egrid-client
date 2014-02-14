@@ -5,11 +5,14 @@ module egrid.app {
     projectKey : string;
     list : model.Collaborator[];
 
-    constructor(private $q, $stateParams, private $scope, private $modal) {
+    constructor(private $q, $stateParams, private $scope, private $modal, storage) {
       this.projectKey = $stateParams.projectId;
       this.$q.when(model.Collaborator.query(this.projectKey))
         .then((collaborators : model.Collaborator[]) => {
-          this.list = collaborators;
+          storage.set('collaborators', collaborators);
+        })
+        .finally(() => {
+          this.list = storage.get('collaborators');
         })
         ;
     }

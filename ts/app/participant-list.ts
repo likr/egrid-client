@@ -6,7 +6,7 @@ module egrid.app {
     public projectId : string;
     public participants: model.Participant[] = [];
 
-    constructor($q, $stateParams) {
+    constructor($q, $stateParams, storage) {
       super();
 
       this.projectId = $stateParams.projectId;
@@ -16,7 +16,10 @@ module egrid.app {
 
       $q.when(model.Participant.query(this.projectId))
         .then((participants : model.Participant[]) => {
-          this.participants = participants;
+          storage.set('participants', participants);
+        })
+        .finally(() => {
+          this.participants = storage.get('participants');
         })
         ;
     }

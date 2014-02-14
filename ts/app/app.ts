@@ -276,12 +276,12 @@ module egrid.app {
         .preferredLanguage("ja");
     }])
     .controller('CollaboratorCreateController', ['$q', '$stateParams', '$state', '$timeout', CollaboratorCreateController])
-    .controller('CollaboratorListController', ['$q', '$stateParams', '$scope', '$modal', CollaboratorListController])
+    .controller('CollaboratorListController', ['$q', '$stateParams', '$scope', '$modal', 'storage', CollaboratorListController])
     .controller('ParticipantController', ['$q', '$stateParams', '$scope', '$location', '$modal', ParticipantController])
     .controller('ParticipantCreateController', ['$q', '$stateParams', '$state', ParticipantCreateController])
     .controller('ParticipantGridController', ['$q', '$stateParams', '$scope', ParticipantGridController])
     .controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', ParticipantGridEditController])
-    .controller('ParticipantListController', ['$q', '$stateParams', ParticipantListController])
+    .controller('ParticipantListController', ['$q', '$stateParams', 'storage', ParticipantListController])
     .controller('ProjectController', ['$q', '$stateParams', '$location', '$scope', '$modal', ProjectController])
     .controller('ProjectCreateController', ['$q', '$state', ProjectCreateController])
     .controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', ProjectGridController])
@@ -289,7 +289,7 @@ module egrid.app {
     .controller('SemProjectController', ['$q', '$stateParams', SemProjectController])
     .controller('SemProjectAnalysisController', ['$q', '$stateParams', SemProjectAnalysisController])
     .controller('SemProjectCreateController', ['$q', '$stateParams', '$state', '$timeout', SemProjectCreateController])
-    .controller('SemProjectListController', ['$q', '$stateParams', SemProjectListController])
+    .controller('SemProjectListController', ['$q', '$stateParams', 'storage', SemProjectListController])
     .controller('SemProjectQuestionnaireEditController', ['$q', '$stateParams', SemProjectQuestionnaireEditController])
     .run(['$rootScope', '$translate', '$http', ($rootScope, $translate, $http) => {
       $rootScope.Url = Url;
