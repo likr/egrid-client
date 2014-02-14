@@ -2887,8 +2887,6 @@ var egrid;
                 _super.call(this);
                 this.projects = [];
 
-                storage.bind($scope, 'projects');
-
                 this.itemsPerPage = 5;
                 this.predicate = 'updatedAt';
                 this.reverse = true;

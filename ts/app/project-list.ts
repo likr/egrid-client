@@ -9,8 +9,6 @@ module egrid.app {
     constructor($q, $scope, storage: angularLocalStorage.IStorageService) {
       super();
 
-      storage.bind($scope, 'projects');
-
       this.itemsPerPage = 5;
       this.predicate = 'updatedAt';
       this.reverse = true;
