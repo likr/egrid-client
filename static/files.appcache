@@ -1,11 +1,12 @@
 CACHE MANIFEST
-# Thu Feb 13 21:13:27 JST 2014
+# Fri Feb 14 15:33:22 JST 2014
 
 CACHE:
 /index.html
 /bower_components/bootstrap/dist/css/bootstrap.min.css
 /styles/egm.css
 /bower_components/angular/angular.min.js
+/bower_components/angular-cookies/angular-cookies.min.js
 /bower_components/angular-ui-router/release/angular-ui-router.min.js
 /bower_components/jquery/jquery.min.js
 /bower_components/bootstrap/dist/js/bootstrap.min.js
@@ -16,6 +17,7 @@ CACHE:
 /bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.min.js
 /bower_components/angular-translate/angular-translate.min.js
 /bower_components/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js
+/bower_components/angularLocalStorage/src/angularLocalStorage.js
 /bower_components/d3/d3.min.js
 /scripts/dagre.js
 /scripts/collaboegm.js

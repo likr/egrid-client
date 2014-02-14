@@ -1,4 +1,5 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/angularLocalStorage/angularLocalStorage.d.ts"/>
 /// <reference path="modules/app.ts"/>
 /// <reference path="collaborator-create.ts"/>
 /// <reference path="collaborator-list.ts"/>
@@ -19,7 +20,7 @@
 /// <reference path="url.ts"/>
 
 module egrid.app {
-  angular.module('collaboegm', ['paginator', 'ui.router', "ui.bootstrap", "pascalprecht.translate"])
+  angular.module('collaboegm', ['paginator', 'ui.router', "ui.bootstrap", 'angularLocalStorage', "pascalprecht.translate"])
     .directive('focusMe', ['$timeout', function($timeout) {
       return {
          link: function (scope, element, attrs, model) {
@@ -284,7 +285,7 @@ module egrid.app {
     .controller('ProjectController', ['$q', '$stateParams', '$location', '$scope', '$modal', ProjectController])
     .controller('ProjectCreateController', ['$q', '$state', ProjectCreateController])
     .controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', ProjectGridController])
-    .controller('ProjectListController', ['$q', ProjectListController])
+    .controller('ProjectListController', ['$q', '$scope', 'storage', ProjectListController])
     .controller('SemProjectController', ['$q', '$stateParams', SemProjectController])
     .controller('SemProjectAnalysisController', ['$q', '$stateParams', SemProjectAnalysisController])
     .controller('SemProjectCreateController', ['$q', '$stateParams', '$state', '$timeout', SemProjectCreateController])

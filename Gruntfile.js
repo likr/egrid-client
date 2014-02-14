@@ -21,7 +21,7 @@ module.exports = function(grunt) {
         },
       },
       prod: {
-        out: 'static/scripts/collaboegm.js',
+        out: 'static/scripts/collaboegm.min.js',
         src: ['ts/app/app.ts'],
         options: {
           removeComments: true,
