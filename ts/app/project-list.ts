@@ -16,10 +16,14 @@ module egrid.app {
       $q
         .when(model.Project.query())
         .then((projects: model.Project[]) => {
-          storage.set('projects', projects);
+          storage.set('projects', projects.map((item: model.Project) => {
+            item.toJSON();
+          }));
         })
         .finally(() => {
-          this.projects = storage.get('projects');
+          this.projects = storage.get('projects').map((item: string) => {
+            return model.Project.fromJSON(item);
+          });
         });
     }
   }

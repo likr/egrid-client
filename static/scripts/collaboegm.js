@@ -114,6 +114,24 @@ var egrid;
                     return '/api/projects';
                 }
             };
+
+            Project.prototype.toJSON = function () {
+                return JSON.stringify(this, function (key, value) {
+                    return (typeof value === 'function') ? value.toString() : value;
+                });
+            };
+
+            Project.fromJSON = function (s) {
+                var o = JSON.parse(s, function (key, value) {
+                });
+                var p = new Project(o);
+
+                p.key_ = o.key_;
+                p.createdAt_ = o.createdAt_;
+                p.updatedAt_ = p.updatedAt_;
+
+                return p;
+            };
             return Project;
         })();
         model.Project = Project;
@@ -2896,9 +2914,13 @@ var egrid;
                 this.reverse = true;
 
                 $q.when(egrid.model.Project.query()).then(function (projects) {
-                    storage.set('projects', projects);
+                    storage.set('projects', projects.map(function (item) {
+                        item.toJSON();
+                    }));
                 }).finally(function () {
-                    _this.projects = storage.get('projects');
+                    _this.projects = storage.get('projects').map(function (item) {
+                        return egrid.model.Project.fromJSON(item);
+                    });
                 });
             }
             return ProjectListController;

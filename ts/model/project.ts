@@ -113,5 +113,25 @@ module egrid.model {
         return '/api/projects';
       }
     }
+
+    public toJSON() : string {
+      return JSON.stringify(this, (key: string, value: any) => {
+        return (typeof value === 'function')
+          ? value.toString()
+          : value;
+      });
+    }
+
+    static fromJSON(s: string) : Project {
+      var o: any = JSON.parse(s, (key: string, value: any) => {
+      });
+      var p: Project = new Project(o);
+
+      p.key_ = o.key_;
+      p.createdAt_ = o.createdAt_;
+      p.updatedAt_ = p.updatedAt_;
+
+      return p;
+    }
   }
 }
