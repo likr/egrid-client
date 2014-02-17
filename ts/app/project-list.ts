@@ -17,12 +17,12 @@ module egrid.app {
         .when(model.Project.query())
         .then((projects: model.Project[]) => {
           storage.set('projects', projects.map((item: model.Project) => {
-            item.toJSON();
+            return JSON.stringify(item);
           }));
         })
         .finally(() => {
           this.projects = storage.get('projects').map((item: string) => {
-            return model.Project.fromJSON(item);
+            return model.Project.parse(item);
           });
         });
     }

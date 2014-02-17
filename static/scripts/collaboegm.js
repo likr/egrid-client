@@ -115,20 +115,13 @@ var egrid;
                 }
             };
 
-            Project.prototype.toJSON = function () {
-                return JSON.stringify(this, function (key, value) {
-                    return (typeof value === 'function') ? value.toString() : value;
-                });
-            };
-
-            Project.fromJSON = function (s) {
-                var o = JSON.parse(s, function (key, value) {
-                });
+            Project.parse = function (s) {
+                var o = JSON.parse(s);
                 var p = new Project(o);
 
                 p.key_ = o.key_;
                 p.createdAt_ = o.createdAt_;
-                p.updatedAt_ = p.updatedAt_;
+                p.updatedAt_ = o.updatedAt_;
 
                 return p;
             };
@@ -2915,11 +2908,11 @@ var egrid;
 
                 $q.when(egrid.model.Project.query()).then(function (projects) {
                     storage.set('projects', projects.map(function (item) {
-                        item.toJSON();
+                        return JSON.stringify(item);
                     }));
                 }).finally(function () {
                     _this.projects = storage.get('projects').map(function (item) {
-                        return egrid.model.Project.fromJSON(item);
+                        return egrid.model.Project.parse(item);
                     });
                 });
             }
