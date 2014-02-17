@@ -321,6 +321,17 @@ var egrid;
                     return '/api/projects/' + projectKey + '/participants';
                 }
             };
+
+            Participant.parse = function (s) {
+                var o = JSON.parse(s);
+                var p = new Participant(o);
+
+                p.key_ = o.key_;
+                p.createdAt_ = o.createdAt_;
+                p.updatedAt_ = o.updatedAt_;
+
+                return p;
+            };
             return Participant;
         })();
         model.Participant = Participant;
@@ -393,6 +404,15 @@ var egrid;
                 } else {
                     return '/api/projects/' + projectKey + '/sem-projects';
                 }
+            };
+
+            SemProject.parse = function (s) {
+                var o = JSON.parse(s);
+                var p = new SemProject(o);
+
+                p.key_ = o.key_;
+
+                return p;
             };
             return SemProject;
         })();
@@ -2651,9 +2671,13 @@ var egrid;
                 this.reverse = true;
 
                 $q.when(egrid.model.Participant.query(this.projectId)).then(function (participants) {
-                    storage.set('participants', participants);
+                    storage.set('participants', participants.map(function (item) {
+                        return JSON.stringify(item);
+                    }));
                 }).finally(function () {
-                    _this.participants = storage.get('participants');
+                    _this.participants = storage.get('participants').map(function (item) {
+                        return egrid.model.Participant.parse(item);
+                    });
                 });
             }
             return ParticipantListController;
@@ -3494,9 +3518,13 @@ var egrid;
                 var _this = this;
                 var projectId = $stateParams.projectId;
                 $q.when(egrid.model.SemProject.query(projectId)).then(function (semProjects) {
-                    storage.set('sem', semProjects);
+                    storage.set('sem', semProjects.map(function (item) {
+                        return JSON.stringify(item);
+                    }));
                 }).finally(function () {
-                    _this.list = storage.get('sem');
+                    _this.list = storage.get('sem').map(function (item) {
+                        return egrid.model.SemProject.parse(item);
+                    });
                 });
             }
             return SemProjectListController;

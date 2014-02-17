@@ -108,5 +108,16 @@ module egrid.model {
         return '/api/projects/' + projectKey + '/participants';
       }
     }
+
+    static parse(s: string) : Participant {
+      var o: any = JSON.parse(s);
+      var p: Participant = new Participant(o);
+
+      p.key_ = o.key_;
+      p.createdAt_ = o.createdAt_;
+      p.updatedAt_ = o.updatedAt_;
+
+      return p;
+    }
   }
 }

@@ -84,5 +84,14 @@ module egrid.model {
         return '/api/projects/' + projectKey + '/sem-projects';
       }
     }
+
+    static parse(s: string) : SemProject {
+      var o: any = JSON.parse(s);
+      var p: SemProject = new SemProject(o);
+
+      p.key_ = o.key_;
+
+      return p;
+    }
   }
 }
