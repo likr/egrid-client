@@ -82,28 +82,42 @@ module egrid.model {
       return project;
     }
 
-    static get(key : string) : JQueryXHR {
+    static get(key : string) : JQueryPromise<Project> {
       return $.ajax({
-        url: Project.url(key),
-        type: 'GET',
-        dataFilter: data => {
-          var obj : ApiProjectData = JSON.parse(data);
-          return Project.load(obj);
-        },
-      });
+          url: Project.url(key),
+          type: 'GET',
+          dataFilter: data => {
+            var obj : ApiProjectData = JSON.parse(data);
+            return Project.load(obj);
+          },
+        })
+        .then((project : Project) => {
+          return project;
+        }, () => {
+          return JSON.parse(window.localStorage.getItem('projects')).map(Project.import).filter((value : Project, index : number, ar : Project[]) => { return value.key() === key; })[0];
+        });
     }
 
-    static query() : JQueryXHR {
+    static query() : JQueryPromise<Project[]> {
       return $.ajax({
-        url: Project.url(),
-        type: 'GET',
-        dataFilter: data => {
-          var objs = JSON.parse(data);
-          return objs.map((obj : ApiProjectData) => {
-            return Project.load(obj);
-          });
-        },
-      });
+          url: Project.url(),
+          type: 'GET',
+          dataFilter: data => {
+            var objs = JSON.parse(data);
+            return objs.map((obj : ApiProjectData) => {
+              return Project.load(obj);
+            });
+          },
+        })
+        .then((projects : Project[]) => {
+          window
+            .localStorage
+            .setItem('projects', JSON.stringify(projects));
+
+          return projects;
+        }, () => {
+          return JSON.parse(window.localStorage.getItem('projects')).map(Project.import);
+        });
     }
 
     private static url(key? : string) : string {
@@ -114,8 +128,7 @@ module egrid.model {
       }
     }
 
-    static parse(s: string) : Project {
-      var o: any = JSON.parse(s);
+    static import(o: any) : Project {
       var p: Project = new Project(o);
 
       p.key_ = o.key_;

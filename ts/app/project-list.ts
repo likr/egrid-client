@@ -6,7 +6,7 @@ module egrid.app {
   export class ProjectListController extends PaginationController {
     public projects: model.Project[] = [];
 
-    constructor($q, $scope, storage: angularLocalStorage.IStorageService) {
+    constructor($q, $scope, $window) {
       super();
 
       this.itemsPerPage = 5;
@@ -15,11 +15,11 @@ module egrid.app {
 
       $q
         .when(model.Project.query())
+        // rejected の引数が reason じゃないとか、そのうち直す
         .then((projects: model.Project[]) => {
-          return storage.set('projects', projects.map(JSON.stringify));
-        })
-        .finally(() => {
-          this.projects = storage.get('projects').map(model.Project.parse);
+          this.projects = projects;
+        }, (projects: model.Project[]) => {
+          this.projects = projects;
         });
     }
   }

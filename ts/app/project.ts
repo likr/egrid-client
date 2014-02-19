@@ -18,19 +18,9 @@ module egrid.app {
         .then((p: model.Project) => {
           this.name = p.name;
           this.note = p.note;
-        }, (reason: any) => {
-          if (!stored) throw new Error();
-
-          project = stored
-            .map((items: any) => {
-              return model.Project.parse(items);
-            })
-            .filter((value: model.Project, index: number, ar: model.Project[]) => {
-              return value.key() === this.projectKey;
-            })[0]; // FIXME
-
-          this.name = project.name;
-          this.note = project.note;
+        }, (p: model.Project) => {
+          this.name = p.name;
+          this.note = p.note;
         });
     }
 

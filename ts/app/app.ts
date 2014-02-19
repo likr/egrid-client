@@ -285,7 +285,7 @@ module egrid.app {
     .controller('ProjectController', ['$q', '$stateParams', '$location', '$scope', '$modal', 'storage', ProjectController])
     .controller('ProjectCreateController', ['$q', '$state', ProjectCreateController])
     .controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', ProjectGridController])
-    .controller('ProjectListController', ['$q', '$scope', 'storage', ProjectListController])
+    .controller('ProjectListController', ['$q', '$scope', '$window', ProjectListController])
     .controller('SemProjectController', ['$q', '$stateParams', 'storage', SemProjectController])
     .controller('SemProjectAnalysisController', ['$q', '$stateParams', SemProjectAnalysisController])
     .controller('SemProjectCreateController', ['$q', '$stateParams', '$state', '$timeout', SemProjectCreateController])
