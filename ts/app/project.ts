@@ -18,9 +18,6 @@ module egrid.app {
         .then((p: model.Project) => {
           this.name = p.name;
           this.note = p.note;
-        }, (p: model.Project) => {
-          this.name = p.name;
-          this.note = p.note;
         });
     }
 

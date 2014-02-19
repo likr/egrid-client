@@ -84,7 +84,9 @@ var egrid;
             };
 
             Project.get = function (key) {
-                return $.ajax({
+                var $deferred = $.Deferred();
+
+                $.ajax({
                     url: Project.url(key),
                     type: 'GET',
                     dataFilter: function (data) {
@@ -92,12 +94,14 @@ var egrid;
                         return Project.load(obj);
                     }
                 }).then(function (project) {
-                    return project;
+                    return $deferred.resolve(project);
                 }, function () {
-                    return JSON.parse(window.localStorage.getItem('projects')).map(Project.import).filter(function (value, index, ar) {
+                    return $deferred.resolve(JSON.parse(window.localStorage.getItem('projects')).map(Project.import).filter(function (value, index, ar) {
                         return value.key() === key;
-                    })[0];
+                    })[0]);
                 });
+
+                return $deferred.promise();
             };
 
             Project.query = function () {
@@ -2726,9 +2730,6 @@ var egrid;
                 this.$q.when(egrid.model.Project.get(this.projectKey)).then(function (p) {
                     _this.name = p.name;
                     _this.note = p.note;
-                }, function (p) {
-                    _this.name = p.name;
-                    _this.note = p.note;
                 });
             }
             ProjectController.prototype.update = function () {
@@ -2960,8 +2961,6 @@ var egrid;
                 this.reverse = true;
 
                 $q.when(egrid.model.Project.query()).then(function (projects) {
-                    _this.projects = projects;
-                }, function (projects) {
                     _this.projects = projects;
                 });
             }

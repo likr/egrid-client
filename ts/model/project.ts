@@ -83,7 +83,9 @@ module egrid.model {
     }
 
     static get(key : string) : JQueryPromise<Project> {
-      return $.ajax({
+      var $deferred = $.Deferred();
+
+      $.ajax({
           url: Project.url(key),
           type: 'GET',
           dataFilter: data => {
@@ -92,10 +94,20 @@ module egrid.model {
           },
         })
         .then((project : Project) => {
-          return project;
+          return $deferred.resolve(project);
         }, () => {
-          return JSON.parse(window.localStorage.getItem('projects')).map(Project.import).filter((value : Project, index : number, ar : Project[]) => { return value.key() === key; })[0];
+          // 復帰可能なので resolve
+          // reject を使う理由がないので例外投げまくる
+          return $deferred
+            .resolve(
+              JSON
+                .parse(window.localStorage.getItem('projects'))
+                .map(Project.import)
+                .filter((value : Project, index : number, ar : Project[]) => { return value.key() === key; })[0]
+            );
         });
+
+      return $deferred.promise();
     }
 
     static query() : JQueryPromise<Project[]> {

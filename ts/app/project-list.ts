@@ -15,10 +15,7 @@ module egrid.app {
 
       $q
         .when(model.Project.query())
-        // rejected の引数が reason じゃないとか、そのうち直す
         .then((projects: model.Project[]) => {
-          this.projects = projects;
-        }, (projects: model.Project[]) => {
           this.projects = projects;
         });
     }
