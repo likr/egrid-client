@@ -6,14 +6,31 @@ module egrid.app {
     name : string;
     note : string;
 
-    constructor(private $q, $stateParams, private $location, private $scope, private $modal) {
+    constructor(private $q, $stateParams, private $location, private $scope, private $modal, storage: angularLocalStorage.IStorageService) {
+      var storedProjects: string[] = storage
+        .get('projects');
+      var project: model.Project;
+
       this.projectKey = $stateParams.projectId;
+
       this.$q.when(model.Project.get(this.projectKey))
-        .then(project => {
+        .then((p: model.Project) => {
+          this.name = p.name;
+          this.note = p.note;
+        }, (reason: any) => {
+          // WebStorage を非同期にしたいが…
+          storedProjects = storage.get('projects');
+          project = storedProjects
+            .map((items: any) => {
+              return model.Project.parse(items);
+            })
+            .filter((value: model.Project, index: number, ar: model.Project[]) => {
+              return value.key() === this.projectKey;
+            })[0]; // FIXME
+
           this.name = project.name;
           this.note = project.note;
-        })
-        ;
+        });
     }
 
     public update() {

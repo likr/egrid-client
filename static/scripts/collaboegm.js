@@ -2690,14 +2690,28 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var ProjectController = (function () {
-            function ProjectController($q, $stateParams, $location, $scope, $modal) {
+            function ProjectController($q, $stateParams, $location, $scope, $modal, storage) {
                 var _this = this;
                 this.$q = $q;
                 this.$location = $location;
                 this.$scope = $scope;
                 this.$modal = $modal;
+                var storedProjects = storage.get('projects');
+                var project;
+
                 this.projectKey = $stateParams.projectId;
-                this.$q.when(egrid.model.Project.get(this.projectKey)).then(function (project) {
+
+                this.$q.when(egrid.model.Project.get(this.projectKey)).then(function (p) {
+                    _this.name = p.name;
+                    _this.note = p.note;
+                }, function (reason) {
+                    storedProjects = storage.get('projects');
+                    project = storedProjects.map(function (items) {
+                        return egrid.model.Project.parse(items);
+                    }).filter(function (value, index, ar) {
+                        return value.key() === _this.projectKey;
+                    })[0];
+
                     _this.name = project.name;
                     _this.note = project.note;
                 });
@@ -2931,13 +2945,9 @@ var egrid;
                 this.reverse = true;
 
                 $q.when(egrid.model.Project.query()).then(function (projects) {
-                    storage.set('projects', projects.map(function (item) {
-                        return JSON.stringify(item);
-                    }));
+                    return storage.set('projects', projects.map(JSON.stringify));
                 }).finally(function () {
-                    _this.projects = storage.get('projects').map(function (item) {
-                        return egrid.model.Project.parse(item);
-                    });
+                    _this.projects = storage.get('projects').map(egrid.model.Project.parse);
                 });
             }
             return ProjectListController;
@@ -3756,7 +3766,7 @@ var egrid;
                     prefix: 'locations/',
                     suffix: '.json'
                 }).fallbackLanguage("en").preferredLanguage("ja");
-            }]).controller('CollaboratorCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$stateParams', '$scope', '$modal', 'storage', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$stateParams', '$scope', '$location', '$modal', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$stateParams', '$state', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$stateParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$stateParams', 'storage', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$stateParams', '$location', '$scope', '$modal', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$state', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', '$scope', 'storage', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$stateParams', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$stateParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$stateParams', 'storage', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$stateParams', egrid.app.SemProjectQuestionnaireEditController]).run([
+            }]).controller('CollaboratorCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$stateParams', '$scope', '$modal', 'storage', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$stateParams', '$scope', '$location', '$modal', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$stateParams', '$state', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$stateParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$stateParams', 'storage', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$stateParams', '$location', '$scope', '$modal', 'storage', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$state', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', '$scope', 'storage', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$stateParams', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$stateParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$stateParams', 'storage', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$stateParams', egrid.app.SemProjectQuestionnaireEditController]).run([
             '$rootScope', '$translate', '$http', function ($rootScope, $translate, $http) {
                 $rootScope.Url = egrid.app.Url;
 
