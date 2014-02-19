@@ -7,7 +7,8 @@ module egrid.app {
     note : string;
 
     constructor(private $q, $stateParams, private $location, private $scope, private $modal, storage: angularLocalStorage.IStorageService) {
-      var storedProjects: string[] = storage
+      // TODO: 非同期にする
+      var stored: string[] = storage
         .get('projects');
       var project: model.Project;
 
@@ -18,9 +19,9 @@ module egrid.app {
           this.name = p.name;
           this.note = p.note;
         }, (reason: any) => {
-          // WebStorage を非同期にしたいが…
-          storedProjects = storage.get('projects');
-          project = storedProjects
+          if (!stored) throw new Error();
+
+          project = stored
             .map((items: any) => {
               return model.Project.parse(items);
             })

@@ -555,15 +555,30 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var ParticipantController = (function () {
-            function ParticipantController($q, $stateParams, $scope, $location, $modal) {
+            function ParticipantController($q, $stateParams, $scope, $location, $modal, storage) {
                 var _this = this;
                 this.$q = $q;
                 this.$scope = $scope;
                 this.$location = $location;
                 this.$modal = $modal;
+                var stored = storage.get('participants');
+                var participant;
+
                 this.participantKey = $stateParams.participantId;
                 this.projectKey = $stateParams.projectId;
-                this.$q.when(egrid.model.Participant.get(this.projectKey, this.participantKey)).then(function (participant) {
+
+                this.$q.when(egrid.model.Participant.get(this.projectKey, this.participantKey)).then(function (p) {
+                    _this.name = p.name;
+                    _this.note = p.note;
+                    _this.project = p.project;
+                }, function (reason) {
+                    if (!stored)
+                        throw new Error();
+
+                    participant = stored.map(egrid.model.Participant.parse).filter(function (value, index, ar) {
+                        return value.key() === _this.participantKey;
+                    })[0];
+
                     _this.name = participant.name;
                     _this.note = participant.note;
                     _this.project = participant.project;
@@ -2671,13 +2686,9 @@ var egrid;
                 this.reverse = true;
 
                 $q.when(egrid.model.Participant.query(this.projectId)).then(function (participants) {
-                    storage.set('participants', participants.map(function (item) {
-                        return JSON.stringify(item);
-                    }));
+                    storage.set('participants', participants.map(JSON.stringify));
                 }).finally(function () {
-                    _this.participants = storage.get('participants').map(function (item) {
-                        return egrid.model.Participant.parse(item);
-                    });
+                    _this.participants = storage.get('participants').map(egrid.model.Participant.parse);
                 });
             }
             return ParticipantListController;
@@ -2696,7 +2707,7 @@ var egrid;
                 this.$location = $location;
                 this.$scope = $scope;
                 this.$modal = $modal;
-                var storedProjects = storage.get('projects');
+                var stored = storage.get('projects');
                 var project;
 
                 this.projectKey = $stateParams.projectId;
@@ -2705,8 +2716,10 @@ var egrid;
                     _this.name = p.name;
                     _this.note = p.note;
                 }, function (reason) {
-                    storedProjects = storage.get('projects');
-                    project = storedProjects.map(function (items) {
+                    if (!stored)
+                        throw new Error();
+
+                    project = stored.map(function (items) {
                         return egrid.model.Project.parse(items);
                     }).filter(function (value, index, ar) {
                         return value.key() === _this.projectKey;
@@ -2960,13 +2973,27 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var SemProjectController = (function () {
-            function SemProjectController($q, $stateParams) {
+            function SemProjectController($q, $stateParams, storage) {
                 var _this = this;
+                var stored = storage.get('sem');
+                var project;
+
                 this.projectKey = $stateParams.projectId;
                 this.semProjectKey = $stateParams.semProjectId;
-                $q.when(egrid.model.SemProject.get(this.projectKey, this.semProjectKey)).then(function (semProject) {
-                    _this.name = semProject.name;
-                    _this.project = semProject.project;
+
+                $q.when(egrid.model.SemProject.get(this.projectKey, this.semProjectKey)).then(function (p) {
+                    _this.name = p.name;
+                    _this.project = p.project;
+                }, function (reason) {
+                    if (!stored)
+                        throw new Error();
+
+                    project = stored.map(egrid.model.SemProject.parse).filter(function (value, index, ar) {
+                        return value.key() === _this.semProjectKey;
+                    })[0];
+
+                    _this.name = project.name;
+                    _this.project = project.project;
                 });
             }
             return SemProjectController;
@@ -3527,14 +3554,11 @@ var egrid;
             function SemProjectListController($q, $stateParams, storage) {
                 var _this = this;
                 var projectId = $stateParams.projectId;
+
                 $q.when(egrid.model.SemProject.query(projectId)).then(function (semProjects) {
-                    storage.set('sem', semProjects.map(function (item) {
-                        return JSON.stringify(item);
-                    }));
+                    storage.set('sem', semProjects.map(JSON.stringify));
                 }).finally(function () {
-                    _this.list = storage.get('sem').map(function (item) {
-                        return egrid.model.SemProject.parse(item);
-                    });
+                    _this.list = storage.get('sem').map(egrid.model.SemProject.parse);
                 });
             }
             return SemProjectListController;
@@ -3766,7 +3790,7 @@ var egrid;
                     prefix: 'locations/',
                     suffix: '.json'
                 }).fallbackLanguage("en").preferredLanguage("ja");
-            }]).controller('CollaboratorCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$stateParams', '$scope', '$modal', 'storage', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$stateParams', '$scope', '$location', '$modal', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$stateParams', '$state', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$stateParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$stateParams', 'storage', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$stateParams', '$location', '$scope', '$modal', 'storage', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$state', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', '$scope', 'storage', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$stateParams', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$stateParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$stateParams', 'storage', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$stateParams', egrid.app.SemProjectQuestionnaireEditController]).run([
+            }]).controller('CollaboratorCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$stateParams', '$scope', '$modal', 'storage', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$stateParams', '$scope', '$location', '$modal', 'storage', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$stateParams', '$state', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$stateParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$stateParams', 'storage', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$stateParams', '$location', '$scope', '$modal', 'storage', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$state', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', '$scope', 'storage', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$stateParams', 'storage', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$stateParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$stateParams', 'storage', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$stateParams', egrid.app.SemProjectQuestionnaireEditController]).run([
             '$rootScope', '$translate', '$http', function ($rootScope, $translate, $http) {
                 $rootScope.Url = egrid.app.Url;
 

@@ -6,16 +6,13 @@ module egrid.app {
 
     constructor($q, $stateParams, storage) {
       var projectId = $stateParams.projectId;
+
       $q.when(model.SemProject.query(projectId))
         .then((semProjects : model.SemProject[]) => {
-          storage.set('sem', semProjects.map((item: model.SemProject) => {
-            return JSON.stringify(item);
-          }));
+          storage.set('sem', semProjects.map(JSON.stringify));
         })
         .finally(() => {
-          this.list = storage.get('sem').map((item: string) => {
-            return model.SemProject.parse(item);
-          });
+          this.list = storage.get('sem').map(model.SemProject.parse);
         })
     }
   }
