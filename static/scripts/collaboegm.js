@@ -31,6 +31,8 @@ var egrid;
 
             Project.prototype.save = function () {
                 var _this = this;
+                var $deferred = $.Deferred();
+
                 return $.ajax({
                     url: Project.url(this.key()),
                     type: this.key() ? 'PUT' : 'POST',
@@ -45,7 +47,15 @@ var egrid;
                         _this.key_ = obj.key;
                         return _this;
                     }
+                }).done(function () {
+                    return $deferred.resolve();
+                }).fail(function () {
+                    window.localStorage.setItem('queues', JSON.stringify({ projects: [_this] }));
+
+                    return $deferred.resolve();
                 });
+
+                return $deferred.promise();
             };
 
             Project.prototype.remove = function () {
@@ -105,7 +115,9 @@ var egrid;
             };
 
             Project.query = function () {
-                return $.ajax({
+                var $deferred = $.Deferred();
+
+                $.ajax({
                     url: Project.url(),
                     type: 'GET',
                     dataFilter: function (data) {
@@ -117,10 +129,12 @@ var egrid;
                 }).then(function (projects) {
                     window.localStorage.setItem('projects', JSON.stringify(projects));
 
-                    return projects;
+                    return $deferred.resolve(projects);
                 }, function () {
-                    return JSON.parse(window.localStorage.getItem('projects')).map(Project.import);
+                    return $deferred.resolve(JSON.parse(window.localStorage.getItem('projects')).map(Project.import));
                 });
+
+                return $deferred.promise();
             };
 
             Project.url = function (key) {

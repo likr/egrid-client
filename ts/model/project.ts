@@ -37,22 +37,34 @@ module egrid.model {
       return this.key_;
     }
 
-    save() : JQueryXHR {
+    save() : JQueryPromise<Project> {
+      var $deferred = $.Deferred();
+
       return $.ajax({
-        url: Project.url(this.key()),
-        type: this.key() ? 'PUT' : 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({
-          key: this.key(),
-          name: this.name,
-          note: this.note,
-        }),
-        dataFilter: data => {
-          var obj : ApiProjectData = JSON.parse(data);
-          this.key_ = obj.key;
-          return this;
-        },
-      });
+          url: Project.url(this.key()),
+          type: this.key() ? 'PUT' : 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({
+            key: this.key(),
+            name: this.name,
+            note: this.note,
+          }),
+          dataFilter: data => {
+            var obj : ApiProjectData = JSON.parse(data);
+            this.key_ = obj.key;
+            return this;
+          },
+        })
+        .done(() => {
+          return $deferred.resolve();
+        })
+        .fail(() => {
+          window.localStorage.setItem('queues', JSON.stringify({ projects: [ this ] }));
+
+          return $deferred.resolve();
+        });
+
+      return $deferred.promise();
     }
 
     remove() : JQueryXHR {
@@ -103,7 +115,9 @@ module egrid.model {
               JSON
                 .parse(window.localStorage.getItem('projects'))
                 .map(Project.import)
-                .filter((value : Project, index : number, ar : Project[]) => { return value.key() === key; })[0]
+                .filter((value : Project, index : number, ar : Project[]) => {
+                  return value.key() === key;
+                })[0]
             );
         });
 
@@ -111,7 +125,9 @@ module egrid.model {
     }
 
     static query() : JQueryPromise<Project[]> {
-      return $.ajax({
+      var $deferred = $.Deferred();
+
+      $.ajax({
           url: Project.url(),
           type: 'GET',
           dataFilter: data => {
@@ -126,10 +142,12 @@ module egrid.model {
             .localStorage
             .setItem('projects', JSON.stringify(projects));
 
-          return projects;
+          return $deferred.resolve(projects);
         }, () => {
-          return JSON.parse(window.localStorage.getItem('projects')).map(Project.import);
+          return $deferred.resolve(JSON.parse(window.localStorage.getItem('projects')).map(Project.import));
         });
+
+      return $deferred.promise();
     }
 
     private static url(key? : string) : string {

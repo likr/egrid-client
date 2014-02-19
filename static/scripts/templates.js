@@ -689,7 +689,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('/partials/projects/projects.html',
-    "<div class=\"tab-pane\" ng-controller=\"ProjectController as project\">\n" +
+    "<div class=\"tab-pane\">\n" +
     "  <h2>{{'PROJECT.PROJECTS' | translate}}</h2>\n" +
     "\n" +
     "  <ol class=\"breadcrumb\">\n" +
