@@ -37,7 +37,12 @@ module egrid.model {
       return this.key_;
     }
 
-    save() : JQueryPromise<Project> {
+    /**
+     * POST/PUT リクエストを発行します。
+     *
+     * @throws  Error
+     */
+    public publish() : JQueryPromise<Project> {
       var $deferred = $.Deferred();
 
       return $.ajax({
@@ -55,13 +60,62 @@ module egrid.model {
             return this;
           },
         })
-        .done(() => {
+        .then(() => {
           return $deferred.resolve();
-        })
-        .fail(() => {
-          window.localStorage.setItem('queues', JSON.stringify({ projects: [ this ] }));
+        }, () => {
+          return $deferred.reject();
+        });
+
+      return $deferred.promise();
+    }
+
+    /**
+     * コレクションの各要素に対し通信処理を呼び出します。
+     */
+    public static flush() : JQueryPromise<boolean> {
+      var $deferred = $.Deferred();
+      var unsavedItems: any[];
+
+      unsavedItems = JSON.parse(window.localStorage.getItem('queues')) || [];
+
+      $.when.apply($, unsavedItems
+        .map((o: any) => {
+          var p = Project.import(o);
+
+          return p.publish();
+        }))
+        .then((projects: Project[]) => {
+          window.localStorage.removeItem('queues');
 
           return $deferred.resolve();
+        }, () => {
+          return $deferred.reject();
+        });
+
+      return $deferred.promise();
+    }
+
+    /**
+     * 保存処理を実行します。
+     * localStorage に処理されていないデータがあれば保存します。
+     */
+    public save() : JQueryPromise<Project> {
+      var $deferred = $.Deferred();
+      var promises: JQueryPromise<Project[]>;
+
+      var queues = JSON.parse(window.localStorage.getItem('queues')) || [];
+
+      queues.push(this);
+
+      window.localStorage.setItem('queues', JSON.stringify(queues));
+
+      promises = Project.flush();
+
+      promises
+        .then(() => {
+          return $deferred.resolve();
+        }, () => {
+          return $deferred.reject();
         });
 
       return $deferred.promise();
@@ -108,17 +162,14 @@ module egrid.model {
         .then((project : Project) => {
           return $deferred.resolve(project);
         }, () => {
-          // 復帰可能なので resolve
-          // reject を使う理由がないので例外投げまくる
-          return $deferred
-            .resolve(
-              JSON
-                .parse(window.localStorage.getItem('projects'))
-                .map(Project.import)
-                .filter((value : Project, index : number, ar : Project[]) => {
-                  return value.key() === key;
-                })[0]
-            );
+          var target: Project = JSON
+            .parse(window.localStorage.getItem('projects'))
+            .map(Project.import)
+            .filter((value: Project) => {
+              return value.key() === key;
+            });
+
+          return target ? $deferred.resolve(target[0]) : $deferred.reject();
         });
 
       return $deferred.promise();
@@ -137,10 +188,8 @@ module egrid.model {
             });
           },
         })
-        .then((projects : Project[]) => {
-          window
-            .localStorage
-            .setItem('projects', JSON.stringify(projects));
+        .then((projects: Project[]) => {
+          window.localStorage.setItem('projects', JSON.stringify(projects));
 
           return $deferred.resolve(projects);
         }, () => {
