@@ -47,8 +47,8 @@ var egrid;
                         _this.key_ = obj.key;
                         return _this;
                     }
-                }).then(function () {
-                    return $deferred.resolve();
+                }).then(function (p) {
+                    return $deferred.resolve(p);
                 }, function () {
                     return $deferred.reject();
                 });
@@ -66,10 +66,14 @@ var egrid;
                     var p = Project.import(o);
 
                     return p.publish();
-                })).then(function (projects) {
+                })).then(function () {
+                    var projects = [];
+                    for (var _i = 0; _i < (arguments.length - 0); _i++) {
+                        projects[_i] = arguments[_i + 0];
+                    }
                     window.localStorage.removeItem('queues');
 
-                    return $deferred.resolve();
+                    return $deferred.resolve(projects);
                 }, function () {
                     return $deferred.reject();
                 });
@@ -3028,6 +3032,10 @@ var egrid;
             ProjectListController.prototype.sync = function () {
                 var _this = this;
                 this.$q.when(egrid.model.Project.flush()).then(function () {
+                    return egrid.model.Project.query();
+                }).then(function (projects) {
+                    _this.projects = projects;
+
                     _this.$log.debug('sync completed successfully');
                     _this.$state.go('projects.all.list');
                 });

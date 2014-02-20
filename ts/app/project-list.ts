@@ -22,7 +22,10 @@ module egrid.app {
 
     sync() {
       this.$q.when(model.Project.flush())
-        .then(() => {
+        .then(() => { return model.Project.query(); })
+        .then((projects: model.Project[]) => {
+          this.projects = projects;
+
           this.$log.debug('sync completed successfully');
           this.$state.go('projects.all.list');
         });

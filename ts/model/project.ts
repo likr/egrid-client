@@ -60,8 +60,8 @@ module egrid.model {
             return this;
           },
         })
-        .then(() => {
-          return $deferred.resolve();
+        .then((p: Project) => {
+          return $deferred.resolve(p);
         }, () => {
           return $deferred.reject();
         });
@@ -72,7 +72,7 @@ module egrid.model {
     /**
      * コレクションの各要素に対し通信処理を呼び出します。
      */
-    public static flush() : JQueryPromise<boolean> {
+    public static flush() : JQueryPromise<Project[]> {
       var $deferred = $.Deferred();
       var unsavedItems: any[];
 
@@ -84,10 +84,10 @@ module egrid.model {
 
           return p.publish();
         }))
-        .then((projects: Project[]) => {
+        .then((...projects: Project[]) => {
           window.localStorage.removeItem('queues');
 
-          return $deferred.resolve();
+          return $deferred.resolve(projects);
         }, () => {
           return $deferred.reject();
         });
