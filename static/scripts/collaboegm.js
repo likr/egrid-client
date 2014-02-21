@@ -4018,6 +4018,14 @@ var egrid;
                             templateUrl: '/partials/project/evaluation.html'
                         }
                     }
+                }).state('projects.get.grid', {
+                    url: '/grid',
+                    views: {
+                        '@': {
+                            controller: 'ProjectGridController as projectGrid',
+                            templateUrl: '/partials/egm-show-all.html'
+                        }
+                    }
                 }).state('projects.get.participants', {
                     abstract: true,
                     url: '/participants'
@@ -4068,14 +4076,14 @@ var egrid;
                             templateUrl: '/partials/project/participants/participant/evaluation.html'
                         }
                     }
-                }).state('grid', {
-                    url: egrid.app.Url.projectGridUrlBase,
-                    controller: 'ProjectGridController as projectGrid',
-                    templateUrl: '/partials/egm-show-all.html'
-                }).state('gridedit', {
-                    url: egrid.app.Url.participantGridUrlBase,
-                    controller: 'ParticipantGridEditController as participantGrid',
-                    templateUrl: '/partials/egm-edit.html'
+                }).state('projects.get.participants.get.grid', {
+                    url: '/grid',
+                    views: {
+                        '@': {
+                            controller: 'ParticipantGridEditController as participantGrid',
+                            templateUrl: '/partials/egm-edit.html'
+                        }
+                    }
                 }).state("/help", {
                     templateUrl: '/partials/help.html'
                 }).state("/about", {

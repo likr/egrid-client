@@ -39,7 +39,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "  <div class=\"navbar navbar-default navbar-fixed-top\" style=\"top: 50px;\">\n" +
     "    <div class=\"container\">\n" +
     "      <form class=\"navbar-form\">\n" +
-    "        <a class=\"btn btn-default\" id=\"quitButton\" href=\"/#{{Url.projectUrl(projectGrid.projectKey)}}\">{{'ACTION.QUIT' | translate}}</a>\n" +
+    "        <a class=\"btn btn-default\" id=\"quitButton\" ui-sref=\"projects.get.evaluation\">{{'ACTION.QUIT' | translate}}</a>\n" +
     "        <a class=\"btn btn-default\" id=\"undoButton\"><i class=\"icon-arrow-left\"></i>{{'ACTION.UNDO' | translate}}</a>\n" +
     "        <a class=\"btn btn-default\" id=\"redoButton\"><i class=\"icon-arrow-right\"></i>{{'ACTION.REDO' | translate}}</a>\n" +
     "        <a class=\"btn btn-default pull-right\" id=\"filterButton\">{{'ACTION.FILTER' | translate}}</a>\n" +

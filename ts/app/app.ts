@@ -185,6 +185,15 @@ module egrid.app {
             },
           },
         })
+        .state('projects.get.grid', {
+          url: '/grid',
+          views: {
+            '@': {
+              controller: 'ProjectGridController as projectGrid',
+              templateUrl: '/partials/egm-show-all.html',
+            },
+          },
+        })
         .state('projects.get.participants', {
           abstract: true,
           url: '/participants',
@@ -242,15 +251,14 @@ module egrid.app {
             },
           },
         })
-        .state('grid', {
-          url: Url.projectGridUrlBase,
-          controller: 'ProjectGridController as projectGrid',
-          templateUrl: '/partials/egm-show-all.html',
-        })
-        .state('gridedit', {
-          url: Url.participantGridUrlBase,
-          controller: 'ParticipantGridEditController as participantGrid',
-          templateUrl: '/partials/egm-edit.html',
+        .state('projects.get.participants.get.grid', {
+          url: '/grid',
+          views: {
+            '@': {
+              controller: 'ParticipantGridEditController as participantGrid',
+              templateUrl: '/partials/egm-edit.html',
+            },
+          },
         })
         .state("/help", {
           templateUrl: '/partials/help.html',
