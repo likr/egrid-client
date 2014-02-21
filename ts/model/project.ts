@@ -37,90 +37,6 @@ module egrid.model {
       return this.key_;
     }
 
-    /**
-     * POST/PUT リクエストを発行します。
-     *
-     * @throws  Error
-     */
-    public publish() : JQueryPromise<Project> {
-      var $deferred = $.Deferred();
-
-      return $.ajax({
-          url: Project.url(this.key()),
-          type: this.key() ? 'PUT' : 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({
-            key: this.key(),
-            name: this.name,
-            note: this.note,
-          }),
-          dataFilter: data => {
-            var obj : ApiProjectData = JSON.parse(data);
-            this.key_ = obj.key;
-            return this;
-          },
-        })
-        .then((p: Project) => {
-          return $deferred.resolve(p);
-        }, () => {
-          return $deferred.reject();
-        });
-
-      return $deferred.promise();
-    }
-
-    /**
-     * コレクションの各要素に対し通信処理を呼び出します。
-     */
-    public static flush() : JQueryPromise<Project[]> {
-      var $deferred = $.Deferred();
-      var unsavedItems: any[];
-
-      unsavedItems = JSON.parse(window.localStorage.getItem('queues')) || [];
-
-      $.when.apply($, unsavedItems
-        .map((o: any) => {
-          var p = Project.import(o);
-
-          return p.publish();
-        }))
-        .then((...projects: Project[]) => {
-          window.localStorage.removeItem('queues');
-
-          return $deferred.resolve(projects);
-        }, () => {
-          return $deferred.reject();
-        });
-
-      return $deferred.promise();
-    }
-
-    /**
-     * 保存処理を実行します。
-     * localStorage に処理されていないデータがあれば保存します。
-     */
-    public save() : JQueryPromise<Project> {
-      var $deferred = $.Deferred();
-      var promises: JQueryPromise<Project[]>;
-
-      var queues = JSON.parse(window.localStorage.getItem('queues')) || [];
-
-      queues.push(this);
-
-      window.localStorage.setItem('queues', JSON.stringify(queues));
-
-      promises = Project.flush();
-
-      promises
-        .then(() => {
-          return $deferred.resolve();
-        }, () => {
-          return $deferred.reject();
-        });
-
-      return $deferred.promise();
-    }
-
     remove() : JQueryXHR {
       return $.ajax({
         url: Project.url(this.key()),
@@ -175,6 +91,7 @@ module egrid.model {
       return $deferred.promise();
     }
 
+    // TODO: Collection<T> を作って IRetrievable を実装する…かも
     static query() : JQueryPromise<Project[]> {
       var $deferred = $.Deferred();
 
@@ -215,6 +132,97 @@ module egrid.model {
       p.updatedAt_ = o.updatedAt_;
 
       return p;
+    }
+
+    /**
+     * POST/PUT リクエストを発行します。
+     *
+     * TODO: StorableBase<T> に移動…するかも
+     * @throws  Error
+     */
+    public publish() : JQueryPromise<Project> {
+      var $deferred = $.Deferred();
+
+      return $.ajax({
+          url: Project.url(this.key()),
+          type: this.key() ? 'PUT' : 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({
+            key: this.key(),
+            name: this.name,
+            note: this.note,
+          }),
+          dataFilter: data => {
+            var obj : ApiProjectData = JSON.parse(data);
+            this.key_ = obj.key;
+            return this;
+          },
+        })
+        .then((p: Project) => {
+          return $deferred.resolve(p);
+        }, () => {
+          return $deferred.reject();
+        });
+
+      return $deferred.promise();
+    }
+
+    /**
+     * localStorage に格納されている各要素に対して publish メソッドを発行します。
+     *
+     * TODO: Collection<T> に IFlushable を実装…かも
+     * @see Project.publish
+     */
+    public static flush() : JQueryPromise<Project[]> {
+      var $deferred = $.Deferred();
+      var unsavedItems: any[];
+
+      unsavedItems = JSON.parse(window.localStorage.getItem('queues')) || [];
+
+      $.when.apply($, unsavedItems
+        .map((o: any) => {
+          var p = Project.import(o);
+
+          return p.publish();
+        }))
+        .then((...projects: Project[]) => {
+          window.localStorage.removeItem('queues');
+
+          return $deferred.resolve(projects);
+        }, () => {
+          return $deferred.reject();
+        });
+
+      return $deferred.promise();
+    }
+
+    /**
+     * localStorage と this を保存するラッパーメソッドです。
+     * flush メソッドを実行します。
+     *
+     * TODO: StorableBase<T> に移動…するかも
+     * @see Project.flush
+     */
+    public save() : JQueryPromise<Project> {
+      var $deferred = $.Deferred();
+      var promises: JQueryPromise<Project[]>;
+
+      var queues = JSON.parse(window.localStorage.getItem('queues')) || [];
+
+      queues.push(this);
+
+      window.localStorage.setItem('queues', JSON.stringify(queues));
+
+      promises = Project.flush();
+
+      promises
+        .then(() => {
+          return $deferred.resolve();
+        }, () => {
+          return $deferred.reject();
+        });
+
+      return $deferred.promise();
     }
   }
 }
