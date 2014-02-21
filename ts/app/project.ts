@@ -7,11 +7,6 @@ module egrid.app {
     note : string;
 
     constructor(private $q, $stateParams, private $location, private $scope, private $modal, storage: angularLocalStorage.IStorageService) {
-      // TODO: 非同期にする
-      var stored: string[] = storage
-        .get('projects');
-      var project: model.Project;
-
       this.projectKey = $stateParams.projectId;
 
       this.$q.when(model.Project.get(this.projectKey))

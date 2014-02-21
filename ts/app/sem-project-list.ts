@@ -3,17 +3,26 @@
 module egrid.app {
   export class SemProjectListController {
     list : model.SemProject[];
+    projectId : string;
 
-    constructor($q, $stateParams, storage) {
-      var projectId = $stateParams.projectId;
+    constructor(private $q, $stateParams, private $state, private $log) {
+      this.projectId = $stateParams.projectId;
 
-      $q.when(model.SemProject.query(projectId))
+      this.$q.when(model.SemProject.query(this.projectId))
         .then((semProjects : model.SemProject[]) => {
-          storage.set('sem', semProjects.map(JSON.stringify));
-        })
-        .finally(() => {
-          this.list = storage.get('sem').map(model.SemProject.parse);
-        })
+          this.list = semProjects;
+        });
+    }
+
+    sync() {
+      this.$q.when(model.SemProject.flush())
+        .then(() => { return model.SemProject.query(this.projectId); })
+        .then((semProjects: model.SemProject[]) => {
+          this.list = semProjects;
+
+          this.$log.debug('sync completed successfully');
+          this.$state.go('projects.get.analyses.all.list');
+        });
     }
   }
 }

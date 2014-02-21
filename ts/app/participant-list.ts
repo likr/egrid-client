@@ -6,7 +6,7 @@ module egrid.app {
     public projectId : string;
     public participants: model.Participant[] = [];
 
-    constructor($q, $stateParams, storage) {
+    constructor(private $q, private $state, $stateParams, private $log) {
       super();
 
       this.projectId = $stateParams.projectId;
@@ -14,14 +14,22 @@ module egrid.app {
       this.predicate = 'updatedAt';
       this.reverse = true;
 
-      $q.when(model.Participant.query(this.projectId))
-        .then((participants : model.Participant[]) => {
-          storage.set('participants', participants.map(JSON.stringify));
-        })
-        .finally(() => {
-          this.participants = storage.get('participants').map(model.Participant.parse);
-        })
-        ;
+      this.$q
+        .when(model.Participant.query(this.projectId))
+        .then((participants: model.Participant[]) => {
+          this.participants = participants;
+        });
+    }
+
+    sync() {
+      this.$q.when(model.Participant.flush())
+        .then(() => { return model.Participant.query(this.projectId); })
+        .then((participants: model.Participant[]) => {
+          this.participants = participants;
+
+          this.$log.debug('sync completed successfully');
+          this.$state.go('projects.get.participants.all.list');
+        });
     }
   }
 }

@@ -10,10 +10,6 @@ module egrid.app {
     projectKey : string;
 
     constructor(private $q, $stateParams, private $scope, private $location, private $modal, storage: angularLocalStorage.IStorageService) {
-      var stored: string[] = storage
-        .get('participants');
-      var participant: model.Participant;
-
       this.participantKey = $stateParams.participantId;
       this.projectKey = $stateParams.projectId;
 
@@ -22,18 +18,6 @@ module egrid.app {
           this.name = p.name;
           this.note = p.note;
           this.project = p.project;
-        }, (reason: any) => {
-          if (!stored) throw new Error();
-
-          participant = stored
-            .map(model.Participant.parse)
-            .filter((value: model.Participant, index: number, ar: model.Participant[]) => {
-              return value.key() === this.participantKey;
-            })[0]; // FIXME
-
-          this.name = participant.name;
-          this.note = participant.note;
-          this.project = participant.project;
         });
     }
 

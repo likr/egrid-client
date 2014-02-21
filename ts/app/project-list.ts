@@ -6,7 +6,7 @@ module egrid.app {
   export class ProjectListController extends PaginationController {
     public projects: model.Project[] = [];
 
-    constructor(private $q, $scope, private $state, private $log) {
+    constructor(private $q, private $state, private $log) {
       super();
 
       this.itemsPerPage = 5;

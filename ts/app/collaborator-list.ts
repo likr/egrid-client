@@ -2,19 +2,26 @@
 
 module egrid.app {
   export class CollaboratorListController {
-    projectKey : string;
+    projectId : string;
     list : model.Collaborator[];
 
-    constructor(private $q, $stateParams, private $scope, private $modal, storage) {
-      this.projectKey = $stateParams.projectId;
-      this.$q.when(model.Collaborator.query(this.projectKey))
+    constructor(private $q, $stateParams, private $state, private $log, private $scope, private $modal) {
+      this.projectId = $stateParams.projectId;
+      this.$q.when(model.Collaborator.query(this.projectId))
         .then((collaborators : model.Collaborator[]) => {
-          storage.set('collaborators', collaborators);
-        })
-        .finally(() => {
-          this.list = storage.get('collaborators');
-        })
-        ;
+          this.list = collaborators;
+        });
+    }
+
+    sync() {
+      this.$q.when(model.Collaborator.flush())
+        .then(() => { return model.Collaborator.query(this.projectId); })
+        .then((collaborators: model.Collaborator[]) => {
+          this.list = collaborators;
+
+          this.$log.debug('sync completed successfully');
+          this.$state.go('projects.get.collaborators.all.list');
+        });
     }
 
     public confirm(index) {

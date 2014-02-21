@@ -1,7 +1,12 @@
 <div class="tab-pane active">
   <div class="row">
-    <nav class="col-sm-4 col-sm-offset-8 search-control">
-      <form class="form-inline">
+    <nav>
+      <form class="form-inline col-sm-1 col-sm-offset-7" ng-submit="ctrl.sync()">
+        <div class="input-group">
+          <button class="btn btn-default" type="submit">Sync</button>
+        </div>
+      </form>
+      <form class="form-inline col-sm-4 search-control">
         <div class="input-group">
           <input type="text" class="form-control" placeholder="{{'ACTION.SEARCH' | translate}}" ng-model="ctrl.query.name" />
           <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>

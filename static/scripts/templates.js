@@ -132,27 +132,27 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('/partials/project/analyses/analysis/analyses.html',
-    "    <div tab heading=\"{{'SEM.ANALYSIS' | translate}}\" select=\"drawSemAnalysis()\">\n" +
-    "      <div ng-controller=\"SemProjectAnalysisController as analysis\">\n" +
-    "        <div id=\"sem-analysis-display\">\n" +
-    "          <div class=\"row\">\n" +
-    "            <div class=\"span10\">\n" +
-    "              <svg width=\"100%\" height=\"500px\"></svg>\n" +
-    "            </div>\n" +
-    "            <div class=\"span2\">\n" +
-    "              <table class=\"table\">\n" +
-    "                <tr ng-repeat=\"item in items\">\n" +
-    "                  <td>\n" +
-    "                    <label class=\"checkbox\">\n" +
-    "                      <input type=\"checkbox\" ng-model=\"item.active\" ng-change=\"removeNode()\"/>{{ item.text }}\n" +
-    "                    </label>\n" +
-    "                </tr>\n" +
-    "              </table>\n" +
-    "            </div>\n" +
-    "          </div>\n" +
+    "<div tab heading=\"{{'SEM.ANALYSIS' | translate}}\" select=\"drawSemAnalysis()\">\n" +
+    "  <div ng-controller=\"SemProjectAnalysisController as analysis\">\n" +
+    "    <div id=\"sem-analysis-display\">\n" +
+    "      <div class=\"row\">\n" +
+    "        <div class=\"span10\">\n" +
+    "          <svg width=\"100%\" height=\"500px\"></svg>\n" +
+    "        </div>\n" +
+    "        <div class=\"span2\">\n" +
+    "          <table class=\"table\">\n" +
+    "            <tr ng-repeat=\"item in items\">\n" +
+    "              <td>\n" +
+    "                <label class=\"checkbox\">\n" +
+    "                  <input type=\"checkbox\" ng-model=\"item.active\" ng-change=\"removeNode()\"/>{{ item.text }}\n" +
+    "                </label>\n" +
+    "            </tr>\n" +
+    "          </table>\n" +
     "        </div>\n" +
     "      </div>\n" +
-    "    </div>\n"
+    "    </div>\n" +
+    "  </div>\n" +
+    "</div>\n"
   );
 
 
@@ -283,6 +283,15 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('/partials/project/analyses/list.html',
     "<div class=\"tab-pane active\" ng-controller=\"SemProjectListController as semProjects\">\n" +
+    "  <div class=\"row\">\n" +
+    "    <nav>\n" +
+    "      <form class=\"form-inline col-sm-1 col-sm-offset-11\" ng-submit=\"semProjects.sync()\">\n" +
+    "        <div class=\"input-group\">\n" +
+    "          <button class=\"btn btn-default\" type=\"submit\">Sync</button>\n" +
+    "        </div>\n" +
+    "      </form>\n" +
+    "    </nav>\n" +
+    "  </div>\n" +
     "  <table class=\"table\">\n" +
     "    <thead>\n" +
     "      <tr>\n" +
@@ -350,6 +359,15 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('/partials/project/collaborators/list.html',
     "<div class=\"tab-pane active\">\n" +
+    "  <div class=\"row\">\n" +
+    "    <nav>\n" +
+    "      <form class=\"form-inline col-sm-1 col-sm-offset-11\" ng-submit=\"collaborators.sync()\">\n" +
+    "        <div class=\"input-group\">\n" +
+    "          <button class=\"btn btn-default\" type=\"submit\">Sync</button>\n" +
+    "        </div>\n" +
+    "      </form>\n" +
+    "    </nav>\n" +
+    "  </div>\n" +
     "  <table class=\"table\">\n" +
     "    <thead>\n" +
     "      <tr>\n" +
@@ -446,8 +464,13 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
   $templateCache.put('/partials/project/participants/list.html',
     "<div class=\"tab-pane active\">\n" +
     "  <div class=\"row\">\n" +
-    "    <nav class=\"col-sm-4 col-sm-offset-8 search-control\">\n" +
-    "      <form class=\"form-inline\">\n" +
+    "    <nav>\n" +
+    "      <form class=\"form-inline col-sm-1 col-sm-offset-7\" ng-submit=\"ctrl.sync()\">\n" +
+    "        <div class=\"input-group\">\n" +
+    "          <button class=\"btn btn-default\" type=\"submit\">Sync</button>\n" +
+    "        </div>\n" +
+    "      </form>\n" +
+    "      <form class=\"form-inline col-sm-4 search-control\">\n" +
     "        <div class=\"input-group\">\n" +
     "          <input type=\"text\" class=\"form-control\" placeholder=\"{{'ACTION.SEARCH' | translate}}\" ng-model=\"ctrl.query.name\" />\n" +
     "          <span class=\"input-group-addon\"><span class=\"glyphicon glyphicon-search\"></span></span>\n" +
