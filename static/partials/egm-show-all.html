@@ -24,7 +24,8 @@
         <a class="btn btn-default" id="redoButton"><i class="glyphicon glyphicon-arrow-right"></i>{{'ACTION.REDO' | translate}}</a>
       </form>
       <form class="navbar-form navbar-right">
-        <a class="btn btn-default" id="exportButton" target="_blank"><i class="glyphicon glyphicon-floppy-save"></i>{{'ACTION.EXPORT' | translate}}</a>
+        <a ng-click="projectGrid.exportJSON($event)" class="btn btn-default" id="exportJSON" target="_blank"><i class="glyphicon glyphicon-floppy-save"></i>JSON {{'ACTION.EXPORT' | translate}}</a>
+        <a class="btn btn-default" id="exportSVG" target="_blank"><i class="glyphicon glyphicon-floppy-save"></i>SVG {{'ACTION.EXPORT' | translate}}</a>
       </form>
     </div>
   </div>

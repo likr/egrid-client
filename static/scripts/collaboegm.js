@@ -1438,6 +1438,27 @@ var egrid;
             return function (selection) {
             };
         };
+
+        /**
+        * @return  object  { node: [ { text: string, weight: number } ], link: [ { source, target, weight } ] }
+        */
+        DAG.prototype.export = function () {
+            return {
+                links: this.links().map(function (v, i, a) {
+                    return {
+                        source: v.source,
+                        target: v.target,
+                        weight: v.weight
+                    };
+                }),
+                ndoes: this.nodes().map(function (v, i, a) {
+                    return {
+                        text: v.text,
+                        weight: v.weight
+                    };
+                })
+            };
+        };
         return DAG;
     })();
     egrid.DAG = DAG;
@@ -3030,7 +3051,7 @@ var egrid;
                     d3.select("#redoButton").classed("disabled", true);
                 }));
 
-                d3.select("#exportButton").on("click", function () {
+                d3.select("#exportSVG").on("click", function () {
                     __this.hideNodeController();
                     __this.egm.graphicize();
 
@@ -3138,6 +3159,10 @@ var egrid;
                 var nodeRect = selection.node().getBoundingClientRect();
                 var controllerWidth = $("#nodeController").width();
                 d3.select("#nodeController").style("top", nodeRect.top + nodeRect.height + 10 + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
+            };
+
+            ProjectGridController.prototype.exportJSON = function ($event) {
+                $($event.currentTarget).attr("href", "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.egm.export())));
             };
             return ProjectGridController;
         })();

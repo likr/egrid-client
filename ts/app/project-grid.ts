@@ -59,7 +59,7 @@ module egrid.app {
               d3.select("#redoButton").classed("disabled", true);
             }));
 
-      d3.select("#exportButton")
+      d3.select("#exportSVG")
         .on("click", function() {
           __this.hideNodeController();
           __this.egm.graphicize();
@@ -195,6 +195,12 @@ module egrid.app {
         .style("top", nodeRect.top + nodeRect.height + 10 + "px")
         .style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px")
         ;
+    }
+
+    public exportJSON($event) {
+      $($event.currentTarget).attr("href", "data:application/json;charset=utf-8," + encodeURIComponent(
+        JSON.stringify(this.egm.export())
+      ));
     }
   }
 }
