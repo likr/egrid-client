@@ -1438,6 +1438,27 @@ var egrid;
             return function (selection) {
             };
         };
+
+        /**
+        * @return  object  { node: [ { text: string, weight: number } ], link: [ { source, target, weight } ] }
+        */
+        DAG.prototype.export = function () {
+            return {
+                links: this.links().map(function (v, i, a) {
+                    return {
+                        source: v.source,
+                        target: v.target,
+                        weight: v.weight
+                    };
+                }),
+                ndoes: this.nodes().map(function (v, i, a) {
+                    return {
+                        text: v.text,
+                        weight: v.weight
+                    };
+                })
+            };
+        };
         return DAG;
     })();
     egrid.DAG = DAG;
@@ -1552,7 +1573,7 @@ var egrid;
                 return EGM.rx - d.baseWidth / 2;
             }).attr("y", function (d) {
                 return EGM.rx;
-            });
+            }).style("font-size", "2em");
             nodesSelection.selectAll("rect").attr("x", function (d) {
                 return -d.baseWidth / 2;
             }).attr("y", function (d) {
@@ -1563,7 +1584,7 @@ var egrid;
                 return d.baseWidth;
             }).attr("height", function (d) {
                 return d.baseHeight;
-            });
+            }).style("fill", "none").style("stroke", "purple").style("stroke-width", 5);
 
             var linksSelection = this.contentsSelection.select(".links").selectAll(".link").data(links, Object);
             linksSelection.exit().remove();
@@ -1575,6 +1596,7 @@ var egrid;
                     selection.call(_this.appendRemoveLinkButton());
                 }
             });
+            linksSelection.style("fill", "none").style("stroke", "purple");
 
             this.grid().layout(this.options_.inactiveNode == 0 /* Hidden */, this.options_.lineUpTop, this.options_.lineUpBottom);
 
@@ -2925,6 +2947,7 @@ var egrid;
     var app = egrid.app;
 })(egrid || (egrid = {}));
 /// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/core/lib.extend.d.ts"/>
 /// <reference path="../core/egm.ts"/>
 /// <reference path="../core/egm-ui.ts"/>
 /// <reference path="../model/participant.ts"/>
@@ -2968,6 +2991,11 @@ var egrid;
                 }).onDisable(function () {
                     d3.select("#redoButton").classed("disabled", true);
                 }));
+
+                d3.select("#exportSVG").on("click", function () {
+                    // unescape はそのうち変えよう
+                    d3.select(this).attr("href", "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(d3.select("#display").attr("version", "1.1").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xmlns:xlink", "http://www.w3.org/1999/xlink").node().outerHTML))));
+                });
 
                 d3.select("#removeNodeButton").call(egmui.removeNodeButton().onEnable(function (selection) {
                     return _this.showNodeController(selection);
@@ -3069,6 +3097,10 @@ var egrid;
                 var nodeRect = selection.node().getBoundingClientRect();
                 var controllerWidth = $("#nodeController").width();
                 d3.select("#nodeController").style("top", nodeRect.top + nodeRect.height + 10 + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
+            };
+
+            ProjectGridController.prototype.exportJSON = function ($event) {
+                $($event.currentTarget).attr("href", "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.egm.export())));
             };
             return ProjectGridController;
         })();
