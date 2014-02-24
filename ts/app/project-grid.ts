@@ -14,6 +14,7 @@ module egrid.app {
     participantState : {} = {};
 
     constructor($q, $stateParams, $modal, private $scope) {
+      var __this = this;
       this.projectKey = $stateParams.projectId;
 
       var egmui = egrid.egmui();
@@ -60,7 +61,9 @@ module egrid.app {
 
       d3.select("#exportButton")
         .on("click", function() {
-          // unescape はそのうち変えよう
+          __this.hideNodeController();
+          __this.egm.graphicize();
+
           d3.select(this).attr("href", "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(
             d3.select("#display")
               .attr("version", "1.1")
@@ -69,6 +72,8 @@ module egrid.app {
               .node()
               .outerHTML
           ))));
+
+          // __this.egm.ungraphicize();
         });
 
       d3.select("#removeNodeButton")

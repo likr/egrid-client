@@ -1512,6 +1512,60 @@ var egrid;
         };
 
         /**
+        * @method graphicize
+        * @see EGM.ungraphicize
+        */
+        EGM.prototype.graphicize = function () {
+            var nodesSelection;
+            var left = d3.min(this.nodes(), function (node) {
+                return node.left().x;
+            });
+            var right = d3.max(this.nodes(), function (node) {
+                return node.right().x;
+            });
+            var top = d3.min(this.nodes(), function (node) {
+                return node.top().y;
+            });
+            var bottom = d3.max(this.nodes(), function (node) {
+                return node.bottom().y;
+            });
+            var margin = new Svg.Transform.Translate(EGM.rx, EGM.rx);
+
+            this.unselectElement();
+            this.showRemoveLinkButton(false);
+            this.contentsZoomBehavior.scale(1);
+            this.resize((right - left) + EGM.rx * 2, (bottom - top) + EGM.rx * 2);
+            this.contentsSelection.attr("transform", "scale(1) " + margin.toString());
+
+            nodesSelection = this.contentsSelection.select(".nodes").selectAll(".element");
+
+            nodesSelection.selectAll("text").style("font-size", "2em");
+
+            nodesSelection.selectAll("rect").style("fill", "white").style("stroke", "#323a48").style("stroke-width", 5);
+
+            this.contentsSelection.select(".links").selectAll(".link").style("fill", "none").style("stroke", "#323a48");
+
+            return this;
+        };
+
+        /**
+        * @method ungraphicize
+        */
+        EGM.prototype.ungraphicize = function () {
+            var nodesSelection;
+
+            nodesSelection = this.contentsSelection.select(".nodes").selectAll(".element");
+
+            nodesSelection.selectAll("text").style("font-size", null);
+
+            nodesSelection.selectAll("rect").style("fill", null).style("stroke", null).style("stroke-width", null);
+
+            this.contentsSelection.select(".links").selectAll(".link").style("fill", null).style("stroke", null);
+
+            return this;
+        };
+
+        /**
         * @method draw
         */
         EGM.prototype.draw = function () {
@@ -1552,7 +1606,7 @@ var egrid;
                 return EGM.rx - d.baseWidth / 2;
             }).attr("y", function (d) {
                 return EGM.rx;
-            }).style("font-size", "2em");
+            });
             nodesSelection.selectAll("rect").attr("x", function (d) {
                 return -d.baseWidth / 2;
             }).attr("y", function (d) {
@@ -1563,7 +1617,7 @@ var egrid;
                 return d.baseWidth;
             }).attr("height", function (d) {
                 return d.baseHeight;
-            }).style("fill", "none").style("stroke", "purple").style("stroke-width", 5);
+            });
 
             var linksSelection = this.contentsSelection.select(".links").selectAll(".link").data(links, Object);
             linksSelection.exit().remove();
@@ -1575,7 +1629,6 @@ var egrid;
                     selection.call(_this.appendRemoveLinkButton());
                 }
             });
-            linksSelection.style("fill", "none").style("stroke", "purple");
 
             this.grid().layout(this.options_.inactiveNode == 0 /* Hidden */, this.options_.lineUpTop, this.options_.lineUpBottom);
 
@@ -1885,7 +1938,8 @@ var egrid;
         /**
         * @method focusCenter
         */
-        EGM.prototype.focusCenter = function () {
+        EGM.prototype.focusCenter = function (animate) {
+            if (typeof animate === "undefined") { animate = true; }
             var left = d3.min(this.nodes(), function (node) {
                 return node.left().x;
             });
@@ -1907,7 +1961,11 @@ var egrid;
             var scale = new Svg.Transform.Scale(s);
             this.contentsZoomBehavior.translate([translate.x, translate.y]);
             this.contentsZoomBehavior.scale(scale.sx);
-            this.contentsSelection.transition().attr("transform", translate.toString() + scale.toString());
+            if (animate) {
+                this.contentsSelection.transition().attr("transform", translate.toString() + scale.toString());
+            } else {
+                this.contentsSelection.attr("transform", translate.toString() + scale.toString());
+            }
             return this;
         };
 
@@ -2940,6 +2998,7 @@ var egrid;
                 this.$scope = $scope;
                 this.filter = {};
                 this.participantState = {};
+                var __this = this;
                 this.projectKey = $stateParams.projectId;
 
                 var egmui = egrid.egmui();
@@ -2972,8 +3031,11 @@ var egrid;
                 }));
 
                 d3.select("#exportButton").on("click", function () {
-                    // unescape はそのうち変えよう
+                    __this.hideNodeController();
+                    __this.egm.graphicize();
+
                     d3.select(this).attr("href", "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(d3.select("#display").attr("version", "1.1").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xmlns:xlink", "http://www.w3.org/1999/xlink").node().outerHTML))));
+                    // __this.egm.ungraphicize();
                 });
 
                 d3.select("#removeNodeButton").call(egmui.removeNodeButton().onEnable(function (selection) {
