@@ -1,20 +1,31 @@
 <div>
   <div class="navbar navbar-default navbar-fixed-top" style="top: 50px;">
     <div class="container">
-      <form class="navbar-form">
+      <form class="navbar-form navbar-left">
         <a class="btn btn-default" id="quitButton" href="/#{{Url.projectUrl(projectGrid.projectKey)}}">{{'ACTION.QUIT' | translate}}</a>
-        <a class="btn btn-default" id="undoButton"><i class="icon-arrow-left"></i>{{'ACTION.UNDO' | translate}}</a>
-        <a class="btn btn-default" id="redoButton"><i class="icon-arrow-right"></i>{{'ACTION.REDO' | translate}}</a>
-        <a class="btn btn-default pull-right" id="filterButton">{{'ACTION.FILTER' | translate}}</a>
-        <a class="btn btn-default pull-right" id="layoutButton">{{'EGM.APP.LAYOUT_SETTINGS' | translate}}</a>
+      </form>
+      <form class="navbar-form navbar-right">
+        <a class="btn btn-default" id="filterButton">{{'ACTION.FILTER' | translate}}</a>
+        <a class="btn btn-default" id="layoutButton">{{'EGM.APP.LAYOUT_SETTINGS' | translate}}</a>
       </form>
     </div>
   </div>
-  <div style="position: absolute; left: 0; top: 100px; overflow: hidden;">
+  <div id="svgContainer" style="position: absolute; left: 0; top: 100px; overflow: hidden;">
     <svg id="display" style="display: block;"></svg>
     <div id="nodeController" class="btn-group invisible" style="position: absolute; top: 0; left: 0;">
-      <button id="removeNodeButton" class="btn" title="{{'ACTION.REMOVE' | translate}}"><i class="icon-remove"></i></button>
-      <button id="mergeNodeButton" class="btn" title="{{'ACTION.MERGE' | translate}}"><i class="icon-plus"></i></button>
+      <button id="removeNodeButton" class="btn" title="{{'ACTION.REMOVE' | translate}}"><i class="glyphicon glyphicon-remove"></i></button>
+      <button id="mergeNodeButton" class="btn" title="{{'ACTION.MERGE' | translate}}"><i class="glyphicon glyphicon-plus"></i></button>
+    </div>
+  </div>
+  <div class="navbar navbar-default navbar-fixed-bottom">
+    <div class="container">
+      <form class="navbar-form navbar-left">
+        <a class="btn btn-default" id="undoButton"><i class="glyphicon glyphicon-arrow-left"></i>{{'ACTION.UNDO' | translate}}</a>
+        <a class="btn btn-default" id="redoButton"><i class="glyphicon glyphicon-arrow-right"></i>{{'ACTION.REDO' | translate}}</a>
+      </form>
+      <form class="navbar-form navbar-right">
+        <a class="btn btn-default" id="exportButton" target="_blank"><i class="glyphicon glyphicon-floppy-save"></i>{{'ACTION.EXPORT' | translate}}</a>
+      </form>
     </div>
   </div>
 </div>
