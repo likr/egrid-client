@@ -670,6 +670,20 @@ module egrid {
     }
 
 
+    private showGuide() : D3.Selection {
+      return this.rootSelection.select('.guide')
+        .style('visibility', 'visible')
+        ;
+    }
+
+
+    private hideGuide() : D3.Selection {
+      return this.rootSelection.select('.guide')
+        .style('visibility', 'hidden')
+        ;
+    }
+
+
     private createNode(text : string) : Node {
       var node = new egrid.Node(text);
       return node;

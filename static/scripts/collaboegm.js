@@ -1939,6 +1939,14 @@ var egrid;
             guideSelection.selectAll('.guide-lower-question').attr('x', axisTo[0]);
         };
 
+        EGM.prototype.showGuide = function () {
+            return this.rootSelection.select('.guide').style('visibility', 'visible');
+        };
+
+        EGM.prototype.hideGuide = function () {
+            return this.rootSelection.select('.guide').style('visibility', 'hidden');
+        };
+
         EGM.prototype.createNode = function (text) {
             var node = new egrid.Node(text);
             return node;
@@ -2693,6 +2701,7 @@ var egrid;
                 this.$modal = $modal;
                 this.$scope = $scope;
                 this.disableCompletion = false;
+                var __this = this;
                 this.projectKey = $stateParams.projectId;
                 this.participantKey = $stateParams.participantId;
                 if ($stateParams.disableCompletion) {
@@ -2710,7 +2719,7 @@ var egrid;
                 d3.select("#display").attr({
                     width: $(window).width(),
                     height: calcHeight()
-                }).call(this.egm.display($(window).width(), calcHeight()));
+                }).call(this.egm.display($(window).width(), calcHeight() - 50));
                 d3.select(window).on('resize', function () {
                     var width = $(window).width();
                     var height = calcHeight();
@@ -2741,6 +2750,14 @@ var egrid;
                         $location.path(egrid.app.Url.participantUrl(_this.projectKey, _this.participantKey));
                     });
                 }));
+
+                d3.select("#exportSVG").on("click", function () {
+                    __this.hideNodeController();
+                    __this.egm.graphicize();
+
+                    d3.select(this).attr("href", "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(d3.select("#display").attr("version", "1.1").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xmlns:xlink", "http://www.w3.org/1999/xlink").node().outerHTML))));
+                    // __this.egm.ungraphicize();
+                });
 
                 d3.select("#ladderUpButton").call(egmui.radderUpButton().onClick(function (callback) {
                     return _this.openInputTextDialog(callback);
@@ -3032,7 +3049,7 @@ var egrid;
                 d3.select("#display").attr({
                     width: $(window).width(),
                     height: calcHeight()
-                }).call(this.egm.display($(window).width(), calcHeight()));
+                }).call(this.egm.display($(window).width(), calcHeight() - 50));
                 d3.select(window).on('resize', function () {
                     d3.select("#display").attr({
                         width: $(window).width(),

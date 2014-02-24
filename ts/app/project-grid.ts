@@ -29,7 +29,7 @@ module egrid.app {
           width: $(window).width(),
           height: calcHeight(),
         })
-        .call(this.egm.display($(window).width(), calcHeight()))
+        .call(this.egm.display($(window).width(), calcHeight() - 50))
         ;
       d3.select(window)
         .on('resize', () => {
