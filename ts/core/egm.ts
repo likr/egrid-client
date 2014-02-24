@@ -136,6 +136,7 @@ module egrid {
         .text(d => d.text)
         .attr("x", d => EGM.rx - d.baseWidth / 2)
         .attr("y", d => EGM.rx)
+        .style("font-size", "2em")
         ;
       nodesSelection.selectAll("rect")
         .attr("x", d => - d.baseWidth / 2)
@@ -143,6 +144,9 @@ module egrid {
         .attr("rx", d => (d.original || d.isTop || d.isBottom) ? 0 : EGM.rx)
         .attr("width", d => d.baseWidth)
         .attr("height", d => d.baseHeight)
+        .style("fill", "none")
+        .style("stroke", "purple")
+        .style("stroke-width", 5)
         ;
 
       var linksSelection = this.contentsSelection
@@ -167,6 +171,10 @@ module egrid {
             selection.call(this.appendRemoveLinkButton());
           }
         })
+        ;
+      linksSelection
+        .style("fill", "none")
+        .style("stroke", "purple")
         ;
 
       this.grid()
