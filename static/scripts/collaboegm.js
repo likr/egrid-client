@@ -1,3 +1,4 @@
+/// <reference path="../../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -15,12 +16,18 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
 var egrid;
 (function (egrid) {
     (function (model) {
+        /**
+        * @class Project
+        */
         var Project = (function () {
             function Project(obj) {
                 if (obj) {
+                    // for-in と hasOwnProperty を組み合わせて書き換えるかもしれない
+                    // そのとき値の変換を考えよう
                     this.name = obj.name;
                     this.note = obj.note;
                 }
@@ -120,6 +127,7 @@ var egrid;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
 var egrid;
 (function (egrid) {
     (function (model) {
@@ -132,6 +140,9 @@ var egrid;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="project.ts"/>
+/// <reference path="user.ts"/>
 var egrid;
 (function (egrid) {
     (function (model) {
@@ -216,6 +227,8 @@ var egrid;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="project.ts"/>
 var egrid;
 (function (egrid) {
     (function (model) {
@@ -316,6 +329,8 @@ var egrid;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="project.ts"/>
 var egrid;
 (function (egrid) {
     (function (model) {
@@ -389,6 +404,9 @@ var egrid;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
 })(egrid || (egrid = {}));
+/// <reference path="../model/participant.ts"/>
+/// <reference path="../model/project.ts"/>
+/// <reference path="../model/sem-project.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -445,6 +463,8 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../model/collaborator.ts"/>
+/// <reference path="url.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -474,6 +494,7 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../model/collaborator.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -518,6 +539,8 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../model/participant.ts"/>
+/// <reference path="../model/project.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -582,6 +605,8 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../model/participant.ts"/>
+/// <reference path="url.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -604,6 +629,9 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/Definitelytyped/jquery/jquery.d.ts"/>
+/// <reference path="participant-grid-node.ts"/>
+/// <reference path="participant-grid-link.ts"/>
 var egrid;
 (function (egrid) {
     (function (model) {
@@ -779,9 +807,18 @@ var Svg;
     })();
     Svg.ViewBox = ViewBox;
 })(Svg || (Svg = {}));
+/// <reference path="../lib/dagre.d.ts"/>
+/// <reference path="svg.ts"/>
 var egrid;
 (function (egrid) {
+    /**
+    @class egrid.Node
+    */
     var Node = (function () {
+        /**
+        @class egrid.Node
+        @constructor
+        */
         function Node(text, weight, original, participants) {
             if (typeof weight === "undefined") { weight = undefined; }
             if (typeof original === "undefined") { original = undefined; }
@@ -824,7 +861,14 @@ var egrid;
     })();
     egrid.Node = Node;
 
+    /**
+    @class egrid.Link
+    */
     var Link = (function () {
+        /**
+        @class egrid.Link
+        @constructor
+        */
         function Link(source, target, weight) {
             if (typeof weight === "undefined") { weight = undefined; }
             this.source = source;
@@ -863,7 +907,14 @@ var egrid;
         return CommandTransaction;
     })();
 
+    /**
+    @class egrid.Grid
+    */
     var Grid = (function () {
+        /**
+        @class egrid.Grid
+        @constructor
+        */
         function Grid() {
             this.nodes_ = [];
             this.links_ = [];
@@ -1272,16 +1323,31 @@ var egrid;
     })();
     egrid.Grid = Grid;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="grid.ts"/>
 var egrid;
 (function (egrid) {
     var DAG = (function () {
+        /**
+        * @class egrid.DAG
+        * @constructor
+        */
         function DAG() {
             this.grid_ = new egrid.Grid;
         }
+        /**
+        * @method grid
+        * @return {egrid.Grid}
+        */
         DAG.prototype.grid = function () {
             return this.grid_;
         };
 
+        /**
+        * @method nodes
+        * @param {Egm.Node[]} [nodes] new nodes.
+        * @return {egrid.DAG|egrid.Node[]} Returns self if nodes is specified. Otherwise, returns current nodes.
+        */
         DAG.prototype.nodes = function (arg) {
             if (arg === undefined) {
                 return this.grid_.nodes();
@@ -1290,6 +1356,11 @@ var egrid;
             return this;
         };
 
+        /**
+        * @method links
+        * @param {Egm.Link[]} [links] new links.
+        * @return {egrid.DAG|egrid.Link} Returns self if links is specified. Otherwise, returns current links.
+        */
         DAG.prototype.links = function (arg) {
             if (arg === undefined) {
                 return this.grid_.links();
@@ -1298,6 +1369,9 @@ var egrid;
             return this;
         };
 
+        /**
+        * @method notify
+        */
         DAG.prototype.notify = function () {
             if (this.uiCallback) {
                 this.uiCallback();
@@ -1305,11 +1379,17 @@ var egrid;
             return this;
         };
 
+        /**
+        * @method registerUiCallback;
+        */
         DAG.prototype.registerUiCallback = function (callback) {
             this.uiCallback = callback;
             return this;
         };
 
+        /**
+        * @method undo
+        */
         DAG.prototype.undo = function () {
             if (this.grid().canUndo()) {
                 this.grid().undo();
@@ -1319,6 +1399,9 @@ var egrid;
             return this;
         };
 
+        /**
+        * @method redo
+        */
         DAG.prototype.redo = function () {
             if (this.grid().canRedo()) {
                 this.grid().redo();
@@ -1328,14 +1411,27 @@ var egrid;
             return this;
         };
 
+        /**
+        * @method draw
+        */
         DAG.prototype.draw = function () {
             return this;
         };
 
+        /**
+        * @method focusCenter
+        */
         DAG.prototype.focusCenter = function () {
             return this;
         };
 
+        /**
+        * Generates a function to init display region.
+        * @method display
+        * @param regionWidth {number} Width of display region.
+        * @param regionHeight {number} Height of display region.
+        * @return {function}
+        */
         DAG.prototype.display = function (regionWidth, regionHeight) {
             if (typeof regionWidth === "undefined") { regionWidth = undefined; }
             if (typeof regionHeight === "undefined") { regionHeight = undefined; }
@@ -1346,6 +1442,10 @@ var egrid;
     })();
     egrid.DAG = DAG;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="svg.ts"/>
+/// <reference path="dag.ts"/>
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -1389,8 +1489,15 @@ var egrid;
     })(egrid.Raddering || (egrid.Raddering = {}));
     var Raddering = egrid.Raddering;
 
+    /**
+    * @class egrid.EGM
+    */
     var EGM = (function (_super) {
         __extends(EGM, _super);
+        /**
+        * @class egrid.EGM
+        * @constructor
+        */
         function EGM() {
             _super.call(this);
             this.removeLinkButtonEnabled = false;
@@ -1404,6 +1511,9 @@ var egrid;
             return this;
         };
 
+        /**
+        * @method draw
+        */
         EGM.prototype.draw = function () {
             var _this = this;
             var spline = d3.svg.line().x(function (d) {
@@ -1442,7 +1552,7 @@ var egrid;
                 return EGM.rx - d.baseWidth / 2;
             }).attr("y", function (d) {
                 return EGM.rx;
-            });
+            }).style("font-size", "2em");
             nodesSelection.selectAll("rect").attr("x", function (d) {
                 return -d.baseWidth / 2;
             }).attr("y", function (d) {
@@ -1453,7 +1563,7 @@ var egrid;
                 return d.baseWidth;
             }).attr("height", function (d) {
                 return d.baseHeight;
-            });
+            }).style("fill", "none").style("stroke", "purple").style("stroke-width", 5);
 
             var linksSelection = this.contentsSelection.select(".links").selectAll(".link").data(links, Object);
             linksSelection.exit().remove();
@@ -1465,6 +1575,7 @@ var egrid;
                     selection.call(_this.appendRemoveLinkButton());
                 }
             });
+            linksSelection.style("fill", "none").style("stroke", "purple");
 
             this.grid().layout(this.options_.inactiveNode == 0 /* Hidden */, this.options_.lineUpTop, this.options_.lineUpBottom);
 
@@ -1621,6 +1732,13 @@ var egrid;
             this.drawGuide();
         };
 
+        /**
+        * Generates a function to init display region.
+        * @method display
+        * @param regionWidth {number} Width of display region.
+        * @param regionHeight {number} Height of display region.
+        * @return {function}
+        */
         EGM.prototype.display = function (regionWidth, regionHeight) {
             if (typeof regionWidth === "undefined") { regionWidth = undefined; }
             if (typeof regionHeight === "undefined") { regionHeight = undefined; }
@@ -1752,6 +1870,10 @@ var egrid;
             return node;
         };
 
+        /**
+        * @method focusNode
+        * @param node {egrid.Node}
+        */
         EGM.prototype.focusNode = function (node) {
             var s = this.contentsZoomBehavior.scale() || 1;
             var translate = new Svg.Transform.Translate(this.displayWidth / 2 - node.center().x * s, this.displayHeight / 2 - node.center().y * s);
@@ -1760,6 +1882,9 @@ var egrid;
             this.contentsSelection.transition().attr("transform", translate.toString() + scale.toString());
         };
 
+        /**
+        * @method focusCenter
+        */
         EGM.prototype.focusCenter = function () {
             var left = d3.min(this.nodes(), function (node) {
                 return node.left().x;
@@ -1786,17 +1911,28 @@ var egrid;
             return this;
         };
 
+        /**
+        * @method selectElement
+        * @param selection {D3.Selection}
+        */
         EGM.prototype.selectElement = function (selection) {
             this.rootSelection.selectAll(".selected").classed("selected", false);
             selection.classed("selected", true);
             this.drawNodeConnection();
         };
 
+        /**
+        * @method selectedNode
+        * @return {egrid.Node}
+        */
         EGM.prototype.selectedNode = function () {
             var selection = this.rootSelection.select(".selected");
             return selection.empty() ? null : selection.datum();
         };
 
+        /**
+        * @method unselectElement
+        */
         EGM.prototype.unselectElement = function () {
             this.rootSelection.selectAll(".selected").classed("selected", false);
             this.rootSelection.selectAll(".connected").classed("connected", false);
@@ -1961,11 +2097,17 @@ var egrid;
             return this;
         };
 
+        /**
+        * @method appendNode
+        * @return {egrid.EGM}
+        */
         EGM.prototype.appendNode = function (text) {
             if (text) {
                 var node;
                 if (node = this.grid().findNode(text)) {
+                    // node already exists
                 } else {
+                    // create new node
                     node = this.createNode(text);
                     node.original = true;
                     this.grid().appendNode(node);
@@ -1981,10 +2123,18 @@ var egrid;
             return this;
         };
 
+        /**
+        * @method removeSelectedNode
+        * @return {egrid.EGM}
+        */
         EGM.prototype.removeSelectedNode = function () {
             return this.removeNode(this.selectedNode());
         };
 
+        /**
+        * @method removeNode
+        * @return {egrid.EGM}
+        */
         EGM.prototype.removeNode = function (node) {
             if (node) {
                 this.unselectElement();
@@ -1995,6 +2145,10 @@ var egrid;
             return this;
         };
 
+        /**
+        * @method mergeNode
+        * @return {egrid.EGM}
+        */
         EGM.prototype.mergeNode = function (fromNode, toNode) {
             if (fromNode && toNode) {
                 this.grid().mergeNode(fromNode.index, toNode.index);
@@ -2006,10 +2160,18 @@ var egrid;
             return this;
         };
 
+        /**
+        * @method editSelectedNode
+        * @return {egrid.EGM}
+        */
         EGM.prototype.editSelectedNode = function (text) {
             return this.editNode(this.selectedNode(), text);
         };
 
+        /**
+        * @method editNode
+        * @return {egrid.EGM}
+        */
         EGM.prototype.editNode = function (node, text) {
             if (node && text) {
                 this.grid().updateNodeText(node.index, text);
@@ -2023,6 +2185,10 @@ var egrid;
     })(egrid.DAG);
     egrid.EGM = EGM;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../model/participant-grid.ts"/>
+/// <reference path="../core/egm.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -2054,9 +2220,18 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="egm.ts"/>
 var egrid;
 (function (egrid) {
+    /**
+    * @class egrid.EGMUi
+    */
     var EGMUi = (function () {
+        /**
+        * @class egrid.EGMUi
+        * @constructor
+        */
         function EGMUi() {
             var _this = this;
             this.egm_ = new egrid.EGM();
@@ -2382,11 +2557,19 @@ var egrid;
     })();
     egrid.EGMUi = EGMUi;
 
+    /**
+    * @return {egrid.EGMUi}
+    */
     function egmui() {
         return new EGMUi;
     }
     egrid.egmui = egmui;
 })(egrid || (egrid = {}));
+/// <reference path="participant-grid-node.ts"/>
+/// <reference path="participant-grid-link.ts"/>
+/// <reference path="../ts-definitions/Definitelytyped/jquery/jquery.d.ts"/>
+/// <reference path="project-grid-node.ts"/>
+/// <reference path="project-grid-link.ts"/>
 var egrid;
 (function (egrid) {
     (function (model) {
@@ -2416,6 +2599,12 @@ var egrid;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../core/egm.ts"/>
+/// <reference path="../core/egm-ui.ts"/>
+/// <reference path="../model/participant-grid.ts"/>
+/// <reference path="../model/project-grid.ts"/>
+/// <reference path="url.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -2622,6 +2811,8 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../model/participant.ts"/>
+/// <reference path="pagination.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -2647,6 +2838,7 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../model/project.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -2671,6 +2863,7 @@ var egrid;
 
                     return project.save();
                 }).then(function (project) {
+                    // バインドしてるから要らない気はする
                     _this.name = project.name;
                     _this.note = project.note;
                 });
@@ -2709,6 +2902,8 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../model/project.ts"/>
+/// <reference path="url.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -2730,6 +2925,12 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/core/lib.extend.d.ts"/>
+/// <reference path="../core/egm.ts"/>
+/// <reference path="../core/egm-ui.ts"/>
+/// <reference path="../model/participant.ts"/>
+/// <reference path="../model/project-grid.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -2771,6 +2972,7 @@ var egrid;
                 }));
 
                 d3.select("#exportButton").on("click", function () {
+                    // unescape はそのうち変えよう
                     d3.select(this).attr("href", "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(d3.select("#display").attr("version", "1.1").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xmlns:xlink", "http://www.w3.org/1999/xlink").node().outerHTML))));
                 });
 
@@ -2881,6 +3083,8 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../model/project.ts"/>
+/// <reference path="pagination.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -2905,6 +3109,8 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../model/project.ts"/>
+/// <reference path="../model/sem-project.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -2924,14 +3130,24 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="dag.ts"/>
 var egrid;
 (function (egrid) {
+    /**
+    * @class egrid.SEM
+    */
     var SEM = (function (_super) {
         __extends(SEM, _super);
         function SEM() {
             _super.apply(this, arguments);
             this.removeLinkButtonEnabled = true;
         }
+        /**
+        * @method draw
+        * @return {egrid.SEM}
+        */
         SEM.prototype.draw = function () {
             var _this = this;
             var spline = d3.svg.line().x(function (d) {
@@ -3031,6 +3247,7 @@ var egrid;
                 return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
             });
             transition.each("end", function () {
+                //this.notify();
             });
 
             this.rescale();
@@ -3128,6 +3345,13 @@ var egrid;
             this.contentsZoomBehavior.scaleExtent([s, 1]);
         };
 
+        /**
+        * Generates a function to init display region.
+        * @method display
+        * @param regionWidth {number} Width of display region.
+        * @param regionHeight {number} Height of display region.
+        * @return {function}
+        */
         SEM.prototype.display = function (regionWidth, regionHeight) {
             if (typeof regionWidth === "undefined") { regionWidth = undefined; }
             if (typeof regionHeight === "undefined") { regionHeight = undefined; }
@@ -3150,11 +3374,15 @@ var egrid;
                     var translate = new Svg.Transform.Translate(d3.event.translate[0], d3.event.translate[1]);
                     var scale = new Svg.Transform.Scale(d3.event.scale);
                     _this.contentsSelection.attr("transform", translate.toString() + scale.toString());
+                    //this.notify();
                 });
                 selection.call(_this.contentsZoomBehavior);
             };
         };
 
+        /**
+        * @method focusCenter
+        */
         SEM.prototype.focusCenter = function () {
             var left = d3.min(this.nodes(), function (node) {
                 return node.left().x;
@@ -3271,11 +3499,17 @@ var egrid;
             return new Svg.Point(xy[0], xy[1]);
         };
 
+        /**
+        * @method appendNode
+        * @return {egrid.G
+        */
         SEM.prototype.appendNode = function (text) {
             if (text) {
                 var node;
                 if (node = this.grid().findNode(text)) {
+                    // node already exists
                 } else {
+                    // create new node
                     node = this.createNode(text);
                     node.original = true;
                     this.grid().appendNode(node);
@@ -3285,6 +3519,8 @@ var egrid;
                     return node.text == text;
                 });
 
+                //this.selectElement(addedElement);
+                //this.focusNode(addedElement.datum());
                 this.notify();
             }
             return this;
@@ -3300,11 +3536,15 @@ var egrid;
     })(egrid.DAG);
     egrid.SEM = SEM;
 
+    /**
+    * @return {egrid.SEM}
+    */
     function sem() {
         return new SEM;
     }
     egrid.sem = sem;
 })(egrid || (egrid = {}));
+/// <reference path="../core/sem.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -3317,6 +3557,8 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../model/sem-project.ts"/>
+/// <reference path="url.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -3342,6 +3584,7 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/Definitelytyped/jquery/jquery.d.ts"/>
 var egrid;
 (function (egrid) {
     (function (model) {
@@ -3388,6 +3631,11 @@ var egrid;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
+/// <reference path="../core/egm.ts"/>
+/// <reference path="../model/project-grid.ts"/>
+/// <reference path="../model/sem-project.ts"/>
+/// <reference path="../model/sem-project-questionnaire.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -3469,6 +3717,7 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../model/sem-project.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -3486,6 +3735,25 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
+/// <reference path="../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+/// <reference path="modules/app.ts"/>
+/// <reference path="collaborator-create.ts"/>
+/// <reference path="collaborator-list.ts"/>
+/// <reference path="participant.ts"/>
+/// <reference path="participant-create.ts"/>
+/// <reference path="participant-grid.ts"/>
+/// <reference path="participant-grid-edit.ts"/>
+/// <reference path="participant-list.ts"/>
+/// <reference path="project.ts"/>
+/// <reference path="project-create.ts"/>
+/// <reference path="project-grid.ts"/>
+/// <reference path="project-list.ts"/>
+/// <reference path="sem-project.ts"/>
+/// <reference path="sem-project-analysis.ts"/>
+/// <reference path="sem-project-create.ts"/>
+/// <reference path="sem-project-questionnaire-edit.ts"/>
+/// <reference path="sem-project-list.ts"/>
+/// <reference path="url.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -3698,6 +3966,7 @@ var egrid;
                     templateUrl: '/partials/about.html'
                 });
 
+                // ほんとは $state.go にしたい
                 $urlRouterProvider.otherwise(egrid.app.Url.projectListUrlBase + '/all/list');
             }]).filter('count', function () {
             return function (input) {
