@@ -129,26 +129,5 @@ module egrid {
     display(regionWidth : number = undefined, regionHeight : number = undefined) : (selection : D3.Selection) => void {
       return (selection) => {};
     }
-
-    /**
-     * @return  object  { node: [ { text: string, weight: number } ], link: [ { source, target, weight } ] }
-     */
-    export() {
-      return {
-        links: this.links().map((v, i, a) => {
-          return {
-            source: v.source,
-            target: v.target,
-            weight: v.weight,
-          };
-        }),
-        ndoes: this.nodes().map((v, i, a) => {
-          return {
-            text: v.text,
-            weight: v.weight,
-          };
-        }),
-      };
-    }
   }
 }

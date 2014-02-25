@@ -226,5 +226,11 @@ module egrid.app {
         .style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px")
         ;
     }
+
+    public exportJSON($event) {
+      $($event.currentTarget).attr("href", "data:application/json;charset=utf-8," + encodeURIComponent(
+        JSON.stringify(this.egm.grid().toJSON())
+      ));
+    }
   }
 }
