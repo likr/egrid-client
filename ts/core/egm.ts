@@ -93,9 +93,10 @@ module egrid {
 
     /**
      * @method graphicize
+     * @param c Function callback
      * @see EGM.ungraphicize
      */
-    graphicize() : EGM {
+    graphicize(c : Function) : EGM {
       var nodesSelection;
       var left = d3.min(this.nodes(), node => {
         return node.left().x;
@@ -110,6 +111,7 @@ module egrid {
         return node.bottom().y;
       });
       var margin = new Svg.Transform.Translate(EGM.rx, EGM.rx);
+      var defaults = { w: this.displayWidth, h: this.displayHeight };
 
       this.unselectElement();
       this.showRemoveLinkButton(false);
@@ -118,6 +120,9 @@ module egrid {
       this
         .contentsSelection
         .attr("transform", "scale(1) " + margin.toString());
+      this.rootSelection.select('.guide')
+        .style('visibility', 'hidden')
+        ;
 
       nodesSelection = this.contentsSelection
         .select(".nodes")
@@ -141,14 +146,18 @@ module egrid {
         .style("stroke", "#323a48")
         ;
 
-      return this;
+      c();
+
+      return this.ungraphicize(defaults);
     }
 
     /**
      * @method ungraphicize
      */
-    ungraphicize() : EGM {
+    private ungraphicize(d: any) : EGM {
       var nodesSelection;
+
+      this.resize(d.w, d.h);
 
       nodesSelection = this.contentsSelection
         .select(".nodes")
@@ -171,6 +180,8 @@ module egrid {
         .style("fill", null)
         .style("stroke", null)
         ;
+
+      this.drawGuide();
 
       return this;
     }
@@ -494,6 +505,7 @@ module egrid {
         selection.attr("viewBox", (new Svg.ViewBox(0, 0, this.displayWidth, this.displayHeight)).toString());
         selection.append("text")
           .classed("measure", true)
+          .style("visibility", "hidden")
           ;
 
         selection.append("rect")
@@ -666,20 +678,6 @@ module egrid {
         ;
       guideSelection.selectAll('.guide-lower-question')
         .attr('x', axisTo[0])
-        ;
-    }
-
-
-    private showGuide() : D3.Selection {
-      return this.rootSelection.select('.guide')
-        .style('visibility', 'visible')
-        ;
-    }
-
-
-    private hideGuide() : D3.Selection {
-      return this.rootSelection.select('.guide')
-        .style('visibility', 'hidden')
         ;
     }
 

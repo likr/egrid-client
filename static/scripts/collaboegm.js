@@ -1534,9 +1534,10 @@ var egrid;
 
         /**
         * @method graphicize
+        * @param c Function callback
         * @see EGM.ungraphicize
         */
-        EGM.prototype.graphicize = function () {
+        EGM.prototype.graphicize = function (c) {
             var nodesSelection;
             var left = d3.min(this.nodes(), function (node) {
                 return node.left().x;
@@ -1551,12 +1552,14 @@ var egrid;
                 return node.bottom().y;
             });
             var margin = new Svg.Transform.Translate(EGM.rx, EGM.rx);
+            var defaults = { w: this.displayWidth, h: this.displayHeight };
 
             this.unselectElement();
             this.showRemoveLinkButton(false);
             this.contentsZoomBehavior.scale(1);
             this.resize((right - left) + EGM.rx * 2, (bottom - top) + EGM.rx * 2);
             this.contentsSelection.attr("transform", "scale(1) " + margin.toString());
+            this.rootSelection.select('.guide').style('visibility', 'hidden');
 
             nodesSelection = this.contentsSelection.select(".nodes").selectAll(".element");
 
@@ -1566,14 +1569,18 @@ var egrid;
 
             this.contentsSelection.select(".links").selectAll(".link").style("fill", "none").style("stroke", "#323a48");
 
-            return this;
+            c();
+
+            return this.ungraphicize(defaults);
         };
 
         /**
         * @method ungraphicize
         */
-        EGM.prototype.ungraphicize = function () {
+        EGM.prototype.ungraphicize = function (d) {
             var nodesSelection;
+
+            this.resize(d.w, d.h);
 
             nodesSelection = this.contentsSelection.select(".nodes").selectAll(".element");
 
@@ -1582,6 +1589,8 @@ var egrid;
             nodesSelection.selectAll("rect").style("fill", null).style("stroke", null).style("stroke-width", null);
 
             this.contentsSelection.select(".links").selectAll(".link").style("fill", null).style("stroke", null);
+
+            this.drawGuide();
 
             return this;
         };
@@ -1823,7 +1832,7 @@ var egrid;
                 _this.displayWidth = regionWidth || $(window).width();
                 _this.displayHeight = regionHeight || $(window).height();
                 selection.attr("viewBox", (new Svg.ViewBox(0, 0, _this.displayWidth, _this.displayHeight)).toString());
-                selection.append("text").classed("measure", true);
+                selection.append("text").classed("measure", true).style("visibility", "hidden");
 
                 selection.append("rect").attr("fill", "#fff").attr("width", _this.displayWidth).attr("height", _this.displayHeight);
 
@@ -1937,14 +1946,6 @@ var egrid;
             guideSelection.select('.guide-lower-label').attr('x', axisTo[0]);
             guideSelection.selectAll('.guide-upper-question').attr('x', axisFrom[0]);
             guideSelection.selectAll('.guide-lower-question').attr('x', axisTo[0]);
-        };
-
-        EGM.prototype.showGuide = function () {
-            return this.rootSelection.select('.guide').style('visibility', 'visible');
-        };
-
-        EGM.prototype.hideGuide = function () {
-            return this.rootSelection.select('.guide').style('visibility', 'hidden');
         };
 
         EGM.prototype.createNode = function (text) {
@@ -2752,11 +2753,11 @@ var egrid;
                 }));
 
                 d3.select("#exportSVG").on("click", function () {
+                    var _this = this;
                     __this.hideNodeController();
-                    __this.egm.graphicize();
-
-                    d3.select(this).attr("href", "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(d3.select("#display").attr("version", "1.1").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xmlns:xlink", "http://www.w3.org/1999/xlink").node().outerHTML))));
-                    // __this.egm.ungraphicize();
+                    __this.egm.graphicize(function () {
+                        d3.select(_this).attr("href", "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(d3.select("#display").attr("version", "1.1").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xmlns:xlink", "http://www.w3.org/1999/xlink").node().outerHTML))));
+                    });
                 });
 
                 d3.select("#ladderUpButton").call(egmui.radderUpButton().onClick(function (callback) {
@@ -3069,11 +3070,11 @@ var egrid;
                 }));
 
                 d3.select("#exportSVG").on("click", function () {
+                    var _this = this;
                     __this.hideNodeController();
-                    __this.egm.graphicize();
-
-                    d3.select(this).attr("href", "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(d3.select("#display").attr("version", "1.1").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xmlns:xlink", "http://www.w3.org/1999/xlink").node().outerHTML))));
-                    // __this.egm.ungraphicize();
+                    __this.egm.graphicize(function () {
+                        d3.select(_this).attr("href", "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(d3.select("#display").attr("version", "1.1").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xmlns:xlink", "http://www.w3.org/1999/xlink").node().outerHTML))));
+                    });
                 });
 
                 d3.select("#removeNodeButton").call(egmui.removeNodeButton().onEnable(function (selection) {

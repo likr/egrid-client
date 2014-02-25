@@ -86,18 +86,16 @@ module egrid.app {
       d3.select("#exportSVG")
         .on("click", function() {
           __this.hideNodeController();
-          __this.egm.graphicize();
-
-          d3.select(this).attr("href", "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(
-            d3.select("#display")
-              .attr("version", "1.1")
-              .attr("xmlns", "http://www.w3.org/2000/svg")
-              .attr("xmlns:xmlns:xlink", "http://www.w3.org/1999/xlink")
-              .node()
-              .outerHTML
-          ))));
-
-          // __this.egm.ungraphicize();
+          __this.egm.graphicize(() => {
+            d3.select(this).attr("href", "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(
+              d3.select("#display")
+                .attr("version", "1.1")
+                .attr("xmlns", "http://www.w3.org/2000/svg")
+                .attr("xmlns:xmlns:xlink", "http://www.w3.org/1999/xlink")
+                .node()
+                .outerHTML
+                ))));
+            });
         });
 
       d3.select("#ladderUpButton")
