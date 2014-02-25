@@ -1,28 +1,83 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="entity.ts"/>
 
 module egrid.model {
   /**
   * @class Collection
   */
-  export class Collection<T extends EntityBase> {
-    private collection: T;
+  export class Collection<T extends Entity> {
+    private collection: T[] = [];
 
-    public static retrieve<T>(): JQueryPromise<T[]> {
+    /**
+     * GET メソッドを発行し this.collection を満たします。
+     *
+     * @param Y Entity 戻り値
+     * @param yj Y モデル (TypeScript の制限より)
+     */
+    public retrieve(type: new() => T): JQueryPromise<T[]> {
       var $deferred = $.Deferred();
 
       $.ajax({
-          url: this.url(),
+          url: '/api/projects',
           type: 'GET',
         })
-        .then((items: T[]) => {
-          window.localStorage.setItem('', JSON.stringify(items));
+        .then((result: string) => {
+          var items: any[] = JSON.parse(result);
 
-          return $deferred.resolve(items);
-        }, () => {
-          return $deferred.resolve(JSON.parse(window.localStorage.getItem('')).map(EntityBase.deserialize<T>()));
+          window.localStorage.setItem('projects', JSON.stringify(items));
+
+          return $deferred.resolve(items.map((item: any) => {
+              var i = new type();
+
+              return i.deserialize(item);
+            }));
+        }, (...reasons: any[]) => {
+          return $deferred
+            .resolve(JSON.parse(window.localStorage.getItem('projects'))
+              .map((o: any) => {
+                var i = new type();
+
+                return i.deserialize(o);
+              }));
         });
 
       return $deferred.promise();
+    }
+
+    /**
+     * this.collection に対し Entity.publish() を呼び出します。
+     */
+    public flush(type: new() => T): JQueryPromise<T[]> {
+      var $deferred = $.Deferred();
+      var unsavedItems: any[];
+
+      $.when.apply($, unsavedItems
+        .map((o: any) => {
+          var item = new type();
+
+          return item.deserialize(o).publish();
+        }))
+        .then((...items: T[]) => {
+          window.localStorage.removeItem('queues');
+
+          return $deferred.resolve(items);
+        }, () => {
+          return $deferred.reject();
+        });
+
+      return $deferred.promise();
+    }
+
+    public getItem(n: number): T {
+      return this.collection[n];
+    }
+
+    public setItem(item: T): void {
+      this.collection.push(item);
+    }
+
+    public toArray(): T[] {
+      return this.collection;
     }
   }
 }

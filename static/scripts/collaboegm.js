@@ -1,4 +1,3 @@
-/// <reference path="../../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -16,29 +15,95 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
 var egrid;
 (function (egrid) {
     (function (model) {
-        /**
-        * @class Project
-        */
-        var Project = (function () {
+        var ValueObject = (function () {
+            function ValueObject(v) {
+                this.value = v;
+            }
+            ValueObject.prototype.vomit = function () {
+                return this.value;
+            };
+
+            ValueObject.prototype.toString = function () {
+                return this.value.toString();
+            };
+            return ValueObject;
+        })();
+        model.ValueObject = ValueObject;
+    })(egrid.model || (egrid.model = {}));
+    var model = egrid.model;
+})(egrid || (egrid = {}));
+var egrid;
+(function (egrid) {
+    (function (model) {
+        var Entity = (function () {
+            function Entity() {
+            }
+            Entity.prototype.getKey = function () {
+                if (this.key_)
+                    return this.key_.vomit();
+                else
+                    throw new Error('UnsupportedException');
+            };
+
+            Entity.prototype.setKey = function (key) {
+                if (!this.key_)
+                    this.key_ = new egrid.model.ValueObject(key);
+            };
+
+            Entity.getUri = function () {
+                throw new Error('NotImplementedException');
+            };
+
+            Entity.prototype.deserialize = function (o) {
+                throw new Error('NotImplementedException');
+            };
+
+            Entity.prototype.serialize = function () {
+                throw new Error('NotImplementedException');
+            };
+
+            Entity.prototype.publish = function () {
+                throw new Error('NotImplementedException');
+            };
+
+            Entity.prototype.fetch = function (key) {
+                throw new Error('NotImplementedException');
+            };
+
+            Entity.getType = function () {
+                throw new Error('NotImplementedException');
+            };
+            return Entity;
+        })();
+        model.Entity = Entity;
+    })(egrid.model || (egrid.model = {}));
+    var model = egrid.model;
+})(egrid || (egrid = {}));
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var egrid;
+(function (egrid) {
+    (function (model) {
+        var Project = (function (_super) {
+            __extends(Project, _super);
             function Project(obj) {
+                _super.call(this);
+
                 if (obj) {
-                    // for-in と hasOwnProperty を組み合わせて書き換えるかもしれない
-                    // そのとき値の変換を考えよう
                     this.name = obj.name;
                     this.note = obj.note;
                 }
             }
-            Project.prototype.key = function () {
-                return this.key_;
-            };
-
             Project.prototype.remove = function () {
                 return $.ajax({
-                    url: Project.url(this.key()),
+                    url: Project.url(this.getKey()),
                     type: 'DELETE'
                 });
             };
@@ -60,18 +125,14 @@ var egrid;
             });
 
             Project.prototype.url = function () {
-                return Project.url(this.key());
+                return Project.url(this.getKey());
             };
 
-            Project.load = function (obj) {
-                var project = new Project(obj);
-                project.key_ = obj.key;
-                project.createdAt_ = new Date(obj.createdAt);
-                project.updatedAt_ = new Date(obj.updatedAt);
-                return project;
+            Project.getUri = function () {
+                return Project.url();
             };
 
-            Project.get = function (key) {
+            Project.prototype.fetch = function (key) {
                 var $deferred = $.Deferred();
 
                 $.ajax({
@@ -79,40 +140,18 @@ var egrid;
                     type: 'GET',
                     dataFilter: function (data) {
                         var obj = JSON.parse(data);
-                        return Project.load(obj);
+                        return new Project().deserialize(obj);
                     }
                 }).then(function (project) {
                     return $deferred.resolve(project);
                 }, function () {
-                    var target = JSON.parse(window.localStorage.getItem('projects')).map(Project.import).filter(function (value) {
-                        return value.key() === key;
+                    var target = JSON.parse(window.localStorage.getItem('projects')).map(function (p) {
+                        new Project().deserialize(p);
+                    }).filter(function (value) {
+                        return value.getKey() === key;
                     });
 
                     return target ? $deferred.resolve(target[0]) : $deferred.reject();
-                });
-
-                return $deferred.promise();
-            };
-
-            // TODO: Collection<T> を作って IRetrievable を実装する…かも
-            Project.query = function () {
-                var $deferred = $.Deferred();
-
-                $.ajax({
-                    url: Project.url(),
-                    type: 'GET',
-                    dataFilter: function (data) {
-                        var objs = JSON.parse(data);
-                        return objs.map(function (obj) {
-                            return Project.load(obj);
-                        });
-                    }
-                }).then(function (projects) {
-                    window.localStorage.setItem('projects', JSON.stringify(projects));
-
-                    return $deferred.resolve(projects);
-                }, function () {
-                    return $deferred.resolve(JSON.parse(window.localStorage.getItem('projects')).map(Project.import));
                 });
 
                 return $deferred.promise();
@@ -126,39 +165,27 @@ var egrid;
                 }
             };
 
-            Project.import = function (o) {
-                var p = new Project(o);
+            Project.prototype.deserialize = function (o) {
+                this.setKey(o.key);
 
-                p.key_ = o.key_;
-                p.createdAt_ = o.createdAt_;
-                p.updatedAt_ = o.updatedAt_;
-
-                return p;
+                return this;
             };
 
-            /**
-            * POST/PUT リクエストを発行します。
-            *
-            * TODO: StorableBase<T> に移動…するかも
-            * @throws  Error
-            */
             Project.prototype.publish = function () {
-                var _this = this;
                 var $deferred = $.Deferred();
 
                 return $.ajax({
-                    url: Project.url(this.key()),
-                    type: this.key() ? 'PUT' : 'POST',
+                    url: Project.url(this.getKey()),
+                    type: this.getKey() ? 'PUT' : 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
-                        key: this.key(),
+                        key: this.getKey(),
                         name: this.name,
                         note: this.note
                     }),
                     dataFilter: function (data) {
                         var obj = JSON.parse(data);
-                        _this.key_ = obj.key;
-                        return _this;
+                        return new Project().deserialize(obj);
                     }
                 }).then(function (p) {
                     return $deferred.resolve(p);
@@ -169,71 +196,15 @@ var egrid;
                 return $deferred.promise();
             };
 
-            /**
-            * localStorage に格納されている各要素に対して publish メソッドを発行します。
-            *
-            * TODO: Collection<T> に IFlushable を実装…かも
-            * @see Project.publish
-            */
-            Project.flush = function () {
-                var $deferred = $.Deferred();
-                var unsavedItems;
-
-                unsavedItems = JSON.parse(window.localStorage.getItem('queues')) || [];
-
-                $.when.apply($, unsavedItems.map(function (o) {
-                    var p = Project.import(o);
-
-                    return p.publish();
-                })).then(function () {
-                    var projects = [];
-                    for (var _i = 0; _i < (arguments.length - 0); _i++) {
-                        projects[_i] = arguments[_i + 0];
-                    }
-                    window.localStorage.removeItem('queues');
-
-                    return $deferred.resolve(projects);
-                }, function () {
-                    return $deferred.reject();
-                });
-
-                return $deferred.promise();
-            };
-
-            /**
-            * localStorage と this を保存するラッパーメソッドです。
-            * flush メソッドを実行します。
-            *
-            * TODO: StorableBase<T> に移動…するかも
-            * @see Project.flush
-            */
-            Project.prototype.save = function () {
-                var $deferred = $.Deferred();
-                var promises;
-
-                var queues = JSON.parse(window.localStorage.getItem('queues')) || [];
-
-                queues.push(this);
-
-                window.localStorage.setItem('queues', JSON.stringify(queues));
-
-                promises = Project.flush();
-
-                promises.then(function () {
-                    return $deferred.resolve();
-                }, function () {
-                    return $deferred.reject();
-                });
-
-                return $deferred.promise();
+            Project.getType = function () {
+                return 'Project';
             };
             return Project;
-        })();
+        })(egrid.model.Entity);
         model.Project = Project;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
 var egrid;
 (function (egrid) {
     (function (model) {
@@ -246,9 +217,6 @@ var egrid;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
-/// <reference path="project.ts"/>
-/// <reference path="user.ts"/>
 var egrid;
 (function (egrid) {
     (function (model) {
@@ -331,12 +299,6 @@ var egrid;
                 }
             };
 
-            /**
-            * POST/PUT リクエストを発行します。
-            *
-            * TODO: StorableBase<T> に移動…するかも
-            * @throws  Error
-            */
             Collaborator.prototype.publish = function () {
                 var _this = this;
                 var $deferred = $.Deferred();
@@ -365,12 +327,6 @@ var egrid;
                 return $deferred.promise();
             };
 
-            /**
-            * localStorage に格納されている各要素に対して publish メソッドを発行します。
-            *
-            * TODO: Collection<T> に IFlushable を実装…かも
-            * @see Collaborator.publish
-            */
             Collaborator.flush = function () {
                 var $deferred = $.Deferred();
                 var unsavedItems;
@@ -396,13 +352,6 @@ var egrid;
                 return $deferred.promise();
             };
 
-            /**
-            * localStorage と this を保存するラッパーメソッドです。
-            * flush メソッドを実行します。
-            *
-            * TODO: StorableBase<T> に移動…するかも
-            * @see Collaborator.flush
-            */
             Collaborator.prototype.save = function () {
                 var $deferred = $.Deferred();
                 var items = JSON.parse(window.localStorage.getItem('unsavedCollaborators')) || [];
@@ -425,8 +374,6 @@ var egrid;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
-/// <reference path="project.ts"/>
 var egrid;
 (function (egrid) {
     (function (model) {
@@ -536,12 +483,6 @@ var egrid;
                 return p;
             };
 
-            /**
-            * POST/PUT リクエストを発行します。
-            *
-            * TODO: StorableBase<T> に移動…するかも
-            * @throws  Error
-            */
             Participant.prototype.publish = function () {
                 var _this = this;
                 var $deferred = $.Deferred();
@@ -569,12 +510,6 @@ var egrid;
                 return $deferred.promise();
             };
 
-            /**
-            * localStorage に格納されている各要素に対して publish メソッドを発行します。
-            *
-            * TODO: Collection<T> に IFlushable を実装…かも
-            * @see Participant.publish
-            */
             Participant.flush = function () {
                 var $deferred = $.Deferred();
                 var unsavedItems;
@@ -600,13 +535,6 @@ var egrid;
                 return $deferred.promise();
             };
 
-            /**
-            * localStorage と this を保存するラッパーメソッドです。
-            * flush メソッドを実行します。
-            *
-            * TODO: StorableBase<T> に移動…するかも
-            * @see Participant.flush
-            */
             Participant.prototype.save = function () {
                 var $deferred = $.Deferred();
                 var promises;
@@ -631,8 +559,6 @@ var egrid;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
-/// <reference path="project.ts"/>
 var egrid;
 (function (egrid) {
     (function (model) {
@@ -714,12 +640,6 @@ var egrid;
                 return p;
             };
 
-            /**
-            * POST/PUT リクエストを発行します。
-            *
-            * TODO: StorableBase<T> に移動…するかも
-            * @throws  Error
-            */
             SemProject.prototype.publish = function () {
                 var _this = this;
                 var $deferred = $.Deferred();
@@ -746,12 +666,6 @@ var egrid;
                 return $deferred.promise();
             };
 
-            /**
-            * localStorage に格納されている各要素に対して publish メソッドを発行します。
-            *
-            * TODO: Collection<T> に IFlushable を実装…かも
-            * @see SemProject.publish
-            */
             SemProject.flush = function () {
                 var $deferred = $.Deferred();
                 var unsavedItems;
@@ -777,13 +691,6 @@ var egrid;
                 return $deferred.promise();
             };
 
-            /**
-            * localStorage と this を保存するラッパーメソッドです。
-            * flush メソッドを実行します。
-            *
-            * TODO: StorableBase<T> に移動…するかも
-            * @see SemProject.flush
-            */
             SemProject.prototype.save = function () {
                 var $deferred = $.Deferred();
 
@@ -807,9 +714,6 @@ var egrid;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
 })(egrid || (egrid = {}));
-/// <reference path="../model/participant.ts"/>
-/// <reference path="../model/project.ts"/>
-/// <reference path="../model/sem-project.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -866,8 +770,6 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../model/collaborator.ts"/>
-/// <reference path="url.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -897,7 +799,6 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../model/collaborator.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -956,8 +857,6 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../model/participant.ts"/>
-/// <reference path="../model/project.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -1023,8 +922,6 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../model/participant.ts"/>
-/// <reference path="url.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -1047,9 +944,6 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/Definitelytyped/jquery/jquery.d.ts"/>
-/// <reference path="participant-grid-node.ts"/>
-/// <reference path="participant-grid-link.ts"/>
 var egrid;
 (function (egrid) {
     (function (model) {
@@ -1225,18 +1119,9 @@ var Svg;
     })();
     Svg.ViewBox = ViewBox;
 })(Svg || (Svg = {}));
-/// <reference path="../lib/dagre.d.ts"/>
-/// <reference path="svg.ts"/>
 var egrid;
 (function (egrid) {
-    /**
-    @class egrid.Node
-    */
     var Node = (function () {
-        /**
-        @class egrid.Node
-        @constructor
-        */
         function Node(text, weight, original, participants) {
             if (typeof weight === "undefined") { weight = undefined; }
             if (typeof original === "undefined") { original = undefined; }
@@ -1279,14 +1164,7 @@ var egrid;
     })();
     egrid.Node = Node;
 
-    /**
-    @class egrid.Link
-    */
     var Link = (function () {
-        /**
-        @class egrid.Link
-        @constructor
-        */
         function Link(source, target, weight) {
             if (typeof weight === "undefined") { weight = undefined; }
             this.source = source;
@@ -1325,14 +1203,7 @@ var egrid;
         return CommandTransaction;
     })();
 
-    /**
-    @class egrid.Grid
-    */
     var Grid = (function () {
-        /**
-        @class egrid.Grid
-        @constructor
-        */
         function Grid() {
             this.nodes_ = [];
             this.links_ = [];
@@ -1741,31 +1612,16 @@ var egrid;
     })();
     egrid.Grid = Grid;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="grid.ts"/>
 var egrid;
 (function (egrid) {
     var DAG = (function () {
-        /**
-        * @class egrid.DAG
-        * @constructor
-        */
         function DAG() {
             this.grid_ = new egrid.Grid;
         }
-        /**
-        * @method grid
-        * @return {egrid.Grid}
-        */
         DAG.prototype.grid = function () {
             return this.grid_;
         };
 
-        /**
-        * @method nodes
-        * @param {Egm.Node[]} [nodes] new nodes.
-        * @return {egrid.DAG|egrid.Node[]} Returns self if nodes is specified. Otherwise, returns current nodes.
-        */
         DAG.prototype.nodes = function (arg) {
             if (arg === undefined) {
                 return this.grid_.nodes();
@@ -1774,11 +1630,6 @@ var egrid;
             return this;
         };
 
-        /**
-        * @method links
-        * @param {Egm.Link[]} [links] new links.
-        * @return {egrid.DAG|egrid.Link} Returns self if links is specified. Otherwise, returns current links.
-        */
         DAG.prototype.links = function (arg) {
             if (arg === undefined) {
                 return this.grid_.links();
@@ -1787,9 +1638,6 @@ var egrid;
             return this;
         };
 
-        /**
-        * @method notify
-        */
         DAG.prototype.notify = function () {
             if (this.uiCallback) {
                 this.uiCallback();
@@ -1797,17 +1645,11 @@ var egrid;
             return this;
         };
 
-        /**
-        * @method registerUiCallback;
-        */
         DAG.prototype.registerUiCallback = function (callback) {
             this.uiCallback = callback;
             return this;
         };
 
-        /**
-        * @method undo
-        */
         DAG.prototype.undo = function () {
             if (this.grid().canUndo()) {
                 this.grid().undo();
@@ -1817,9 +1659,6 @@ var egrid;
             return this;
         };
 
-        /**
-        * @method redo
-        */
         DAG.prototype.redo = function () {
             if (this.grid().canRedo()) {
                 this.grid().redo();
@@ -1829,27 +1668,14 @@ var egrid;
             return this;
         };
 
-        /**
-        * @method draw
-        */
         DAG.prototype.draw = function () {
             return this;
         };
 
-        /**
-        * @method focusCenter
-        */
         DAG.prototype.focusCenter = function () {
             return this;
         };
 
-        /**
-        * Generates a function to init display region.
-        * @method display
-        * @param regionWidth {number} Width of display region.
-        * @param regionHeight {number} Height of display region.
-        * @return {function}
-        */
         DAG.prototype.display = function (regionWidth, regionHeight) {
             if (typeof regionWidth === "undefined") { regionWidth = undefined; }
             if (typeof regionHeight === "undefined") { regionHeight = undefined; }
@@ -1857,9 +1683,6 @@ var egrid;
             };
         };
 
-        /**
-        * @return  object  { node: [ { text: string, weight: number } ], link: [ { source, target, weight } ] }
-        */
         DAG.prototype.export = function () {
             return {
                 links: this.links().map(function (v, i, a) {
@@ -1881,16 +1704,6 @@ var egrid;
     })();
     egrid.DAG = DAG;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="svg.ts"/>
-/// <reference path="dag.ts"/>
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
 var egrid;
 (function (egrid) {
     (function (ViewMode) {
@@ -1928,15 +1741,8 @@ var egrid;
     })(egrid.Raddering || (egrid.Raddering = {}));
     var Raddering = egrid.Raddering;
 
-    /**
-    * @class egrid.EGM
-    */
     var EGM = (function (_super) {
         __extends(EGM, _super);
-        /**
-        * @class egrid.EGM
-        * @constructor
-        */
         function EGM() {
             _super.call(this);
             this.removeLinkButtonEnabled = false;
@@ -1950,9 +1756,6 @@ var egrid;
             return this;
         };
 
-        /**
-        * @method draw
-        */
         EGM.prototype.draw = function () {
             var _this = this;
             var spline = d3.svg.line().x(function (d) {
@@ -2171,13 +1974,6 @@ var egrid;
             this.drawGuide();
         };
 
-        /**
-        * Generates a function to init display region.
-        * @method display
-        * @param regionWidth {number} Width of display region.
-        * @param regionHeight {number} Height of display region.
-        * @return {function}
-        */
         EGM.prototype.display = function (regionWidth, regionHeight) {
             if (typeof regionWidth === "undefined") { regionWidth = undefined; }
             if (typeof regionHeight === "undefined") { regionHeight = undefined; }
@@ -2309,10 +2105,6 @@ var egrid;
             return node;
         };
 
-        /**
-        * @method focusNode
-        * @param node {egrid.Node}
-        */
         EGM.prototype.focusNode = function (node) {
             var s = this.contentsZoomBehavior.scale() || 1;
             var translate = new Svg.Transform.Translate(this.displayWidth / 2 - node.center().x * s, this.displayHeight / 2 - node.center().y * s);
@@ -2321,9 +2113,6 @@ var egrid;
             this.contentsSelection.transition().attr("transform", translate.toString() + scale.toString());
         };
 
-        /**
-        * @method focusCenter
-        */
         EGM.prototype.focusCenter = function () {
             var left = d3.min(this.nodes(), function (node) {
                 return node.left().x;
@@ -2350,28 +2139,17 @@ var egrid;
             return this;
         };
 
-        /**
-        * @method selectElement
-        * @param selection {D3.Selection}
-        */
         EGM.prototype.selectElement = function (selection) {
             this.rootSelection.selectAll(".selected").classed("selected", false);
             selection.classed("selected", true);
             this.drawNodeConnection();
         };
 
-        /**
-        * @method selectedNode
-        * @return {egrid.Node}
-        */
         EGM.prototype.selectedNode = function () {
             var selection = this.rootSelection.select(".selected");
             return selection.empty() ? null : selection.datum();
         };
 
-        /**
-        * @method unselectElement
-        */
         EGM.prototype.unselectElement = function () {
             this.rootSelection.selectAll(".selected").classed("selected", false);
             this.rootSelection.selectAll(".connected").classed("connected", false);
@@ -2536,17 +2314,11 @@ var egrid;
             return this;
         };
 
-        /**
-        * @method appendNode
-        * @return {egrid.EGM}
-        */
         EGM.prototype.appendNode = function (text) {
             if (text) {
                 var node;
                 if (node = this.grid().findNode(text)) {
-                    // node already exists
                 } else {
-                    // create new node
                     node = this.createNode(text);
                     node.original = true;
                     this.grid().appendNode(node);
@@ -2562,18 +2334,10 @@ var egrid;
             return this;
         };
 
-        /**
-        * @method removeSelectedNode
-        * @return {egrid.EGM}
-        */
         EGM.prototype.removeSelectedNode = function () {
             return this.removeNode(this.selectedNode());
         };
 
-        /**
-        * @method removeNode
-        * @return {egrid.EGM}
-        */
         EGM.prototype.removeNode = function (node) {
             if (node) {
                 this.unselectElement();
@@ -2584,10 +2348,6 @@ var egrid;
             return this;
         };
 
-        /**
-        * @method mergeNode
-        * @return {egrid.EGM}
-        */
         EGM.prototype.mergeNode = function (fromNode, toNode) {
             if (fromNode && toNode) {
                 this.grid().mergeNode(fromNode.index, toNode.index);
@@ -2599,18 +2359,10 @@ var egrid;
             return this;
         };
 
-        /**
-        * @method editSelectedNode
-        * @return {egrid.EGM}
-        */
         EGM.prototype.editSelectedNode = function (text) {
             return this.editNode(this.selectedNode(), text);
         };
 
-        /**
-        * @method editNode
-        * @return {egrid.EGM}
-        */
         EGM.prototype.editNode = function (node, text) {
             if (node && text) {
                 this.grid().updateNodeText(node.index, text);
@@ -2624,10 +2376,6 @@ var egrid;
     })(egrid.DAG);
     egrid.EGM = EGM;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="../model/participant-grid.ts"/>
-/// <reference path="../core/egm.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -2659,18 +2407,9 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="egm.ts"/>
 var egrid;
 (function (egrid) {
-    /**
-    * @class egrid.EGMUi
-    */
     var EGMUi = (function () {
-        /**
-        * @class egrid.EGMUi
-        * @constructor
-        */
         function EGMUi() {
             var _this = this;
             this.egm_ = new egrid.EGM();
@@ -2996,19 +2735,11 @@ var egrid;
     })();
     egrid.EGMUi = EGMUi;
 
-    /**
-    * @return {egrid.EGMUi}
-    */
     function egmui() {
         return new EGMUi;
     }
     egrid.egmui = egmui;
 })(egrid || (egrid = {}));
-/// <reference path="participant-grid-node.ts"/>
-/// <reference path="participant-grid-link.ts"/>
-/// <reference path="../ts-definitions/Definitelytyped/jquery/jquery.d.ts"/>
-/// <reference path="project-grid-node.ts"/>
-/// <reference path="project-grid-link.ts"/>
 var egrid;
 (function (egrid) {
     (function (model) {
@@ -3038,12 +2769,6 @@ var egrid;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="../core/egm.ts"/>
-/// <reference path="../core/egm-ui.ts"/>
-/// <reference path="../model/participant-grid.ts"/>
-/// <reference path="../model/project-grid.ts"/>
-/// <reference path="url.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -3250,8 +2975,6 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../model/participant.ts"/>
-/// <reference path="pagination.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -3291,33 +3014,25 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../model/project.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
         var ProjectController = (function () {
-            function ProjectController($q, $stateParams, $location, $scope, $modal, storage) {
+            function ProjectController($q, $stateParams, $state, $modal, storage) {
                 var _this = this;
                 this.$q = $q;
-                this.$location = $location;
-                this.$scope = $scope;
+                this.$state = $state;
                 this.$modal = $modal;
-                this.projectKey = $stateParams.projectId;
+                this.project = new egrid.model.Project();
+                var key = $stateParams.projectId;
 
-                this.$q.when(egrid.model.Project.get(this.projectKey)).then(function (p) {
-                    _this.name = p.name;
-                    _this.note = p.note;
+                this.$q.when(this.project.fetch(key)).then(function (p) {
+                    _this.project = p;
                 });
             }
             ProjectController.prototype.update = function () {
                 var _this = this;
-                this.$q.when(egrid.model.Project.get(this.projectKey)).then(function (project) {
-                    project.name = _this.name;
-                    project.note = _this.note;
-
-                    return project.save();
-                }).then(function (project) {
-                    // バインドしてるから要らない気はする
+                this.$q.when(this.project.publish()).then(function (project) {
                     _this.name = project.name;
                     _this.note = project.note;
                 });
@@ -3343,11 +3058,8 @@ var egrid;
 
             ProjectController.prototype.remove = function () {
                 var _this = this;
-                this.$q.when(egrid.model.Project.get(this.projectKey)).then(function (project) {
-                    return project.remove();
-                }).then(function () {
-                    _this.$location.path(egrid.app.Url.projectListUrl());
-                    _this.$scope.$apply();
+                this.$q.when(this.project.remove()).then(function () {
+                    _this.$state.go('project.all.list');
                 });
             };
             return ProjectController;
@@ -3356,8 +3068,6 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../model/project.ts"/>
-/// <reference path="url.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -3370,7 +3080,7 @@ var egrid;
                 var _this = this;
                 var project = new egrid.model.Project(this);
                 this.$q.when(project.publish()).then(function () {
-                    _this.$state.go('projects.get.detail', { projectId: project.key() });
+                    _this.$state.go('projects.get.detail', { projectId: project.getKey() });
                 }, function () {
                     _this.$state.go('projects.all.list');
                 });
@@ -3381,12 +3091,6 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="../ts-definitions/DefinitelyTyped/core/lib.extend.d.ts"/>
-/// <reference path="../core/egm.ts"/>
-/// <reference path="../core/egm-ui.ts"/>
-/// <reference path="../model/participant.ts"/>
-/// <reference path="../model/project-grid.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -3428,7 +3132,6 @@ var egrid;
                 }));
 
                 d3.select("#exportSVG").on("click", function () {
-                    // unescape はそのうち変えよう
                     d3.select(this).attr("href", "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(d3.select("#display").attr("version", "1.1").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xmlns:xlink", "http://www.w3.org/1999/xlink").node().outerHTML))));
                 });
 
@@ -3543,9 +3246,84 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/angularLocalStorage/angularLocalStorage.d.ts"/>
-/// <reference path="../model/project.ts"/>
-/// <reference path="pagination.ts"/>
+var egrid;
+(function (egrid) {
+    (function (model) {
+        var Collection = (function () {
+            function Collection() {
+                this.collection = [];
+            }
+            Collection.prototype.retrieve = function (type) {
+                var $deferred = $.Deferred();
+
+                $.ajax({
+                    url: '/api/projects',
+                    type: 'GET'
+                }).then(function (result) {
+                    var items = JSON.parse(result);
+
+                    window.localStorage.setItem('projects', JSON.stringify(items));
+
+                    return $deferred.resolve(items.map(function (item) {
+                        var i = new type();
+
+                        return i.deserialize(item);
+                    }));
+                }, function () {
+                    var reasons = [];
+                    for (var _i = 0; _i < (arguments.length - 0); _i++) {
+                        reasons[_i] = arguments[_i + 0];
+                    }
+                    return $deferred.resolve(JSON.parse(window.localStorage.getItem('projects')).map(function (o) {
+                        var i = new type();
+
+                        return i.deserialize(o);
+                    }));
+                });
+
+                return $deferred.promise();
+            };
+
+            Collection.prototype.flush = function (type) {
+                var $deferred = $.Deferred();
+                var unsavedItems;
+
+                $.when.apply($, unsavedItems.map(function (o) {
+                    var item = new type();
+
+                    return item.deserialize(o).publish();
+                })).then(function () {
+                    var items = [];
+                    for (var _i = 0; _i < (arguments.length - 0); _i++) {
+                        items[_i] = arguments[_i + 0];
+                    }
+                    window.localStorage.removeItem('queues');
+
+                    return $deferred.resolve(items);
+                }, function () {
+                    return $deferred.reject();
+                });
+
+                return $deferred.promise();
+            };
+
+            Collection.prototype.getItem = function (n) {
+                return this.collection[n];
+            };
+
+            Collection.prototype.setItem = function (item) {
+                this.collection.push(item);
+            };
+
+            Collection.prototype.toArray = function () {
+                return this.collection;
+            };
+            return Collection;
+        })();
+        model.Collection = Collection;
+    })(egrid.model || (egrid.model = {}));
+    var model = egrid.model;
+})(egrid || (egrid = {}));
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -3557,23 +3335,21 @@ var egrid;
                 this.$q = $q;
                 this.$state = $state;
                 this.$log = $log;
-                this.projects = [];
+                this.projects = new egrid.model.Collection();
 
                 this.itemsPerPage = 5;
                 this.predicate = 'updatedAt';
                 this.reverse = true;
 
-                this.$q.when(egrid.model.Project.query()).then(function (projects) {
-                    _this.projects = projects;
+                this.$q.when(this.projects.retrieve(egrid.model.Project)).then(function (projects) {
+                    projects.forEach(function (p) {
+                        _this.projects.setItem(p);
+                    });
                 });
             }
             ProjectListController.prototype.sync = function () {
                 var _this = this;
-                this.$q.when(egrid.model.Project.flush()).then(function () {
-                    return egrid.model.Project.query();
-                }).then(function (projects) {
-                    _this.projects = projects;
-
+                this.$q.when(this.projects.flush(egrid.model.Project)).then(function () {
                     _this.$log.debug('sync completed successfully');
                     _this.$state.go('projects.all.list');
                 });
@@ -3584,8 +3360,6 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../model/project.ts"/>
-/// <reference path="../model/sem-project.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -3606,24 +3380,14 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="dag.ts"/>
 var egrid;
 (function (egrid) {
-    /**
-    * @class egrid.SEM
-    */
     var SEM = (function (_super) {
         __extends(SEM, _super);
         function SEM() {
             _super.apply(this, arguments);
             this.removeLinkButtonEnabled = true;
         }
-        /**
-        * @method draw
-        * @return {egrid.SEM}
-        */
         SEM.prototype.draw = function () {
             var _this = this;
             var spline = d3.svg.line().x(function (d) {
@@ -3723,7 +3487,6 @@ var egrid;
                 return "translate(" + link.points[1].x + "," + link.points[1].y + ")";
             });
             transition.each("end", function () {
-                //this.notify();
             });
 
             this.rescale();
@@ -3821,13 +3584,6 @@ var egrid;
             this.contentsZoomBehavior.scaleExtent([s, 1]);
         };
 
-        /**
-        * Generates a function to init display region.
-        * @method display
-        * @param regionWidth {number} Width of display region.
-        * @param regionHeight {number} Height of display region.
-        * @return {function}
-        */
         SEM.prototype.display = function (regionWidth, regionHeight) {
             if (typeof regionWidth === "undefined") { regionWidth = undefined; }
             if (typeof regionHeight === "undefined") { regionHeight = undefined; }
@@ -3850,15 +3606,11 @@ var egrid;
                     var translate = new Svg.Transform.Translate(d3.event.translate[0], d3.event.translate[1]);
                     var scale = new Svg.Transform.Scale(d3.event.scale);
                     _this.contentsSelection.attr("transform", translate.toString() + scale.toString());
-                    //this.notify();
                 });
                 selection.call(_this.contentsZoomBehavior);
             };
         };
 
-        /**
-        * @method focusCenter
-        */
         SEM.prototype.focusCenter = function () {
             var left = d3.min(this.nodes(), function (node) {
                 return node.left().x;
@@ -3975,17 +3727,11 @@ var egrid;
             return new Svg.Point(xy[0], xy[1]);
         };
 
-        /**
-        * @method appendNode
-        * @return {egrid.G
-        */
         SEM.prototype.appendNode = function (text) {
             if (text) {
                 var node;
                 if (node = this.grid().findNode(text)) {
-                    // node already exists
                 } else {
-                    // create new node
                     node = this.createNode(text);
                     node.original = true;
                     this.grid().appendNode(node);
@@ -3995,8 +3741,6 @@ var egrid;
                     return node.text == text;
                 });
 
-                //this.selectElement(addedElement);
-                //this.focusNode(addedElement.datum());
                 this.notify();
             }
             return this;
@@ -4012,15 +3756,11 @@ var egrid;
     })(egrid.DAG);
     egrid.SEM = SEM;
 
-    /**
-    * @return {egrid.SEM}
-    */
     function sem() {
         return new SEM;
     }
     egrid.sem = sem;
 })(egrid || (egrid = {}));
-/// <reference path="../core/sem.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -4033,8 +3773,6 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../model/sem-project.ts"/>
-/// <reference path="url.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -4060,7 +3798,6 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/Definitelytyped/jquery/jquery.d.ts"/>
 var egrid;
 (function (egrid) {
     (function (model) {
@@ -4107,11 +3844,6 @@ var egrid;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
-/// <reference path="../core/egm.ts"/>
-/// <reference path="../model/project-grid.ts"/>
-/// <reference path="../model/sem-project.ts"/>
-/// <reference path="../model/sem-project-questionnaire.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -4193,7 +3925,6 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../model/sem-project.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -4226,26 +3957,6 @@ var egrid;
     })(egrid.app || (egrid.app = {}));
     var app = egrid.app;
 })(egrid || (egrid = {}));
-/// <reference path="../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
-/// <reference path="../ts-definitions/DefinitelyTyped/angularLocalStorage/angularLocalStorage.d.ts"/>
-/// <reference path="modules/app.ts"/>
-/// <reference path="collaborator-create.ts"/>
-/// <reference path="collaborator-list.ts"/>
-/// <reference path="participant.ts"/>
-/// <reference path="participant-create.ts"/>
-/// <reference path="participant-grid.ts"/>
-/// <reference path="participant-grid-edit.ts"/>
-/// <reference path="participant-list.ts"/>
-/// <reference path="project.ts"/>
-/// <reference path="project-create.ts"/>
-/// <reference path="project-grid.ts"/>
-/// <reference path="project-list.ts"/>
-/// <reference path="sem-project.ts"/>
-/// <reference path="sem-project-analysis.ts"/>
-/// <reference path="sem-project-create.ts"/>
-/// <reference path="sem-project-questionnaire-edit.ts"/>
-/// <reference path="sem-project-list.ts"/>
-/// <reference path="url.ts"/>
 var egrid;
 (function (egrid) {
     (function (app) {
@@ -4466,7 +4177,6 @@ var egrid;
                     templateUrl: '/partials/about.html'
                 });
 
-                // ほんとは $state.go にしたい
                 $urlRouterProvider.otherwise(egrid.app.Url.projectListUrlBase + '/all/list');
             }]).filter('count', function () {
             return function (input) {
@@ -4478,7 +4188,7 @@ var egrid;
                     prefix: 'locations/',
                     suffix: '.json'
                 }).fallbackLanguage("en").preferredLanguage("ja");
-            }]).controller('CollaboratorCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$stateParams', '$state', '$log', '$scope', '$modal', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$stateParams', '$scope', '$location', '$modal', 'storage', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$stateParams', '$state', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$stateParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$state', '$stateParams', '$log', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$stateParams', '$location', '$scope', '$modal', 'storage', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$state', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', '$state', '$log', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$stateParams', 'storage', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$stateParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$stateParams', '$state', '$log', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$stateParams', egrid.app.SemProjectQuestionnaireEditController]).run([
+            }]).controller('CollaboratorCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$stateParams', '$state', '$log', '$scope', '$modal', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$stateParams', '$scope', '$location', '$modal', 'storage', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$stateParams', '$state', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$stateParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$state', '$stateParams', '$log', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$stateParams', '$state', '$modal', 'storage', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$state', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', '$state', '$log', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$stateParams', 'storage', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$stateParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$stateParams', '$state', '$log', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$stateParams', egrid.app.SemProjectQuestionnaireEditController]).run([
             '$rootScope', '$translate', '$http', function ($rootScope, $translate, $http) {
                 $rootScope.Url = egrid.app.Url;
 

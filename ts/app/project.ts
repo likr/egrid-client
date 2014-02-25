@@ -2,28 +2,22 @@
 
 module egrid.app {
   export class ProjectController implements model.ProjectData {
+    public project: model.Project = new model.Project();
     projectKey : string;
     name : string;
     note : string;
 
-    constructor(private $q, $stateParams, private $location, private $scope, private $modal, storage: angularLocalStorage.IStorageService) {
-      this.projectKey = $stateParams.projectId;
+    constructor(private $q, $stateParams, private $state, private $modal, storage: angularLocalStorage.IStorageService) {
+      var key = $stateParams.projectId;
 
-      this.$q.when(model.Project.get(this.projectKey))
+      this.$q.when(this.project.fetch(key))
         .then((p: model.Project) => {
-          this.name = p.name;
-          this.note = p.note;
+          this.project = p;
         });
     }
 
     public update() {
-      this.$q.when(model.Project.get(this.projectKey))
-        .then((project: model.Project) => {
-          project.name = this.name;
-          project.note = this.note;
-
-          return project.save();
-        })
+      this.$q.when(this.project.publish())
         .then((project: model.Project) => {
           // バインドしてるから要らない気はする
           this.name = project.name;
@@ -48,13 +42,9 @@ module egrid.app {
     }
 
     private remove() {
-      this.$q.when(model.Project.get(this.projectKey))
-        .then((project: model.Project) => {
-          return project.remove();
-        })
+      this.$q.when(this.project.remove())
         .then(() => {
-          this.$location.path(egrid.app.Url.projectListUrl());
-          this.$scope.$apply();
+          this.$state.go('project.all.list');
         });
     }
   }

@@ -1,4 +1,5 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="entity.ts"/>
 
 module egrid.model {
   export interface ProjectData {
@@ -17,29 +18,25 @@ module egrid.model {
   /**
   * @class Project
   */
-  export class Project implements ProjectData {
-    private key_: string;
+  export class Project extends Entity implements ProjectData {
     private createdAt_: Date;
     private updatedAt_: Date;
+
     public name: string;
     public note: string;
 
     constructor(obj? : ProjectData) {
+      super();
+
       if (obj) {
-        // for-in と hasOwnProperty を組み合わせて書き換えるかもしれない
-        // そのとき値の変換を考えよう
         this.name = obj.name;
         this.note = obj.note;
       }
     }
 
-    key() : string {
-      return this.key_;
-    }
-
     remove() : JQueryXHR {
       return $.ajax({
-        url: Project.url(this.key()),
+        url: Project.url(this.getKey()),
         type: 'DELETE',
       });
     }
@@ -53,18 +50,14 @@ module egrid.model {
     }
 
     private url() : string {
-      return Project.url(this.key());
+      return Project.url(this.getKey());
     }
 
-    private static load(obj : ApiProjectData) : Project {
-      var project = new Project(obj);
-      project.key_ = obj.key;
-      project.createdAt_ = new Date(obj.createdAt);
-      project.updatedAt_ = new Date(obj.updatedAt);
-      return project;
+    public static getUri(): string {
+      return Project.url();
     }
 
-    static get(key : string) : JQueryPromise<Project> {
+    public fetch(key: string): JQueryPromise<Project> {
       var $deferred = $.Deferred();
 
       $.ajax({
@@ -72,7 +65,7 @@ module egrid.model {
           type: 'GET',
           dataFilter: data => {
             var obj : ApiProjectData = JSON.parse(data);
-            return Project.load(obj);
+            return new Project().deserialize(obj);
           },
         })
         .then((project : Project) => {
@@ -80,9 +73,11 @@ module egrid.model {
         }, () => {
           var target: Project = JSON
             .parse(window.localStorage.getItem('projects'))
-            .map(Project.import)
+            .map((p: any) => {
+              new Project().deserialize(p);
+            })
             .filter((value: Project) => {
-              return value.key() === key;
+              return value.getKey() === key;
             });
 
           return target ? $deferred.resolve(target[0]) : $deferred.reject();
@@ -91,32 +86,7 @@ module egrid.model {
       return $deferred.promise();
     }
 
-    // TODO: Collection<T> を作って IRetrievable を実装する…かも
-    static query() : JQueryPromise<Project[]> {
-      var $deferred = $.Deferred();
-
-      $.ajax({
-          url: Project.url(),
-          type: 'GET',
-          dataFilter: data => {
-            var objs = JSON.parse(data);
-            return objs.map((obj : ApiProjectData) => {
-              return Project.load(obj);
-            });
-          },
-        })
-        .then((projects: Project[]) => {
-          window.localStorage.setItem('projects', JSON.stringify(projects));
-
-          return $deferred.resolve(projects);
-        }, () => {
-          return $deferred.resolve(JSON.parse(window.localStorage.getItem('projects')).map(Project.import));
-        });
-
-      return $deferred.promise();
-    }
-
-    private static url(key? : string) : string {
+    static url(key? : string) : string {
       if (key) {
         return '/api/projects/' + key;
       } else {
@@ -124,38 +94,39 @@ module egrid.model {
       }
     }
 
-    static import(o: any) : Project {
-      var p: Project = new Project(o);
+    /**
+     * Object から Project に変換します。
+     *
+     * @override
+     * @param   object
+     */
+    public deserialize(o: any): Entity {
+      this.setKey(o.key);
 
-      p.key_ = o.key_;
-      p.createdAt_ = o.createdAt_;
-      p.updatedAt_ = o.updatedAt_;
-
-      return p;
+      return this;
     }
 
     /**
      * POST/PUT リクエストを発行します。
      *
-     * TODO: StorableBase<T> に移動…するかも
+     * @override
      * @throws  Error
      */
-    public publish() : JQueryPromise<Project> {
+    public publish(): JQueryPromise<Project> {
       var $deferred = $.Deferred();
 
       return $.ajax({
-          url: Project.url(this.key()),
-          type: this.key() ? 'PUT' : 'POST',
+          url: Project.url(this.getKey()),
+          type: this.getKey() ? 'PUT' : 'POST',
           contentType: 'application/json',
           data: JSON.stringify({
-            key: this.key(),
+            key: this.getKey(),
             name: this.name,
             note: this.note,
           }),
           dataFilter: data => {
             var obj : ApiProjectData = JSON.parse(data);
-            this.key_ = obj.key;
-            return this;
+            return new Project().deserialize(obj);
           },
         })
         .then((p: Project) => {
@@ -168,61 +139,12 @@ module egrid.model {
     }
 
     /**
-     * localStorage に格納されている各要素に対して publish メソッドを発行します。
+     * クラス情報を取得します。
      *
-     * TODO: Collection<T> に IFlushable を実装…かも
-     * @see Project.publish
+     * @override
      */
-    public static flush() : JQueryPromise<Project[]> {
-      var $deferred = $.Deferred();
-      var unsavedItems: any[];
-
-      unsavedItems = JSON.parse(window.localStorage.getItem('queues')) || [];
-
-      $.when.apply($, unsavedItems
-        .map((o: any) => {
-          var p = Project.import(o);
-
-          return p.publish();
-        }))
-        .then((...projects: Project[]) => {
-          window.localStorage.removeItem('queues');
-
-          return $deferred.resolve(projects);
-        }, () => {
-          return $deferred.reject();
-        });
-
-      return $deferred.promise();
-    }
-
-    /**
-     * localStorage と this を保存するラッパーメソッドです。
-     * flush メソッドを実行します。
-     *
-     * TODO: StorableBase<T> に移動…するかも
-     * @see Project.flush
-     */
-    public save() : JQueryPromise<Project> {
-      var $deferred = $.Deferred();
-      var promises: JQueryPromise<Project[]>;
-
-      var queues = JSON.parse(window.localStorage.getItem('queues')) || [];
-
-      queues.push(this);
-
-      window.localStorage.setItem('queues', JSON.stringify(queues));
-
-      promises = Project.flush();
-
-      promises
-        .then(() => {
-          return $deferred.resolve();
-        }, () => {
-          return $deferred.reject();
-        });
-
-      return $deferred.promise();
+    public static getType(): string {
+      return 'Project';
     }
   }
 }

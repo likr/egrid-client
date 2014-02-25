@@ -1,10 +1,11 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/angularLocalStorage/angularLocalStorage.d.ts"/>
+/// <reference path="../model/collection.ts"/>
 /// <reference path="../model/project.ts"/>
 /// <reference path="pagination.ts"/>
 
 module egrid.app {
   export class ProjectListController extends PaginationController {
-    public projects: model.Project[] = [];
+    public projects: model.Collection<model.Project> = new model.Collection<model.Project>();
 
     constructor(private $q, private $state, private $log) {
       super();
@@ -14,18 +15,17 @@ module egrid.app {
       this.reverse = true;
 
       this.$q
-        .when(model.Project.query())
+        .when(this.projects.retrieve(model.Project))
         .then((projects: model.Project[]) => {
-          this.projects = projects;
+          projects.forEach((p: model.Project) => {
+            this.projects.setItem(p);
+          });
         });
     }
 
     sync() {
-      this.$q.when(model.Project.flush())
-        .then(() => { return model.Project.query(); })
-        .then((projects: model.Project[]) => {
-          this.projects = projects;
-
+      this.$q.when(this.projects.flush(model.Project))
+        .then(() => {
           this.$log.debug('sync completed successfully');
           this.$state.go('projects.all.list');
         });
