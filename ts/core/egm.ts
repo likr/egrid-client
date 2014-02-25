@@ -92,6 +92,102 @@ module egrid {
 
 
     /**
+     * @method graphicize
+     * @param c Function callback
+     * @see EGM.ungraphicize
+     */
+    graphicize(c : Function) : EGM {
+      var nodesSelection;
+      var left = d3.min(this.nodes(), node => {
+        return node.left().x;
+      });
+      var right = d3.max(this.nodes(), node => {
+        return node.right().x;
+      });
+      var top = d3.min(this.nodes(), node => {
+        return node.top().y;
+      });
+      var bottom = d3.max(this.nodes(), node => {
+        return node.bottom().y;
+      });
+      var margin = new Svg.Transform.Translate(EGM.rx, EGM.rx);
+      var defaults = { w: this.displayWidth, h: this.displayHeight };
+
+      this.unselectElement();
+      this.showRemoveLinkButton(false);
+      this.contentsZoomBehavior.scale(1);
+      this.resize((right - left) + EGM.rx * 2, (bottom - top) + EGM.rx * 2);
+      this
+        .contentsSelection
+        .attr("transform", "scale(1) " + margin.toString());
+      this.rootSelection.select('.guide')
+        .style('visibility', 'hidden')
+        ;
+
+      nodesSelection = this.contentsSelection
+        .select(".nodes")
+        .selectAll(".element")
+        ;
+
+      nodesSelection.selectAll("text")
+        .style("font-size", "2em")
+        ;
+
+      nodesSelection.selectAll("rect")
+        .style("fill", "white")
+        .style("stroke", "#323a48")
+        .style("stroke-width", 5)
+        ;
+
+      this.contentsSelection
+        .select(".links")
+        .selectAll(".link")
+        .style("fill", "none")
+        .style("stroke", "#323a48")
+        ;
+
+      c();
+
+      return this.ungraphicize(defaults);
+    }
+
+    /**
+     * @method ungraphicize
+     */
+    private ungraphicize(d: any) : EGM {
+      var nodesSelection;
+
+      this.resize(d.w, d.h);
+
+      nodesSelection = this.contentsSelection
+        .select(".nodes")
+        .selectAll(".element")
+        ;
+
+      nodesSelection.selectAll("text")
+        .style("font-size", null)
+        ;
+
+      nodesSelection.selectAll("rect")
+        .style("fill", null)
+        .style("stroke", null)
+        .style("stroke-width", null)
+        ;
+
+      this.contentsSelection
+        .select(".links")
+        .selectAll(".link")
+        .style("fill", null)
+        .style("stroke", null)
+        ;
+
+      this.drawGuide();
+
+      return this;
+    }
+
+
+    /**
      * @method draw
      */
     draw() : EGM {
@@ -136,7 +232,6 @@ module egrid {
         .text(d => d.text)
         .attr("x", d => EGM.rx - d.baseWidth / 2)
         .attr("y", d => EGM.rx)
-        .style("font-size", "2em")
         ;
       nodesSelection.selectAll("rect")
         .attr("x", d => - d.baseWidth / 2)
@@ -144,9 +239,6 @@ module egrid {
         .attr("rx", d => (d.original || d.isTop || d.isBottom) ? 0 : EGM.rx)
         .attr("width", d => d.baseWidth)
         .attr("height", d => d.baseHeight)
-        .style("fill", "none")
-        .style("stroke", "purple")
-        .style("stroke-width", 5)
         ;
 
       var linksSelection = this.contentsSelection
@@ -171,10 +263,6 @@ module egrid {
             selection.call(this.appendRemoveLinkButton());
           }
         })
-        ;
-      linksSelection
-        .style("fill", "none")
-        .style("stroke", "purple")
         ;
 
       this.grid()
@@ -417,6 +505,7 @@ module egrid {
         selection.attr("viewBox", (new Svg.ViewBox(0, 0, this.displayWidth, this.displayHeight)).toString());
         selection.append("text")
           .classed("measure", true)
+          .style("visibility", "hidden")
           ;
 
         selection.append("rect")
@@ -620,7 +709,7 @@ module egrid {
     /**
      * @method focusCenter
      */
-    focusCenter() : EGM {
+    focusCenter(animate: boolean = true) : EGM {
       var left = d3.min(this.nodes(), node => {
         return node.left().x;
       });
@@ -644,9 +733,16 @@ module egrid {
       var scale = new Svg.Transform.Scale(s);
       this.contentsZoomBehavior.translate([translate.x, translate.y]);
       this.contentsZoomBehavior.scale(scale.sx);
-      this.contentsSelection
-        .transition()
-        .attr("transform", translate.toString() + scale.toString());
+      if (animate) {
+        this
+          .contentsSelection
+          .transition()
+          .attr("transform", translate.toString() + scale.toString());
+      } else {
+        this
+          .contentsSelection
+          .attr("transform", translate.toString() + scale.toString());
+      }
       return this;
     }
 
