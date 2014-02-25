@@ -1438,27 +1438,6 @@ var egrid;
             return function (selection) {
             };
         };
-
-        /**
-        * @return  object  { node: [ { text: string, weight: number } ], link: [ { source, target, weight } ] }
-        */
-        DAG.prototype.export = function () {
-            return {
-                links: this.links().map(function (v, i, a) {
-                    return {
-                        source: v.source,
-                        target: v.target,
-                        weight: v.weight
-                    };
-                }),
-                ndoes: this.nodes().map(function (v, i, a) {
-                    return {
-                        text: v.text,
-                        weight: v.weight
-                    };
-                })
-            };
-        };
         return DAG;
     })();
     egrid.DAG = DAG;
@@ -2879,6 +2858,10 @@ var egrid;
                 var controllerWidth = $("#nodeController").width();
                 d3.select("#nodeController").style("top", nodeRect.top + nodeRect.height + 10 + "px").style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px");
             };
+
+            ParticipantGridEditController.prototype.exportJSON = function ($event) {
+                $($event.currentTarget).attr("href", "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.egm.grid().toJSON())));
+            };
             return ParticipantGridEditController;
         })();
         app.ParticipantGridEditController = ParticipantGridEditController;
@@ -3180,7 +3163,7 @@ var egrid;
             };
 
             ProjectGridController.prototype.exportJSON = function ($event) {
-                $($event.currentTarget).attr("href", "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.egm.export())));
+                $($event.currentTarget).attr("href", "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.egm.grid().toJSON())));
             };
             return ProjectGridController;
         })();
