@@ -403,18 +403,18 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('/partials/project/detail.html',
-    "<form class=\"form-horizontal\" ng-submit=\"project.update()\">\n" +
+    "<form class=\"form-horizontal\" ng-submit=\"ctrl.update()\">\n" +
     "  <div class=\"form-group\">\n" +
     "    <label class=\"control-label col-sm-2\" for=\"name\">{{'PROJECT.ATTRIBUTES.NAME' | translate}}</label>\n" +
     "    <div class=\"col-sm-10\">\n" +
-    "      <input class=\"form-control\" type=\"text\" name=\"name\" placeholder=\"{{'PROJECT.ATTRIBUTES.PLACEHOLDERS.NAME' | translate}}\" ng-model=\"project.name\"/>\n" +
+    "      <input class=\"form-control\" type=\"text\" name=\"name\" placeholder=\"{{'PROJECT.ATTRIBUTES.PLACEHOLDERS.NAME' | translate}}\" ng-model=\"ctrl.project.name\"/>\n" +
     "    </div>\n" +
     "  </div>\n" +
     "\n" +
     "  <div class=\"form-group\">\n" +
     "    <label class=\"control-label col-sm-2\" for=\"note\">{{'PROJECT.ATTRIBUTES.NOTE' | translate}}</label>\n" +
     "    <div class=\"col-sm-10\">\n" +
-    "      <textarea class=\"form-control\" name=\"note\" rows=\"3\" placeholder=\"{{'PROJECT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate}}\" ng-model=\"project.note\"></textarea>\n" +
+    "      <textarea class=\"form-control\" name=\"note\" rows=\"3\" placeholder=\"{{'PROJECT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate}}\" ng-model=\"ctrl.project.note\"></textarea>\n" +
     "    </div>\n" +
     "  </div>\n" +
     "\n" +
@@ -424,7 +424,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "    </div>\n" +
     "  </div>\n" +
     "</form>\n" +
-    "<form class=\"form-horizontal\" ng-submit=\"project.confirm()\">\n" +
+    "<form class=\"form-horizontal\" ng-submit=\"ctrl.confirm()\">\n" +
     "  <div class=\"form-group\">\n" +
     "    <div class=\"col-sm-offset-11 col-sm-1\">\n" +
     "      <input type=\"submit\" class=\"btn btn-danger\" value=\"{{'ACTION.REMOVE' | translate}}\"/>\n" +
@@ -624,11 +624,11 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('/partials/project/project.html',
     "<div class=\"tab-pane active\">\n" +
-    "  <h2>{{project.name}}</h2>\n" +
+    "  <h2>{{ctrl.project.name}}</h2>\n" +
     "\n" +
     "  <ol class=\"breadcrumb\">\n" +
     "    <li><a href ui-sref=\"projects.all.list\">{{'PROJECT.PROJECTS' | translate}}</a></li>\n" +
-    "    <li class=\"active\">{{project.name}}</li>\n" +
+    "    <li class=\"active\">{{ctrl.project.name}}</li>\n" +
     "  </ol>\n" +
     "\n" +
     "  <ul class=\"nav nav-tabs\">\n" +

@@ -108,9 +108,19 @@ var egrid;
                 });
             };
 
+            Project.prototype.setCreatedAt = function (date) {
+                if (!this.createdAt_)
+                    this.createdAt_ = new egrid.model.ValueObject(date);
+            };
+
+            Project.prototype.setUpdatedAt = function (date) {
+                if (!this.updatedAt_)
+                    this.updatedAt_ = new egrid.model.ValueObject(date);
+            };
+
             Object.defineProperty(Project.prototype, "createdAt", {
                 get: function () {
-                    return this.createdAt_;
+                    return this.createdAt_.vomit();
                 },
                 enumerable: true,
                 configurable: true
@@ -118,7 +128,7 @@ var egrid;
 
             Object.defineProperty(Project.prototype, "updatedAt", {
                 get: function () {
-                    return this.updatedAt_;
+                    return this.updatedAt_.vomit();
                 },
                 enumerable: true,
                 configurable: true
@@ -133,6 +143,7 @@ var egrid;
             };
 
             Project.prototype.fetch = function (key) {
+                var _this = this;
                 var $deferred = $.Deferred();
 
                 $.ajax({
@@ -140,13 +151,14 @@ var egrid;
                     type: 'GET',
                     dataFilter: function (data) {
                         var obj = JSON.parse(data);
-                        return new Project().deserialize(obj);
+
+                        return _this.deserialize(obj);
                     }
                 }).then(function (project) {
                     return $deferred.resolve(project);
                 }, function () {
-                    var target = JSON.parse(window.localStorage.getItem('projects')).map(function (p) {
-                        new Project().deserialize(p);
+                    var target = JSON.parse(window.localStorage.getItem('projects')).map(function (o) {
+                        return _this.deserialize(o);
                     }).filter(function (value) {
                         return value.getKey() === key;
                     });
@@ -167,6 +179,12 @@ var egrid;
 
             Project.prototype.deserialize = function (o) {
                 this.setKey(o.key);
+
+                this.name = o.name;
+                this.note = o.note;
+
+                this.setCreatedAt(o.createdAt);
+                this.setUpdatedAt(o.updatedAt);
 
                 return this;
             };
@@ -3033,8 +3051,8 @@ var egrid;
             ProjectController.prototype.update = function () {
                 var _this = this;
                 this.$q.when(this.project.publish()).then(function (project) {
-                    _this.name = project.name;
-                    _this.note = project.note;
+                    _this.project.name = project.name;
+                    _this.project.note = project.note;
                 });
             };
 
@@ -4002,7 +4020,7 @@ var egrid;
                     url: egrid.app.Url.projectUrlBase,
                     views: {
                         '@': {
-                            controller: 'ProjectController as project',
+                            controller: 'ProjectController as ctrl',
                             templateUrl: '/partials/project/project.html'
                         }
                     }

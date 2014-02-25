@@ -1,11 +1,8 @@
 /// <reference path="../model/project.ts"/>
 
 module egrid.app {
-  export class ProjectController implements model.ProjectData {
+  export class ProjectController {
     public project: model.Project = new model.Project();
-    projectKey : string;
-    name : string;
-    note : string;
 
     constructor(private $q, $stateParams, private $state, private $modal, storage: angularLocalStorage.IStorageService) {
       var key = $stateParams.projectId;
@@ -20,8 +17,8 @@ module egrid.app {
       this.$q.when(this.project.publish())
         .then((project: model.Project) => {
           // バインドしてるから要らない気はする
-          this.name = project.name;
-          this.note = project.note;
+          this.project.name = project.name;
+          this.project.note = project.note;
         });
     }
 

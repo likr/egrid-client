@@ -1,5 +1,6 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
 /// <reference path="entity.ts"/>
+/// <reference path="value-object.ts"/>
 
 module egrid.model {
   export interface ProjectData {
@@ -19,8 +20,8 @@ module egrid.model {
   * @class Project
   */
   export class Project extends Entity implements ProjectData {
-    private createdAt_: Date;
-    private updatedAt_: Date;
+    private createdAt_: ValueObject<Date>;
+    private updatedAt_: ValueObject<Date>;
 
     public name: string;
     public note: string;
@@ -41,12 +42,22 @@ module egrid.model {
       });
     }
 
+    private setCreatedAt(date: Date) : void {
+      if (!this.createdAt_)
+        this.createdAt_ = new ValueObject<Date>(date);
+    }
+
+    private setUpdatedAt(date: Date) : void {
+      if (!this.updatedAt_)
+        this.updatedAt_ = new ValueObject<Date>(date);
+    }
+
     public get createdAt() : Date {
-      return this.createdAt_;
+      return this.createdAt_.vomit();
     }
 
     public get updatedAt() : Date {
-      return this.updatedAt_;
+      return this.updatedAt_.vomit();
     }
 
     private url() : string {
@@ -65,7 +76,8 @@ module egrid.model {
           type: 'GET',
           dataFilter: data => {
             var obj : ApiProjectData = JSON.parse(data);
-            return new Project().deserialize(obj);
+
+            return this.deserialize(obj);
           },
         })
         .then((project : Project) => {
@@ -73,8 +85,8 @@ module egrid.model {
         }, () => {
           var target: Project = JSON
             .parse(window.localStorage.getItem('projects'))
-            .map((p: any) => {
-              new Project().deserialize(p);
+            .map((o: any) => {
+              return this.deserialize(o);
             })
             .filter((value: Project) => {
               return value.getKey() === key;
@@ -102,6 +114,12 @@ module egrid.model {
      */
     public deserialize(o: any): Entity {
       this.setKey(o.key);
+
+      this.name = o.name;
+      this.note = o.note;
+
+      this.setCreatedAt(o.createdAt);
+      this.setUpdatedAt(o.updatedAt);
 
       return this;
     }

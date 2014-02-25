@@ -67,7 +67,7 @@ module egrid.app {
           url: Url.projectUrlBase,
           views: {
             '@': {
-              controller: 'ProjectController as project',
+              controller: 'ProjectController as ctrl',
               templateUrl: '/partials/project/project.html',
             },
           },
