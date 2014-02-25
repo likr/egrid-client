@@ -64,7 +64,7 @@ module egrid.model {
       return Project.url(this.getKey());
     }
 
-    public static getUri(): string {
+    public getUri(): string {
       return Project.url();
     }
 
@@ -161,7 +161,7 @@ module egrid.model {
      *
      * @override
      */
-    public static getType(): string {
+    public getType(): string {
       return 'Project';
     }
   }

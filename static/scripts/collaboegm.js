@@ -73,7 +73,11 @@ var egrid;
                 throw new Error('NotImplementedException');
             };
 
-            Entity.getType = function () {
+            Entity.prototype.getType = function () {
+                throw new Error('NotImplementedException');
+            };
+
+            Entity.prototype.getUri = function () {
                 throw new Error('NotImplementedException');
             };
             return Entity;
@@ -138,7 +142,7 @@ var egrid;
                 return Project.url(this.getKey());
             };
 
-            Project.getUri = function () {
+            Project.prototype.getUri = function () {
                 return Project.url();
             };
 
@@ -214,7 +218,7 @@ var egrid;
                 return $deferred.promise();
             };
 
-            Project.getType = function () {
+            Project.prototype.getType = function () {
                 return 'Project';
             };
             return Project;
@@ -3273,14 +3277,15 @@ var egrid;
             }
             Collection.prototype.retrieve = function (type) {
                 var $deferred = $.Deferred();
+                var entity = new type();
 
                 $.ajax({
-                    url: '/api/projects',
+                    url: entity.getUri(),
                     type: 'GET'
                 }).then(function (result) {
                     var items = JSON.parse(result);
 
-                    window.localStorage.setItem('projects', JSON.stringify(items));
+                    window.localStorage.setItem(entity.getType(), JSON.stringify(items));
 
                     return $deferred.resolve(items.map(function (item) {
                         var i = new type();

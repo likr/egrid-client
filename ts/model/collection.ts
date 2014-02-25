@@ -11,20 +11,21 @@ module egrid.model {
     /**
      * GET メソッドを発行し this.collection を満たします。
      *
-     * @param Y Entity 戻り値
-     * @param yj Y モデル (TypeScript の制限より)
+     * @param   Y     Entity  戻り値
+     * @param   type  Y       モデルのコンストラクタ (TypeScript の制限より)
      */
     public retrieve(type: new() => T): JQueryPromise<T[]> {
       var $deferred = $.Deferred();
+      var entity = new type(); // 申し訳ない
 
       $.ajax({
-          url: '/api/projects',
+          url: entity.getUri(),
           type: 'GET',
         })
         .then((result: string) => {
           var items: any[] = JSON.parse(result);
 
-          window.localStorage.setItem('projects', JSON.stringify(items));
+          window.localStorage.setItem(entity.getType(), JSON.stringify(items));
 
           return $deferred.resolve(items.map((item: any) => {
               var i = new type();
