@@ -194,6 +194,7 @@ var egrid;
             };
 
             Project.prototype.publish = function () {
+                var _this = this;
                 var $deferred = $.Deferred();
 
                 return $.ajax({
@@ -207,11 +208,16 @@ var egrid;
                     }),
                     dataFilter: function (data) {
                         var obj = JSON.parse(data);
+
                         return new Project().deserialize(obj);
                     }
                 }).then(function (p) {
                     return $deferred.resolve(p);
                 }, function () {
+                    var q = 'unsavedItems.' + egrid.model.Collection.pluralize(_this.getType());
+
+                    window.localStorage.setItem(q, JSON.stringify(_this));
+
                     return $deferred.reject();
                 });
 
@@ -3040,7 +3046,7 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var ProjectController = (function () {
-            function ProjectController($q, $stateParams, $state, $modal, storage) {
+            function ProjectController($q, $stateParams, $state, $modal) {
                 var _this = this;
                 this.$q = $q;
                 this.$state = $state;
@@ -3050,6 +3056,8 @@ var egrid;
 
                 this.$q.when(this.project.fetch(key)).then(function (p) {
                     _this.project = p;
+                }, function () {
+                    _this.$state.go('projects.all.list');
                 });
             }
             ProjectController.prototype.update = function () {
@@ -3285,7 +3293,7 @@ var egrid;
                 }).then(function (result) {
                     var items = JSON.parse(result);
 
-                    window.localStorage.setItem(Collection.pluralize(entity.getType()), JSON.stringify(items));
+                    window.localStorage.setItem(Collection.pluralize(entity.getType()), result);
 
                     return $deferred.resolve(items.map(function (item) {
                         var i = new type();
@@ -3321,7 +3329,7 @@ var egrid;
                     for (var _i = 0; _i < (arguments.length - 0); _i++) {
                         items[_i] = arguments[_i + 0];
                     }
-                    window.localStorage.removeItem('queues.' + Collection.pluralize(entity.getType()));
+                    window.localStorage.removeItem('unsavedItems.' + Collection.pluralize(entity.getType()));
 
                     return $deferred.resolve(items);
                 }, function () {

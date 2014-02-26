@@ -25,7 +25,7 @@ module egrid.model {
         .then((result: string) => {
           var items: any[] = JSON.parse(result);
 
-          window.localStorage.setItem(Collection.pluralize(entity.getType()), JSON.stringify(items));
+          window.localStorage.setItem(Collection.pluralize(entity.getType()), result);
 
           return $deferred.resolve(items.map((item: any) => {
               var i = new type();
@@ -60,7 +60,7 @@ module egrid.model {
           return item.deserialize(o).publish();
         }))
         .then((...items: T[]) => {
-          window.localStorage.removeItem('queues.' + Collection.pluralize(entity.getType()));
+          window.localStorage.removeItem('unsavedItems.' + Collection.pluralize(entity.getType()));
 
           return $deferred.resolve(items);
         }, () => {
@@ -82,7 +82,7 @@ module egrid.model {
       return this.collection;
     }
 
-    private static pluralize(word: string): string {
+    public static pluralize(word: string): string {
       return word + 's';
     }
   }

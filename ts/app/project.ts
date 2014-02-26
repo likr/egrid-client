@@ -4,12 +4,14 @@ module egrid.app {
   export class ProjectController {
     public project: model.Project = new model.Project();
 
-    constructor(private $q, $stateParams, private $state, private $modal, storage: angularLocalStorage.IStorageService) {
+    constructor(private $q, $stateParams, private $state, private $modal) {
       var key = $stateParams.projectId;
 
       this.$q.when(this.project.fetch(key))
         .then((p: model.Project) => {
           this.project = p;
+        }, () => {
+          this.$state.go('projects.all.list');
         });
     }
 

@@ -1,4 +1,3 @@
-/// <reference path="../ts-definitions/DefinitelyTyped/angularLocalStorage/angularLocalStorage.d.ts"/>
 /// <reference path="../model/collection.ts"/>
 /// <reference path="../model/project.ts"/>
 /// <reference path="pagination.ts"/>

@@ -144,12 +144,17 @@ module egrid.model {
           }),
           dataFilter: data => {
             var obj : ApiProjectData = JSON.parse(data);
+
             return new Project().deserialize(obj);
           },
         })
         .then((p: Project) => {
           return $deferred.resolve(p);
         }, () => {
+          var q = 'unsavedItems.' + Collection.pluralize(this.getType());
+
+          window.localStorage.setItem(q, JSON.stringify(this));
+
           return $deferred.reject();
         });
 
