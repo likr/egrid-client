@@ -9,8 +9,11 @@ from api.models import User
 class ProjectHandler(webapp2.RequestHandler):
     def get(self, project_id=None):
         current_user = User.current_user()
-        if project_id and current_user.is_collaborator_on(Project.get(project_id)):
+        if project_id:
             project = Project.get(project_id)
+            if not current_user.is_collaborator_on(Project.get(project_id)):
+                self.error(403)
+
             self.response.write(json.dumps(project.to_dict()))
         else:
             collaborators = Collaborator.all()\
