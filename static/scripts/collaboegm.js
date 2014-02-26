@@ -3285,7 +3285,7 @@ var egrid;
                 }).then(function (result) {
                     var items = JSON.parse(result);
 
-                    window.localStorage.setItem(entity.getType(), JSON.stringify(items));
+                    window.localStorage.setItem(Collection.pluralize(entity.getType()), JSON.stringify(items));
 
                     return $deferred.resolve(items.map(function (item) {
                         var i = new type();
@@ -3297,7 +3297,7 @@ var egrid;
                     for (var _i = 0; _i < (arguments.length - 0); _i++) {
                         reasons[_i] = arguments[_i + 0];
                     }
-                    return $deferred.resolve(JSON.parse(window.localStorage.getItem('projects')).map(function (o) {
+                    return $deferred.resolve(JSON.parse(window.localStorage.getItem(Collection.pluralize(entity.getType()))).map(function (o) {
                         var i = new type();
 
                         return i.deserialize(o);
@@ -3310,6 +3310,7 @@ var egrid;
             Collection.prototype.flush = function (type) {
                 var $deferred = $.Deferred();
                 var unsavedItems;
+                var entity = new type();
 
                 $.when.apply($, unsavedItems.map(function (o) {
                     var item = new type();
@@ -3320,7 +3321,7 @@ var egrid;
                     for (var _i = 0; _i < (arguments.length - 0); _i++) {
                         items[_i] = arguments[_i + 0];
                     }
-                    window.localStorage.removeItem('queues');
+                    window.localStorage.removeItem('queues.' + Collection.pluralize(entity.getType()));
 
                     return $deferred.resolve(items);
                 }, function () {
@@ -3340,6 +3341,10 @@ var egrid;
 
             Collection.prototype.toArray = function () {
                 return this.collection;
+            };
+
+            Collection.pluralize = function (word) {
+                return word + 's';
             };
             return Collection;
         })();

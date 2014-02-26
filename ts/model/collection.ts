@@ -25,7 +25,7 @@ module egrid.model {
         .then((result: string) => {
           var items: any[] = JSON.parse(result);
 
-          window.localStorage.setItem(entity.getType(), JSON.stringify(items));
+          window.localStorage.setItem(Collection.pluralize(entity.getType()), JSON.stringify(items));
 
           return $deferred.resolve(items.map((item: any) => {
               var i = new type();
@@ -34,7 +34,7 @@ module egrid.model {
             }));
         }, (...reasons: any[]) => {
           return $deferred
-            .resolve(JSON.parse(window.localStorage.getItem('projects'))
+            .resolve(JSON.parse(window.localStorage.getItem(Collection.pluralize(entity.getType())))
               .map((o: any) => {
                 var i = new type();
 
@@ -51,6 +51,7 @@ module egrid.model {
     public flush(type: new() => T): JQueryPromise<T[]> {
       var $deferred = $.Deferred();
       var unsavedItems: any[];
+      var entity = new type();
 
       $.when.apply($, unsavedItems
         .map((o: any) => {
@@ -59,7 +60,7 @@ module egrid.model {
           return item.deserialize(o).publish();
         }))
         .then((...items: T[]) => {
-          window.localStorage.removeItem('queues');
+          window.localStorage.removeItem('queues.' + Collection.pluralize(entity.getType()));
 
           return $deferred.resolve(items);
         }, () => {
@@ -69,7 +70,7 @@ module egrid.model {
       return $deferred.promise();
     }
 
-    public getItem(n: number): T {
+    public getItem(n: string): T {
       return this.collection[n];
     }
 
@@ -79,6 +80,10 @@ module egrid.model {
 
     public toArray(): T[] {
       return this.collection;
+    }
+
+    private static pluralize(word: string): string {
+      return word + 's';
     }
   }
 }
