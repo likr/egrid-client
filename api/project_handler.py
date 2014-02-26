@@ -8,11 +8,11 @@ from api.models import User
 
 class ProjectHandler(webapp2.RequestHandler):
     def get(self, project_id=None):
-        if project_id:
+        current_user = User.current_user()
+        if project_id and current_user.is_collaborator_on(Project.get(project_id)):
             project = Project.get(project_id)
             self.response.write(json.dumps(project.to_dict()))
         else:
-            current_user = User.current_user()
             collaborators = Collaborator.all()\
                 .filter('user =', current_user)
             projects = [c.project for c in collaborators if c.project.deleted_at is None]
