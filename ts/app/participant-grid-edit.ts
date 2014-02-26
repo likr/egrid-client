@@ -15,6 +15,7 @@ module egrid.app {
     disableCompletion : boolean = false;
 
     constructor($q, $stateParams, $location, private $modal, private $scope) {
+      var __this = this;
       this.projectKey = $stateParams.projectId;
       this.participantKey = $stateParams.participantId;
       if ($stateParams.disableCompletion) {
@@ -34,7 +35,7 @@ module egrid.app {
           width: $(window).width(),
           height: calcHeight(),
         })
-        .call(this.egm.display($(window).width(), calcHeight()))
+        .call(this.egm.display($(window).width(), calcHeight() - 50))
         ;
       d3.select(window)
         .on('resize', () => {
@@ -81,6 +82,21 @@ module egrid.app {
                 })
                 ;
             }));
+
+      d3.select("#exportSVG")
+        .on("click", function() {
+          __this.hideNodeController();
+          __this.egm.graphicize(() => {
+            d3.select(this).attr("href", "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(
+              d3.select("#display")
+                .attr("version", "1.1")
+                .attr("xmlns", "http://www.w3.org/2000/svg")
+                .attr("xmlns:xmlns:xlink", "http://www.w3.org/1999/xlink")
+                .node()
+                .outerHTML
+                ))));
+            });
+        });
 
       d3.select("#ladderUpButton")
         .call(egmui.radderUpButton()
@@ -209,6 +225,12 @@ module egrid.app {
         .style("top", nodeRect.top + nodeRect.height + 10 + "px")
         .style("left", nodeRect.left + (nodeRect.width - controllerWidth) / 2 + "px")
         ;
+    }
+
+    public exportJSON($event) {
+      $($event.currentTarget).attr("href", "data:application/json;charset=utf-8," + encodeURIComponent(
+        JSON.stringify(this.egm.grid().toJSON())
+      ));
     }
   }
 }

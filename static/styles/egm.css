@@ -45,18 +45,18 @@ text.measure {
 
 
 .element rect {
-  fill: lightpink;
+  fill: white;
 }
 
 
 .element rect {
-  stroke: purple;
+  stroke: #323a48;
   stroke-width: 5;
 }
 
 
 .link {
-  stroke: purple;
+  stroke: #323a48;
 }
 
 
