@@ -14,7 +14,7 @@ module egrid.app {
     overallNodes : model.ProjectGridNodeData[];
     disableCompletion : boolean = false;
 
-    constructor($q, $stateParams, $location, private $modal, private $scope) {
+    constructor($q, $stateParams, $state, private $modal, private $scope) {
       this.projectKey = $stateParams.projectId;
       this.participantKey = $stateParams.participantId;
       if ($stateParams.disableCompletion) {
@@ -49,6 +49,14 @@ module egrid.app {
           this.egm.resize(width, height);
         })
         ;
+
+      $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){
+        if (!d3.select("#undoButton").classed("disabled")) {
+          if (!confirm('保存せずにページを移動しようとしています')) {
+            event.preventDefault();
+          }
+        }
+      });
 
       d3.select("#appendNodeButton")
         .call(egmui.appendNodeButton()
