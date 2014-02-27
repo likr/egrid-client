@@ -16,14 +16,19 @@ module egrid.app {
       $q
         .when(this.projects.query(model.Project))
         .then((projects: model.Project[]) => {
-          if (this.projects.isDirty(model.Project)) {
-            // TODO: fulfilled, rejected を設定する
-            this.projects.flush(model.Project);
-          }
-
-          projects.forEach((p: model.Project) => {
-              this.projects.addItem(p);
+          projects.forEach((v) => {
+              this.projects.addItem(v);
             });
+
+          if (this.projects.isDirty(model.Project))
+            // どうすればいいかわからない
+            this.projects
+              .flush(model.Project)
+              .then((ps) => {
+                  ps.forEach((p) => {
+                      this.projects.addItem(p);
+                    });
+                });
         });
     }
   }

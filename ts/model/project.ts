@@ -90,16 +90,13 @@ module egrid.model {
         .then((project : Project) => {
           return $deferred.resolve(project);
         }, () => {
-          var target: Project = JSON
-            .parse(window.localStorage.getItem(Collection.pluralize(this.getType())))
-            .map((o: any) => {
-              return this.load(o);
-            })
-            .filter((value: Project) => {
-              return value.key === key;
-            });
+          var k = Collection.pluralize(this.getType());
+          var objects = window.localStorage.getItem(k) || [];
+          var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
 
-          return target ? $deferred.resolve(target[0]) : $deferred.reject();
+          var target = $.extend(JSON.parse(objects), JSON.parse(unsaved));
+
+          return target[key] ? $deferred.resolve(this.load(target[key])) : $deferred.reject();
         });
 
       return $deferred.promise();
@@ -111,6 +108,7 @@ module egrid.model {
      * @override
      */
     public getType(): string {
+      // url() もそうだけどフィールドにしたほうがいいかな
       return 'Project';
     }
 

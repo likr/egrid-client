@@ -163,13 +163,13 @@ var egrid;
                 }).then(function (project) {
                     return $deferred.resolve(project);
                 }, function () {
-                    var target = JSON.parse(window.localStorage.getItem(egrid.model.Collection.pluralize(_this.getType()))).map(function (o) {
-                        return _this.load(o);
-                    }).filter(function (value) {
-                        return value.key === key;
-                    });
+                    var k = egrid.model.Collection.pluralize(_this.getType());
+                    var objects = window.localStorage.getItem(k) || [];
+                    var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
 
-                    return target ? $deferred.resolve(target[0]) : $deferred.reject();
+                    var target = $.extend(JSON.parse(objects), JSON.parse(unsaved));
+
+                    return target[key] ? $deferred.resolve(_this.load(target[key])) : $deferred.reject();
                 });
 
                 return $deferred.promise();
@@ -3291,30 +3291,55 @@ var egrid;
             function Dictionary() {
                 this.pairs = {};
             }
-            Dictionary.prototype.addItem = function (k, v) {
-                this.pairs[k] = v;
-            };
-
             Dictionary.prototype.getItem = function (k) {
                 return this.pairs[k];
             };
 
+            Dictionary.prototype.setItem = function (k, v) {
+                this.pairs[k] = v;
+            };
+
             Dictionary.prototype.toArray = function () {
                 var _this = this;
-                return Object.keys(this.pairs).map(function (v, i, ar) {
+                var test = Object.keys(this.pairs).map(function (v, i, ar) {
                     return _this.pairs[v];
                 });
+                return test;
+            };
+
+            Dictionary.prototype.toJSON = function () {
+                var _this = this;
+                var replacement = {};
+
+                Object.keys(this.pairs).forEach(function (k) {
+                    replacement[k] = _this.pairs[k];
+                });
+
+                return replacement;
             };
             return Dictionary;
         })();
         model.Dictionary = Dictionary;
+
+        var NotationDeserializer = (function () {
+            function NotationDeserializer() {
+            }
+            NotationDeserializer.load = function (o) {
+                var b = JSON.parse(o);
+                return Object.keys(b).map(function (v, i, ar) {
+                    return b[v];
+                });
+            };
+            return NotationDeserializer;
+        })();
+        model.NotationDeserializer = NotationDeserializer;
 
         var Collection = (function () {
             function Collection() {
                 this.pairs = new Dictionary();
             }
             Collection.prototype.addItem = function (item) {
-                this.pairs.addItem(item.key, item);
+                this.pairs.setItem(item.key, item);
             };
 
             Collection.prototype.getItem = function (n) {
@@ -3322,46 +3347,53 @@ var egrid;
             };
 
             Collection.prototype.query = function (type) {
+                var _this = this;
                 var $deferred = $.Deferred();
                 var entity = new type();
+                var k = Collection.pluralize(entity.getType());
+                var mapper = function (o) {
+                    var item = new type().load(o);
+
+                    _this.pairs.setItem(item.key, item);
+
+                    return item;
+                };
 
                 $.ajax({
                     url: entity.url(),
                     type: 'GET'
                 }).then(function (result) {
-                    var objects = JSON.parse(result);
+                    var objects = JSON.parse(result) || [];
 
-                    window.localStorage.setItem(Collection.pluralize(entity.getType()), result);
+                    objects.map(mapper);
 
-                    return $deferred.resolve(objects.map(function (o) {
-                        var i = new type();
+                    window.localStorage.setItem(k, JSON.stringify(_this.pairs));
 
-                        return i.load(o);
-                    }));
+                    return $deferred.resolve(_this.pairs.toArray());
                 }, function () {
                     var reasons = [];
                     for (var _i = 0; _i < (arguments.length - 0); _i++) {
                         reasons[_i] = arguments[_i + 0];
                     }
-                    var objects = JSON.parse(window.localStorage.getItem(Collection.pluralize(entity.getType()))) || [];
+                    var objects = window.localStorage.getItem(k) || [];
+                    var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
 
-                    return $deferred.resolve(objects.map(function (o) {
-                        var i = new type();
+                    $.extend(NotationDeserializer.load(objects), NotationDeserializer.load(unsaved)).map(mapper);
 
-                        return i.load(o);
-                    }));
+                    return $deferred.resolve(_this.pairs.toArray());
                 });
 
                 return $deferred.promise();
             };
 
             Collection.prototype.flush = function (type) {
+                var _this = this;
                 var $deferred = $.Deferred();
                 var entity = new type();
                 var k = 'unsavedItems.' + Collection.pluralize(entity.getType());
                 var unsavedItems = JSON.parse(window.localStorage.getItem(k)) || {};
 
-                $.when.apply($, Object.keys(unsavedItems).map(function (value, index, ar) {
+                $.when(Object.keys(unsavedItems).map(function (value, index, ar) {
                     var item = new type();
 
                     return item.load(unsavedItems[value]).save();
@@ -3370,9 +3402,7 @@ var egrid;
                     for (var _i = 0; _i < (arguments.length - 0); _i++) {
                         items[_i] = arguments[_i + 0];
                     }
-                    window.localStorage.removeItem(k);
-
-                    return $deferred.resolve(items);
+                    return $deferred.resolve(_this.toArray());
                 }, function () {
                     return $deferred.reject();
                 });
@@ -3416,13 +3446,16 @@ var egrid;
                 this.reverse = true;
 
                 $q.when(this.projects.query(egrid.model.Project)).then(function (projects) {
-                    if (_this.projects.isDirty(egrid.model.Project)) {
-                        _this.projects.flush(egrid.model.Project);
-                    }
-
-                    projects.forEach(function (p) {
-                        _this.projects.addItem(p);
+                    projects.forEach(function (v) {
+                        _this.projects.addItem(v);
                     });
+
+                    if (_this.projects.isDirty(egrid.model.Project))
+                        _this.projects.flush(egrid.model.Project).then(function (ps) {
+                            ps.forEach(function (p) {
+                                _this.projects.addItem(p);
+                            });
+                        });
                 });
             }
             return ProjectListController;
