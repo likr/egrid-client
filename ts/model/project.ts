@@ -1,4 +1,5 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="collection-base.ts"/>
 /// <reference path="entity.ts"/>
 /// <reference path="value-object.ts"/>
 
@@ -26,6 +27,8 @@ module egrid.model {
     public name: string;
     public note: string;
 
+    public static type: string = 'Project';
+
     constructor(obj? : ProjectData) {
       super();
 
@@ -36,11 +39,11 @@ module egrid.model {
     }
 
     public get createdAt() : Date {
-      return this.createdAt_.vomit();
+      return this.createdAt_.value;
     }
 
     public get updatedAt() : Date {
-      return this.updatedAt_.vomit();
+      return this.updatedAt_.value;
     }
 
     // Accessors は同じ Accessibility を持っていなければいけないのでメソッドを用意する
@@ -60,7 +63,7 @@ module egrid.model {
      * @override
      * @param   object
      */
-    public load(o: any): Entity {
+    public load(o: any): Project {
       this.key = o.key;
 
       this.name = o.name;
@@ -90,7 +93,7 @@ module egrid.model {
         .then((project : Project) => {
           return $deferred.resolve(project);
         }, () => {
-          var k = Collection.pluralize(this.getType());
+          var k = CollectionBase.pluralize(Project.type);
           var objects = window.localStorage.getItem(k) || [];
           var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
 
@@ -103,16 +106,6 @@ module egrid.model {
     }
 
     /**
-     * クラス情報を取得します。
-     *
-     * @override
-     */
-    public getType(): string {
-      // url() もそうだけどフィールドにしたほうがいいかな
-      return 'Project';
-    }
-
-    /**
      * POST/PUT リクエストを発行します。
      *
      * @override
@@ -122,7 +115,7 @@ module egrid.model {
       var $deferred = $.Deferred();
 
       return $.ajax({
-          url: this.url(),
+          url: this.url(this.key),
           type: this.key ? 'PUT' : 'POST',
           contentType: 'application/json',
           data: JSON.stringify({
@@ -140,7 +133,7 @@ module egrid.model {
             return $deferred.resolve(p);
           }, (...reasons) => {
             var o = {};
-            var key = 'unsavedItems.' + Collection.pluralize(this.getType());
+            var key = 'unsavedItems.' + CollectionBase.pluralize(Project.type);
             var unsavedItems: any[];
 
             o[this.key] = this;
@@ -158,21 +151,20 @@ module egrid.model {
     /**
      * @override
      */
-    public url(key? : string) : string {
-      var destination = '/api/projects';
+    public static listUrl() : string {
+      return '/api/projects';
+    }
 
-      if (this.key) {
-        return destination + '/' + this.key;
-      } else if (key) {
-        return destination + '/' + key;
-      } else {
-        return destination;
-      }
+    /**
+     * @override
+     */
+    public url(key? : string) : string {
+      return Project.listUrl() + '/' + key;
     }
 
     public remove() : JQueryXHR {
       return $.ajax({
-        url: this.url(),
+        url: this.url(this.key),
         type: 'DELETE',
       });
     }

@@ -1,4 +1,6 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="collection-base.ts"/>
+/// <reference path="value-object.ts"/>
 /// <reference path="project.ts"/>
 
 module egrid.model {
@@ -17,205 +19,162 @@ module egrid.model {
   }
 
 
-  export class Participant implements ParticipantData {
-    private key_ : string;
-    private createdAt_: Date;
-    private updatedAt_: Date;
+  export class Participant extends Entity {
+    private createdAt_: ValueObject<Date>;
+    private updatedAt_: ValueObject<Date>;
+    private projectKey_: ValueObject<string>;
+
     public name : string;
     public note : string;
     public project : ProjectData;
     public projectKey : string;
 
-    constructor(obj : ParticipantData) {
-      this.name = obj.name;
-      this.note = obj.note;
-      this.project = obj.project;
-      this.projectKey = obj.projectKey;
-    }
+    public static type: string = 'Participant';
+    public static url: string = '/api/projects/:projectId/participants/:participantId';
 
-    key() : string {
-      return this.key_;
-    }
+    constructor(obj? : ParticipantData) {
+      super();
 
-    remove() : JQueryXHR {
-      return $.ajax({
-        url: Participant.url(this.projectKey, this.key()),
-        type: 'DELETE',
-      });
-    }
-
-    public get createdAt() : Date {
-      return this.createdAt_;
-    }
-
-    public get updatedAt() : Date {
-      return this.updatedAt_;
-    }
-
-    static get(projectKey : string, participantKey : string) : JQueryPromise<Participant> {
-      var $deferred = $.Deferred();
-
-      $.ajax({
-          url: Participant.url(projectKey, participantKey),
-          type: 'GET',
-          dataFilter: data => {
-            var obj = JSON.parse(data);
-            return Participant.load(obj);
-          },
-        })
-        .then((participant: Participant) => {
-          return $deferred.resolve(participant);
-        }, () => {
-          var target: Participant = JSON
-            .parse(window.localStorage.getItem('participants'))
-            .map(Participant.import)
-            .filter((value: Participant) => {
-              return value.key() === participantKey;
-            });
-
-          return target ? $deferred.resolve(target[0]) : $deferred.reject();
-        });
-
-      return $deferred.promise();
-    }
-
-    static query(projectKey : string) : JQueryPromise<Participant[]> {
-      var $deferred = $.Deferred();
-
-      $.ajax({
-          url: Participant.url(projectKey),
-          type: 'GET',
-          dataFilter: data => {
-            var objs = JSON.parse(data);
-            return objs.map((obj : ApiParticipantData) => {
-              return Participant.load(obj);
-            });
-          },
-        })
-        .then((participants: Participant[]) => {
-          window.localStorage.setItem('participants', JSON.stringify(participants));
-
-          return $deferred.resolve(participants);
-        }, () => {
-          return $deferred.resolve(JSON.parse(window.localStorage.getItem('participants')).map(Participant.import));
-        });
-
-      return $deferred.promise();
-    }
-
-    private static load(obj : ApiParticipantData) : Participant {
-      var participant = new Participant(obj);
-      participant.key_ = obj.key;
-      participant.createdAt_ = new Date(obj.createdAt);
-      participant.updatedAt_ = new Date(obj.updatedAt);
-      return participant;
-    }
-
-    private static url(projectKey : string, key? : string) : string {
-      if (key) {
-        return '/api/projects/' + projectKey + '/participants/' + key;
-      } else {
-        return '/api/projects/' + projectKey + '/participants';
+      if (obj) {
+        this.name = obj.name;
+        this.note = obj.note;
+        this.project = obj.project;
+        this.projectKey = obj.projectKey;
       }
     }
 
-    static import(o: any) : Participant {
-      var p: Participant = new Participant(o);
+    public get createdAt() : Date {
+      return this.createdAt_.value;
+    }
 
-      p.key_ = o.key_;
-      p.createdAt_ = o.createdAt_;
-      p.updatedAt_ = o.updatedAt_;
+    public get updatedAt() : Date {
+      return this.updatedAt_.value;
+    }
 
-      return p;
+    private setCreatedAt(date: Date) : void {
+      if (!this.createdAt_)
+        this.createdAt_ = new ValueObject<Date>(date);
+    }
+
+    private setUpdatedAt(date: Date) : void {
+      if (!this.updatedAt_)
+        this.updatedAt_ = new ValueObject<Date>(date);
+    }
+
+    private setProjectKey(k: string) : void {
+      if (!this.projectKey_)
+        this.projectKey_ = new ValueObject<string>(k);
+    }
+
+    /**
+     * Object から Participant に変換します。
+     *
+     * @override
+     * @param   object
+     */
+    public load(o: any): Participant {
+      this.key = o.key;
+
+      this.setCreatedAt(o.createdAt);
+      this.setUpdatedAt(o.updatedAt);
+
+      return this;
+    }
+
+    /**
+     * @override
+     */
+    public get(key: string): JQueryPromise<Participant> {
+      var $deferred = $.Deferred();
+
+      $.ajax({
+          url: this.url(this.projectKey),
+          type: 'GET',
+          dataFilter: data => {
+            var obj = JSON.parse(data);
+
+            return this.load(obj);
+          },
+        })
+        .then((participant : Participant) => {
+          return $deferred.resolve(participant);
+        }, () => {
+          var k = CollectionBase.pluralize(Participant.type);
+          var objects = window.localStorage.getItem(k) || [];
+          var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
+
+          var target = $.extend(JSON.parse(objects), JSON.parse(unsaved));
+
+          return target[key] ? $deferred.resolve(this.load(target[key])) : $deferred.reject();
+        });
+
+      return $deferred.promise();
     }
 
     /**
      * POST/PUT リクエストを発行します。
      *
-     * TODO: StorableBase<T> に移動…するかも
+     * @override
      * @throws  Error
      */
-    public publish() : JQueryPromise<Participant> {
+    public save(): JQueryPromise<Project> {
       var $deferred = $.Deferred();
 
       return $.ajax({
-          url: Participant.url(this.projectKey, this.key()),
-          type: this.key() ? 'PUT' : 'POST',
+          url: this.url(this.projectKey),
+          type: this.key ? 'PUT' : 'POST',
           contentType: 'application/json',
           data: JSON.stringify({
-            key: this.key(),
+            key: this.key,
             name: this.name,
             note: this.note,
           }),
           dataFilter: data => {
             var obj : ApiParticipantData = JSON.parse(data);
-            this.key_ = obj.key;
-            return this;
+
+            return new Participant(obj).load(obj);
           },
         })
-        .then((p: Participant) => {
-          return $deferred.resolve(p);
-        }, () => {
-          return $deferred.reject();
-        });
+        .then((p: Project) => {
+            return $deferred.resolve(p);
+          }, (...reasons) => {
+            var o = {};
+            var key = 'unsavedItems.' + CollectionBase.pluralize(Participant.type);
+            var unsavedItems: any[];
+
+            o[this.key] = this;
+
+            unsavedItems = $.extend({}, JSON.parse(window.localStorage.getItem(key)), o);
+
+            window.localStorage.setItem(key, JSON.stringify(unsavedItems));
+
+            return $deferred.reject();
+          });
 
       return $deferred.promise();
     }
 
     /**
-     * localStorage に格納されている各要素に対して publish メソッドを発行します。
-     *
-     * TODO: Collection<T> に IFlushable を実装…かも
-     * @see Participant.publish
+     * @override
+     * @param   key   string  Project Key
      */
-    public static flush() : JQueryPromise<Participant[]> {
-      var $deferred = $.Deferred();
-      var unsavedItems: any[];
-
-      unsavedItems = JSON.parse(window.localStorage.getItem('unsavedParticipants')) || [];
-
-      $.when.apply($, unsavedItems
-        .map((o: any) => {
-          var p = Participant.import(o);
-
-          return p.publish();
-        }))
-        .then((...participants: Participant[]) => {
-          window.localStorage.removeItem('unsavedParticipants');
-
-          return $deferred.resolve(participants);
-        }, () => {
-          return $deferred.reject();
-        });
-
-      return $deferred.promise();
+    public static listUrl(key? : string) : string {
+      return Project.listUrl() + '/' + key + '/participants';
     }
 
     /**
-     * localStorage と this を保存するラッパーメソッドです。
-     * flush メソッドを実行します。
-     *
-     * TODO: StorableBase<T> に移動…するかも
-     * @see Participant.flush
+     * @override
+     * @param   key   string  Participant Key
      */
-    public save() : JQueryPromise<Participant> {
-      var $deferred = $.Deferred();
-      var promises: JQueryPromise<Participant[]>;
+    public url(key? : string) : string {
+      return Participant.listUrl(this.projectKey) + '/' + key;
+    }
 
-      var items = JSON.parse(window.localStorage.getItem('unsavedParticipants')) || [];
-
-      items.push(this);
-
-      window.localStorage.setItem('unsavedParticipants', JSON.stringify(items));
-
-      Participant.flush()
-        .then(() => {
-          return $deferred.resolve();
-        }, () => {
-          return $deferred.reject();
-        });
-
-      return $deferred.promise();
+    public remove() : JQueryXHR {
+      return $.ajax({
+        url: this.url(this.key),
+        type: 'DELETE',
+      });
     }
   }
 }

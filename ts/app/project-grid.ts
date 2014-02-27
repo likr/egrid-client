@@ -3,6 +3,7 @@
 /// <reference path="../core/egm.ts"/>
 /// <reference path="../core/egm-ui.ts"/>
 /// <reference path="../model/participant.ts"/>
+/// <reference path="../model/participant-collection.ts"/>
 /// <reference path="../model/project-grid.ts"/>
 
 module egrid.app {
@@ -10,7 +11,7 @@ module egrid.app {
     projectKey : string;
     egm : EGM;
     filter : {} = {};
-    participants : model.Participant[];
+    participants = new model.ParticipantCollection();
     participantState : {} = {};
 
     constructor($q, $stateParams, $modal, private $scope) {
@@ -85,11 +86,11 @@ module egrid.app {
       d3.select("#filterButton")
         .on("click", () => {
           var node = this.egm.selectedNode();
-          this.participants.forEach(participant => {
+          this.participants.toArray().forEach(participant => {
             if (node) {
-              this.participantState[participant.key()] = node.participants.indexOf(participant.key()) >= 0;
+              this.participantState[participant.key] = node.participants.indexOf(participant.key) >= 0;
             } else {
-              this.participantState[participant.key()] = false;
+              this.participantState[participant.key] = false;
             }
           });
           var m = $modal.open({
@@ -155,13 +156,14 @@ module egrid.app {
         })
         ;
 
-      $q.when(model.Participant.query(this.projectKey))
+      $q.when(this.participants.query())
         .then((participants : model.Participant[]) => {
-          this.participants = participants;
-          this.participants.forEach(participant => {
-            this.participantState[participant.key()] = false;
-            this.filter[participant.key()] = true;
-          });
+          participants.forEach((v) => {
+              this.participants.addItem(v);
+
+              this.participantState[v.key] = false;
+              this.filter[v.key] = true;
+            });
         })
         ;
     }

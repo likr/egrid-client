@@ -6,18 +6,18 @@ module egrid.model {
    * @param  T   保持する値のデータ型
    */
   export class ValueObject<T> {
-    private value: T;
+    private value_: T;
 
     constructor(v: T) {
-      this.value = v;
+      this.value_ = v;
     }
 
-    public vomit(): T {
-      return this.value;
+    public get value(): T {
+      return this.value_;
     }
 
     public toString(): string {
-      return this.value.toString();
+      return this.value_.toString();
     }
   }
 }

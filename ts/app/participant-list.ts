@@ -1,12 +1,13 @@
 /// <reference path="../model/participant.ts"/>
+/// <reference path="../model/participant-collection.ts"/>
 /// <reference path="pagination.ts"/>
 
 module egrid.app {
   export class ParticipantListController extends PaginationController {
     public projectId : string;
-    public participants: model.Participant[] = [];
+    public participants = new model.ParticipantCollection();
 
-    constructor(private $q, private $state, $stateParams, private $log) {
+    constructor($q, $stateParams) {
       super();
 
       this.projectId = $stateParams.projectId;
@@ -14,21 +15,22 @@ module egrid.app {
       this.predicate = 'updatedAt';
       this.reverse = true;
 
-      this.$q
-        .when(model.Participant.query(this.projectId))
+      $q
+        .when(this.participants.query(this.projectId))
         .then((participants: model.Participant[]) => {
-          this.participants = participants;
-        });
-    }
+          participants.forEach((v) => {
+              this.participants.addItem(v);
+            });
 
-    sync() {
-      this.$q.when(model.Participant.flush())
-        .then(() => { return model.Participant.query(this.projectId); })
-        .then((participants: model.Participant[]) => {
-          this.participants = participants;
-
-          this.$log.debug('sync completed successfully');
-          this.$state.go('projects.get.participants.all.list');
+          if (this.participants.isDirty())
+            // どうすればいいかわからない
+            this.participants
+              .flush()
+              .then((ps) => {
+                  ps.forEach((p) => {
+                      this.participants.addItem(p);
+                    });
+                });
         });
     }
   }

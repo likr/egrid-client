@@ -8,6 +8,8 @@ module egrid.model {
   export class Entity {
     private key_: ValueObject<string>;
 
+    public static type: string;
+
     public set key(key: string) {
       if (!this.key_)
         this.key_ = new ValueObject<string>(key);
@@ -15,7 +17,7 @@ module egrid.model {
 
     public get key(): string {
       return (this.key_)
-        ? this.key_.vomit()
+        ? this.key_.value
         : '';
     }
 
@@ -36,17 +38,6 @@ module egrid.model {
     }
 
     /**
-     * 面倒だからここ
-     * そのうちちゃんと実装してくれるはず
-     * http://msdn.microsoft.com/ja-jp/library/system.object.gettype.aspx
-     *
-     * @abstract
-     */
-    public getType(): string {
-      throw new Error('NotImplementedException');
-    }
-
-    /**
      * そのうち誰かが分離してくれる
      *
      * @abstract
@@ -56,9 +47,20 @@ module egrid.model {
     }
 
     /**
+     * 一覧用
+     *
      * @abstract
      */
-    public url(key?: string): string {
+    public static listUrl(key?: string): string {
+      throw new Error('NotImplementedException');
+    }
+
+    /**
+     * 個別
+     *
+     * @abstract
+     */
+    public url(key? : string) : string {
       throw new Error('NotImplementedException');
     }
 

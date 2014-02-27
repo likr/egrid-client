@@ -1,10 +1,10 @@
-/// <reference path="../model/collection.ts"/>
 /// <reference path="../model/project.ts"/>
+/// <reference path="../model/project-collection.ts"/>
 /// <reference path="pagination.ts"/>
 
 module egrid.app {
   export class ProjectListController extends PaginationController {
-    public projects: model.Collection<model.Project> = new model.Collection<model.Project>();
+    public projects = new model.ProjectCollection();
 
     constructor($q) {
       super();
@@ -14,16 +14,16 @@ module egrid.app {
       this.reverse = true;
 
       $q
-        .when(this.projects.query(model.Project))
+        .when(this.projects.query())
         .then((projects: model.Project[]) => {
           projects.forEach((v) => {
               this.projects.addItem(v);
             });
 
-          if (this.projects.isDirty(model.Project))
+          if (this.projects.isDirty())
             // どうすればいいかわからない
             this.projects
-              .flush(model.Project)
+              .flush()
               .then((ps) => {
                   ps.forEach((p) => {
                       this.projects.addItem(p);

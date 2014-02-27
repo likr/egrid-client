@@ -288,7 +288,7 @@ module egrid.app {
     .controller('ParticipantCreateController', ['$q', '$stateParams', '$state', ParticipantCreateController])
     .controller('ParticipantGridController', ['$q', '$stateParams', '$scope', ParticipantGridController])
     .controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', ParticipantGridEditController])
-    .controller('ParticipantListController', ['$q', '$state', '$stateParams', '$log', ParticipantListController])
+    .controller('ParticipantListController', ['$q', '$stateParams', ParticipantListController])
     .controller('ProjectController', ['$q', '$stateParams', '$state', '$modal', '$scope', ProjectController])
     .controller('ProjectCreateController', ['$q', '$state', ProjectCreateController])
     .controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', ProjectGridController])

@@ -507,16 +507,16 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "      </tr>\n" +
     "    </thead>\n" +
     "    <tbody>\n" +
-    "      <tr ng-repeat=\"participant in ctrl.participants | filter:ctrl.query | orderBy:ctrl.predicate:ctrl.reverse | pager:ctrl.currentPage:ctrl.itemsPerPage\">\n" +
+    "      <tr ng-repeat=\"participant in ctrl.participants.toArray() | filter:ctrl.query | orderBy:ctrl.predicate:ctrl.reverse | pager:ctrl.currentPage:ctrl.itemsPerPage\">\n" +
     "        <td>{{$index + 1 + ctrl.itemsPerPage * (ctrl.currentPage - 1)}}</td>\n" +
     "        <td>{{participant.name}}</td>\n" +
     "        <td>{{participant.createdAt | date:'yyyy/MM/dd HH:mm'}}</td>\n" +
     "        <td>{{participant.updatedAt | date:'yyyy/MM/dd HH:mm'}}</td>\n" +
-    "        <td><a href=\"/#{{Url.participantUrl(participant, null, 'detail')}}\">{{'ACTION.SHOW' | translate}}</a>\n" +
+    "        <td><a ui-sref=\"projects.get.participants.get.detail({ participantId: participant.key })\">{{'ACTION.SHOW' | translate}}</a>\n" +
     "      </tr>\n" +
     "    </tbody>\n" +
     "  </table>\n" +
-    "  <pagination total-items=\"ctrl.participants | filter:ctrl.query | count\" page=\"ctrl.currentPage\" items-per-page=\"ctrl.itemsPerPage\"></pagination>\n" +
+    "  <pagination total-items=\"ctrl.participants.toArray() | filter:ctrl.query | count\" page=\"ctrl.currentPage\" items-per-page=\"ctrl.itemsPerPage\"></pagination>\n" +
     "</div>\n"
   );
 

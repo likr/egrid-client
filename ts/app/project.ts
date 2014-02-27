@@ -42,7 +42,7 @@ module egrid.app {
     private remove() {
       this.$q.when(this.project.remove())
         .then(() => {
-          this.$state.go('project.all.list');
+          this.$state.go('projects.all.list');
         });
     }
   }
