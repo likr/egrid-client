@@ -1,5 +1,4 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
-/// <reference path="interfaces/iserializable.ts"/>
 /// <reference path="value-object.ts"/>
 
 module egrid.model {
@@ -9,7 +8,7 @@ module egrid.model {
   export class Entity {
     private key_: ValueObject<string>;
 
-    public setKey(key: string): void {
+    public set key(key: string) {
       if (!this.key_)
         this.key_ = new ValueObject<string>(key);
     }
@@ -29,26 +28,10 @@ module egrid.model {
     }
 
     /**
-     * そのうち誰かが分離してくれる
-     *
-     * @abstract
-     */
-    public publish(): JQueryPromise<Entity> {
-      throw new Error('NotImplementedException');
-    }
-
-    /**
      * @abstract
      * @param key string プライマリ キー
      */
     public fetch(key: string): JQueryPromise<Entity> {
-      throw new Error('NotImplementedException');
-    }
-
-    /**
-     * @abstract
-     */
-    public url(key?: string): string {
       throw new Error('NotImplementedException');
     }
 
@@ -61,6 +44,35 @@ module egrid.model {
      */
     public getType(): string {
       throw new Error('NotImplementedException');
+    }
+
+    /**
+     * そのうち誰かが分離してくれる
+     *
+     * @abstract
+     */
+    public publish(): JQueryPromise<Entity> {
+      throw new Error('NotImplementedException');
+    }
+
+    /**
+     * @abstract
+     */
+    public url(key?: string): string {
+      throw new Error('NotImplementedException');
+    }
+
+    // ValueObject を変換するだけ
+    public toJSON(t): any {
+      var replacement = {};
+
+      for (var k in this) {
+        if (!(this[k] instanceof ValueObject)) {
+          replacement[k] = this[k];
+        }
+      }
+
+      return replacement;
     }
   }
 }

@@ -1,7 +1,10 @@
 module egrid.model {
   /**
-  * @abstract ValueObject
-  */
+   * 変更できない値を表現します。
+   *
+   * @class  ValueObject
+   * @param  T   保持する値のデータ型
+   */
   export class ValueObject<T> {
     private value: T;
 

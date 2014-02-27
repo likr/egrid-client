@@ -5,8 +5,12 @@ module egrid.model {
   export class Dictionary<TValue> {
     private pairs = {};
 
-    public add(k: string, v: TValue) {
+    public addItem(k: string, v: TValue) {
       this.pairs[k] = v;
+    }
+
+    public getItem(k: string) {
+      return this.pairs[k];
     }
 
     public toArray(): TValue[] {
@@ -20,8 +24,15 @@ module egrid.model {
   * @class Collection
   */
   export class Collection<T extends Entity> {
-    private testest = new Dictionary<T>();
-    private collection: T[] = [];
+    private pairs = new Dictionary<T>();
+
+    public addItem(item: T): void {
+      this.pairs.addItem(item.key, item);
+    }
+
+    public getItem(n: string): T {
+      return this.pairs.getItem(n);
+    }
 
     /**
      * GET メソッドを発行し this.collection を満たします。
@@ -90,14 +101,6 @@ module egrid.model {
       return $deferred.promise();
     }
 
-    public getItem(n: string): T {
-      return this.collection[n];
-    }
-
-    public addItem(item: T): void {
-      this.testest.add(item.key, item);
-    }
-
     public isDirty(type: new() => T): boolean {
       var entity = new type();
       var k = 'unsavedItems.' + Collection.pluralize(entity.getType());
@@ -107,7 +110,7 @@ module egrid.model {
     }
 
     public toArray(): T[] {
-      return this.testest.toArray();
+      return this.pairs.toArray();
     }
 
     public static pluralize(word: string): string {

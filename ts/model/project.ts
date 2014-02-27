@@ -35,13 +35,15 @@ module egrid.model {
       }
     }
 
-    remove() : JQueryXHR {
-      return $.ajax({
-        url: this.url(),
-        type: 'DELETE',
-      });
+    public get createdAt() : Date {
+      return this.createdAt_.vomit();
     }
 
+    public get updatedAt() : Date {
+      return this.updatedAt_.vomit();
+    }
+
+    // Accessors は同じ Accessibility を持っていなければいけないのでメソッドを用意する
     private setCreatedAt(date: Date) : void {
       if (!this.createdAt_)
         this.createdAt_ = new ValueObject<Date>(date);
@@ -52,14 +54,27 @@ module egrid.model {
         this.updatedAt_ = new ValueObject<Date>(date);
     }
 
-    public get createdAt() : Date {
-      return this.createdAt_.vomit();
+    /**
+     * Object から Project に変換します。
+     *
+     * @override
+     * @param   object
+     */
+    public deserialize(o: any): Entity {
+      this.key = o.key;
+
+      this.name = o.name;
+      this.note = o.note;
+
+      this.setCreatedAt(o.createdAt);
+      this.setUpdatedAt(o.updatedAt);
+
+      return this;
     }
 
-    public get updatedAt() : Date {
-      return this.updatedAt_.vomit();
-    }
-
+    /**
+     * @override
+     */
     public fetch(key: string): JQueryPromise<Project> {
       var $deferred = $.Deferred();
 
@@ -90,32 +105,13 @@ module egrid.model {
       return $deferred.promise();
     }
 
-    public url(key? : string) : string {
-      if (this.key) {
-        return '/api/projects/' + this.key;
-      } else if (key) {
-        return '/api/projects/' + key;
-      } else {
-        return '/api/projects';
-      }
-    }
-
     /**
-     * Object から Project に変換します。
+     * クラス情報を取得します。
      *
      * @override
-     * @param   object
      */
-    public deserialize(o: any): Entity {
-      this.setKey(o.key);
-
-      this.name = o.name;
-      this.note = o.note;
-
-      this.setCreatedAt(o.createdAt);
-      this.setUpdatedAt(o.updatedAt);
-
-      return this;
+    public getType(): string {
+      return 'Project';
     }
 
     /**
@@ -161,25 +157,26 @@ module egrid.model {
       return $deferred.promise();
     }
 
-    public toJSON(t): any {
-      var replacement = {};
-
-      for (var k in this) {
-        if (!(this[k] instanceof ValueObject)) {
-          replacement[k] = this[k];
-        }
-      }
-
-      return replacement;
-    }
-
     /**
-     * クラス情報を取得します。
-     *
      * @override
      */
-    public getType(): string {
-      return 'Project';
+    public url(key? : string) : string {
+      var destination = '/api/projects';
+
+      if (this.key) {
+        return destination + '/' + this.key;
+      } else if (key) {
+        return destination + '/' + key;
+      } else {
+        return destination;
+      }
+    }
+
+    public remove() : JQueryXHR {
+      return $.ajax({
+        url: this.url(),
+        type: 'DELETE',
+      });
     }
   }
 }

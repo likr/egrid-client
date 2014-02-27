@@ -16,9 +16,8 @@ module egrid.app {
       $q
         .when(this.projects.retrieve(model.Project))
         .then((projects: model.Project[]) => {
-          // 保存されていなければ
           if (this.projects.isDirty(model.Project)) {
-            // flush
+            // TODO: fulfilled, rejected を設定する
             this.projects.flush(model.Project);
           }
 
