@@ -1,5 +1,4 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
-/// <reference path="../ts-definitions/DefinitelyTyped/angularLocalStorage/angularLocalStorage.d.ts"/>
 /// <reference path="modules/app.ts"/>
 /// <reference path="collaborator-create.ts"/>
 /// <reference path="collaborator-list.ts"/>
@@ -20,7 +19,7 @@
 /// <reference path="url.ts"/>
 
 module egrid.app {
-  angular.module('collaboegm', ['paginator', 'ui.router', "ui.bootstrap", 'angularLocalStorage', "pascalprecht.translate"])
+  angular.module('collaboegm', ['paginator', 'ui.router', "ui.bootstrap", "pascalprecht.translate"])
     .directive('focusMe', ['$timeout', function($timeout) {
       return {
          link: function (scope, element, attrs, model) {
@@ -285,16 +284,16 @@ module egrid.app {
     }])
     .controller('CollaboratorCreateController', ['$q', '$stateParams', '$state', '$timeout', CollaboratorCreateController])
     .controller('CollaboratorListController', ['$q', '$stateParams', '$state', '$log', '$scope', '$modal', CollaboratorListController])
-    .controller('ParticipantController', ['$q', '$stateParams', '$scope', '$location', '$modal', 'storage', ParticipantController])
+    .controller('ParticipantController', ['$q', '$stateParams', '$scope', '$location', '$modal', ParticipantController])
     .controller('ParticipantCreateController', ['$q', '$stateParams', '$state', ParticipantCreateController])
     .controller('ParticipantGridController', ['$q', '$stateParams', '$scope', ParticipantGridController])
     .controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', ParticipantGridEditController])
     .controller('ParticipantListController', ['$q', '$state', '$stateParams', '$log', ParticipantListController])
-    .controller('ProjectController', ['$q', '$stateParams', '$state', '$modal', 'storage', ProjectController])
+    .controller('ProjectController', ['$q', '$stateParams', '$state', '$modal', '$scope', ProjectController])
     .controller('ProjectCreateController', ['$q', '$state', ProjectCreateController])
     .controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', ProjectGridController])
-    .controller('ProjectListController', ['$q', '$state', '$log', ProjectListController])
-    .controller('SemProjectController', ['$q', '$stateParams', 'storage', SemProjectController])
+    .controller('ProjectListController', ['$q', ProjectListController])
+    .controller('SemProjectController', ['$q', '$stateParams', SemProjectController])
     .controller('SemProjectAnalysisController', ['$q', '$stateParams', SemProjectAnalysisController])
     .controller('SemProjectCreateController', ['$q', '$stateParams', '$state', '$timeout', SemProjectCreateController])
     .controller('SemProjectListController', ['$q', '$stateParams', '$state', '$log', SemProjectListController])

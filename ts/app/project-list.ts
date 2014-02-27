@@ -6,27 +6,25 @@ module egrid.app {
   export class ProjectListController extends PaginationController {
     public projects: model.Collection<model.Project> = new model.Collection<model.Project>();
 
-    constructor(private $q, private $state, private $log) {
+    constructor($q) {
       super();
 
       this.itemsPerPage = 5;
       this.predicate = 'updatedAt';
       this.reverse = true;
 
-      this.$q
+      $q
         .when(this.projects.retrieve(model.Project))
         .then((projects: model.Project[]) => {
-          projects.forEach((p: model.Project) => {
-            this.projects.setItem(p);
-          });
-        });
-    }
+          // 保存されていなければ
+          if (this.projects.isDirty(model.Project)) {
+            // flush
+            this.projects.flush(model.Project);
+          }
 
-    sync() {
-      this.$q.when(this.projects.flush(model.Project))
-        .then(() => {
-          this.$log.debug('sync completed successfully');
-          this.$state.go('projects.all.list');
+          projects.forEach((p: model.Project) => {
+              this.projects.addItem(p);
+            });
         });
     }
   }

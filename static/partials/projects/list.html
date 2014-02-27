@@ -1,11 +1,6 @@
 <div class="row">
   <nav>
-    <form class="form-inline col-sm-1 col-sm-offset-7" ng-submit="ctrl.sync()">
-      <div class="input-group">
-        <button class="btn btn-default" type="submit">Sync</button>
-      </div>
-    </form>
-    <form class="form-inline col-sm-4 search-control">
+    <form class="form-inline col-sm-4 col-sm-offset-8 search-control">
       <div class="input-group">
         <input type="text" class="form-control" placeholder="{{'ACTION.SEARCH' | translate}}" ng-model="ctrl.query.name" />
         <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
@@ -35,7 +30,7 @@
       <td>{{project.name}}</td>
       <td>{{project.createdAt | date:'yyyy/MM/dd HH:mm'}}</td>
       <td>{{project.updatedAt | date:'yyyy/MM/dd HH:mm'}}</td>
-      <td><a ui-sref="projects.get.detail({ projectId: project.getKey() })">{{'ACTION.SHOW' | translate}}</a>
+      <td><a ui-sref="projects.get.detail({ projectId: project.key })">{{'ACTION.SHOW' | translate}}</a>
     </tr>
   </tbody>
 </table>

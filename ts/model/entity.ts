@@ -6,24 +6,18 @@ module egrid.model {
   /**
   * @abstract Entity
   */
-  export class Entity implements ISerializable<Entity> {
+  export class Entity {
     private key_: ValueObject<string>;
 
-    public getKey(): string {
-      if (this.key_)
-        return this.key_.vomit();
-      else
-        throw new Error('UnsupportedException');
-    }
-
     public setKey(key: string): void {
-      // instanceof Entity とかしたほうがいいかも
       if (!this.key_)
         this.key_ = new ValueObject<string>(key);
     }
 
-    public static getUri(): string {
-      throw new Error('NotImplementedException');
+    public get key(): string {
+      return (this.key_)
+        ? this.key_.vomit()
+        : '';
     }
 
     /**
@@ -31,14 +25,6 @@ module egrid.model {
      * @param   object
      */
     public deserialize(o: any): Entity {
-      throw new Error('NotImplementedException');
-    }
-
-    /**
-     * @abstract
-     * @param   object
-     */
-    public serialize(): any {
       throw new Error('NotImplementedException');
     }
 
@@ -60,6 +46,13 @@ module egrid.model {
     }
 
     /**
+     * @abstract
+     */
+    public url(key?: string): string {
+      throw new Error('NotImplementedException');
+    }
+
+    /**
      * 面倒だからここ
      * そのうちちゃんと実装してくれるはず
      * http://msdn.microsoft.com/ja-jp/library/system.object.gettype.aspx
@@ -67,15 +60,6 @@ module egrid.model {
      * @abstract
      */
     public getType(): string {
-      throw new Error('NotImplementedException');
-    }
-
-    /**
-     * 分離したい
-     *
-     * @abstract
-     */
-    public getUri(): string {
       throw new Error('NotImplementedException');
     }
   }

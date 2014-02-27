@@ -9,7 +9,7 @@ module egrid.app {
     project : model.ProjectData;
     projectKey : string;
 
-    constructor(private $q, $stateParams, private $scope, private $location, private $modal, storage: angularLocalStorage.IStorageService) {
+    constructor(private $q, $stateParams, private $scope, private $location, private $modal) {
       this.participantKey = $stateParams.participantId;
       this.projectKey = $stateParams.projectId;
 

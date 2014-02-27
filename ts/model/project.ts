@@ -19,7 +19,7 @@ module egrid.model {
   /**
   * @class Project
   */
-  export class Project extends Entity implements ProjectData {
+  export class Project extends Entity {
     private createdAt_: ValueObject<Date>;
     private updatedAt_: ValueObject<Date>;
 
@@ -37,7 +37,7 @@ module egrid.model {
 
     remove() : JQueryXHR {
       return $.ajax({
-        url: Project.url(this.getKey()),
+        url: this.url(),
         type: 'DELETE',
       });
     }
@@ -60,19 +60,11 @@ module egrid.model {
       return this.updatedAt_.vomit();
     }
 
-    private url() : string {
-      return Project.url(this.getKey());
-    }
-
-    public getUri(): string {
-      return Project.url();
-    }
-
     public fetch(key: string): JQueryPromise<Project> {
       var $deferred = $.Deferred();
 
       $.ajax({
-          url: Project.url(key),
+          url: this.url(key),
           type: 'GET',
           dataFilter: data => {
             var obj : ApiProjectData = JSON.parse(data);
@@ -84,12 +76,12 @@ module egrid.model {
           return $deferred.resolve(project);
         }, () => {
           var target: Project = JSON
-            .parse(window.localStorage.getItem('projects'))
+            .parse(window.localStorage.getItem(Collection.pluralize(this.getType())))
             .map((o: any) => {
               return this.deserialize(o);
             })
             .filter((value: Project) => {
-              return value.getKey() === key;
+              return value.key === key;
             });
 
           return target ? $deferred.resolve(target[0]) : $deferred.reject();
@@ -98,8 +90,10 @@ module egrid.model {
       return $deferred.promise();
     }
 
-    static url(key? : string) : string {
-      if (key) {
+    public url(key? : string) : string {
+      if (this.key) {
+        return '/api/projects/' + this.key;
+      } else if (key) {
         return '/api/projects/' + key;
       } else {
         return '/api/projects';
@@ -134,11 +128,11 @@ module egrid.model {
       var $deferred = $.Deferred();
 
       return $.ajax({
-          url: Project.url(this.getKey()),
-          type: this.getKey() ? 'PUT' : 'POST',
+          url: this.url(),
+          type: this.key ? 'PUT' : 'POST',
           contentType: 'application/json',
           data: JSON.stringify({
-            key: this.getKey(),
+            key: this.key,
             name: this.name,
             note: this.note,
           }),
@@ -149,16 +143,34 @@ module egrid.model {
           },
         })
         .then((p: Project) => {
-          return $deferred.resolve(p);
-        }, () => {
-          var q = 'unsavedItems.' + Collection.pluralize(this.getType());
+            return $deferred.resolve(p);
+          }, (...reasons) => {
+            var o = {};
+            var key = 'unsavedItems.' + Collection.pluralize(this.getType());
+            var unsavedItems: any[];
 
-          window.localStorage.setItem(q, JSON.stringify(this));
+            o[this.key] = this;
 
-          return $deferred.reject();
-        });
+            unsavedItems = $.extend({}, JSON.parse(window.localStorage.getItem(key)), o);
+
+            window.localStorage.setItem(key, JSON.stringify(unsavedItems));
+
+            return $deferred.reject();
+          });
 
       return $deferred.promise();
+    }
+
+    public toJSON(t): any {
+      var replacement = {};
+
+      for (var k in this) {
+        if (!(this[k] instanceof ValueObject)) {
+          replacement[k] = this[k];
+        }
+      }
+
+      return replacement;
     }
 
     /**

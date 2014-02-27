@@ -41,27 +41,20 @@ var egrid;
         var Entity = (function () {
             function Entity() {
             }
-            Entity.prototype.getKey = function () {
-                if (this.key_)
-                    return this.key_.vomit();
-                else
-                    throw new Error('UnsupportedException');
-            };
-
             Entity.prototype.setKey = function (key) {
                 if (!this.key_)
                     this.key_ = new egrid.model.ValueObject(key);
             };
 
-            Entity.getUri = function () {
-                throw new Error('NotImplementedException');
-            };
+            Object.defineProperty(Entity.prototype, "key", {
+                get: function () {
+                    return (this.key_) ? this.key_.vomit() : '';
+                },
+                enumerable: true,
+                configurable: true
+            });
 
             Entity.prototype.deserialize = function (o) {
-                throw new Error('NotImplementedException');
-            };
-
-            Entity.prototype.serialize = function () {
                 throw new Error('NotImplementedException');
             };
 
@@ -73,11 +66,11 @@ var egrid;
                 throw new Error('NotImplementedException');
             };
 
-            Entity.prototype.getType = function () {
+            Entity.prototype.url = function (key) {
                 throw new Error('NotImplementedException');
             };
 
-            Entity.prototype.getUri = function () {
+            Entity.prototype.getType = function () {
                 throw new Error('NotImplementedException');
             };
             return Entity;
@@ -107,7 +100,7 @@ var egrid;
             }
             Project.prototype.remove = function () {
                 return $.ajax({
-                    url: Project.url(this.getKey()),
+                    url: this.url(),
                     type: 'DELETE'
                 });
             };
@@ -138,20 +131,12 @@ var egrid;
                 configurable: true
             });
 
-            Project.prototype.url = function () {
-                return Project.url(this.getKey());
-            };
-
-            Project.prototype.getUri = function () {
-                return Project.url();
-            };
-
             Project.prototype.fetch = function (key) {
                 var _this = this;
                 var $deferred = $.Deferred();
 
                 $.ajax({
-                    url: Project.url(key),
+                    url: this.url(key),
                     type: 'GET',
                     dataFilter: function (data) {
                         var obj = JSON.parse(data);
@@ -161,10 +146,10 @@ var egrid;
                 }).then(function (project) {
                     return $deferred.resolve(project);
                 }, function () {
-                    var target = JSON.parse(window.localStorage.getItem('projects')).map(function (o) {
+                    var target = JSON.parse(window.localStorage.getItem(egrid.model.Collection.pluralize(_this.getType()))).map(function (o) {
                         return _this.deserialize(o);
                     }).filter(function (value) {
-                        return value.getKey() === key;
+                        return value.key === key;
                     });
 
                     return target ? $deferred.resolve(target[0]) : $deferred.reject();
@@ -173,8 +158,10 @@ var egrid;
                 return $deferred.promise();
             };
 
-            Project.url = function (key) {
-                if (key) {
+            Project.prototype.url = function (key) {
+                if (this.key) {
+                    return '/api/projects/' + this.key;
+                } else if (key) {
                     return '/api/projects/' + key;
                 } else {
                     return '/api/projects';
@@ -198,11 +185,11 @@ var egrid;
                 var $deferred = $.Deferred();
 
                 return $.ajax({
-                    url: Project.url(this.getKey()),
-                    type: this.getKey() ? 'PUT' : 'POST',
+                    url: this.url(),
+                    type: this.key ? 'PUT' : 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
-                        key: this.getKey(),
+                        key: this.key,
                         name: this.name,
                         note: this.note
                     }),
@@ -214,14 +201,36 @@ var egrid;
                 }).then(function (p) {
                     return $deferred.resolve(p);
                 }, function () {
-                    var q = 'unsavedItems.' + egrid.model.Collection.pluralize(_this.getType());
+                    var reasons = [];
+                    for (var _i = 0; _i < (arguments.length - 0); _i++) {
+                        reasons[_i] = arguments[_i + 0];
+                    }
+                    var o = {};
+                    var key = 'unsavedItems.' + egrid.model.Collection.pluralize(_this.getType());
+                    var unsavedItems;
 
-                    window.localStorage.setItem(q, JSON.stringify(_this));
+                    o[_this.key] = _this;
+
+                    unsavedItems = $.extend({}, JSON.parse(window.localStorage.getItem(key)), o);
+
+                    window.localStorage.setItem(key, JSON.stringify(unsavedItems));
 
                     return $deferred.reject();
                 });
 
                 return $deferred.promise();
+            };
+
+            Project.prototype.toJSON = function (t) {
+                var replacement = {};
+
+                for (var k in this) {
+                    if (!(this[k] instanceof egrid.model.ValueObject)) {
+                        replacement[k] = this[k];
+                    }
+                }
+
+                return replacement;
             };
 
             Project.prototype.getType = function () {
@@ -889,7 +898,7 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var ParticipantController = (function () {
-            function ParticipantController($q, $stateParams, $scope, $location, $modal, storage) {
+            function ParticipantController($q, $stateParams, $scope, $location, $modal) {
                 var _this = this;
                 this.$q = $q;
                 this.$scope = $scope;
@@ -3046,8 +3055,7 @@ var egrid;
 (function (egrid) {
     (function (app) {
         var ProjectController = (function () {
-            function ProjectController($q, $stateParams, $state, $modal) {
-                var _this = this;
+            function ProjectController($q, $stateParams, $state, $modal, $scope) {
                 this.$q = $q;
                 this.$state = $state;
                 this.$modal = $modal;
@@ -3055,9 +3063,7 @@ var egrid;
                 var key = $stateParams.projectId;
 
                 this.$q.when(this.project.fetch(key)).then(function (p) {
-                    _this.project = p;
-                }, function () {
-                    _this.$state.go('projects.all.list');
+                }, function (jqXHR, textStatus, errorThrown) {
                 });
             }
             ProjectController.prototype.update = function () {
@@ -3110,7 +3116,7 @@ var egrid;
                 var _this = this;
                 var project = new egrid.model.Project(this);
                 this.$q.when(project.publish()).then(function () {
-                    _this.$state.go('projects.get.detail', { projectId: project.getKey() });
+                    _this.$state.go('projects.get.detail', { projectId: project.key });
                 }, function () {
                     _this.$state.go('projects.all.list');
                 });
@@ -3279,8 +3285,27 @@ var egrid;
 var egrid;
 (function (egrid) {
     (function (model) {
+        var Dictionary = (function () {
+            function Dictionary() {
+                this.pairs = {};
+            }
+            Dictionary.prototype.add = function (k, v) {
+                this.pairs[k] = v;
+            };
+
+            Dictionary.prototype.toArray = function () {
+                var _this = this;
+                return Object.keys(this.pairs).map(function (v, i, ar) {
+                    return _this.pairs[v];
+                });
+            };
+            return Dictionary;
+        })();
+        model.Dictionary = Dictionary;
+
         var Collection = (function () {
             function Collection() {
+                this.testest = new Dictionary();
                 this.collection = [];
             }
             Collection.prototype.retrieve = function (type) {
@@ -3288,24 +3313,26 @@ var egrid;
                 var entity = new type();
 
                 $.ajax({
-                    url: entity.getUri(),
+                    url: entity.url(),
                     type: 'GET'
                 }).then(function (result) {
-                    var items = JSON.parse(result);
+                    var objects = JSON.parse(result);
 
                     window.localStorage.setItem(Collection.pluralize(entity.getType()), result);
 
-                    return $deferred.resolve(items.map(function (item) {
+                    return $deferred.resolve(objects.map(function (o) {
                         var i = new type();
 
-                        return i.deserialize(item);
+                        return i.deserialize(o);
                     }));
                 }, function () {
                     var reasons = [];
                     for (var _i = 0; _i < (arguments.length - 0); _i++) {
                         reasons[_i] = arguments[_i + 0];
                     }
-                    return $deferred.resolve(JSON.parse(window.localStorage.getItem(Collection.pluralize(entity.getType()))).map(function (o) {
+                    var objects = JSON.parse(window.localStorage.getItem(Collection.pluralize(entity.getType()))) || [];
+
+                    return $deferred.resolve(objects.map(function (o) {
                         var i = new type();
 
                         return i.deserialize(o);
@@ -3317,19 +3344,20 @@ var egrid;
 
             Collection.prototype.flush = function (type) {
                 var $deferred = $.Deferred();
-                var unsavedItems;
                 var entity = new type();
+                var k = 'unsavedItems.' + Collection.pluralize(entity.getType());
+                var unsavedItems = JSON.parse(window.localStorage.getItem(k)) || {};
 
-                $.when.apply($, unsavedItems.map(function (o) {
+                $.when.apply($, Object.keys(unsavedItems).map(function (value, index, ar) {
                     var item = new type();
 
-                    return item.deserialize(o).publish();
+                    return item.deserialize(unsavedItems[value]).publish();
                 })).then(function () {
                     var items = [];
                     for (var _i = 0; _i < (arguments.length - 0); _i++) {
                         items[_i] = arguments[_i + 0];
                     }
-                    window.localStorage.removeItem('unsavedItems.' + Collection.pluralize(entity.getType()));
+                    window.localStorage.removeItem(k);
 
                     return $deferred.resolve(items);
                 }, function () {
@@ -3343,12 +3371,20 @@ var egrid;
                 return this.collection[n];
             };
 
-            Collection.prototype.setItem = function (item) {
-                this.collection.push(item);
+            Collection.prototype.addItem = function (item) {
+                this.testest.add(item.key, item);
+            };
+
+            Collection.prototype.isDirty = function (type) {
+                var entity = new type();
+                var k = 'unsavedItems.' + Collection.pluralize(entity.getType());
+                var unsavedItems = JSON.parse(window.localStorage.getItem(k)) || {};
+
+                return !!Object.keys(unsavedItems).length;
             };
 
             Collection.prototype.toArray = function () {
-                return this.collection;
+                return this.testest.toArray();
             };
 
             Collection.pluralize = function (word) {
@@ -3365,31 +3401,25 @@ var egrid;
     (function (app) {
         var ProjectListController = (function (_super) {
             __extends(ProjectListController, _super);
-            function ProjectListController($q, $state, $log) {
+            function ProjectListController($q) {
                 var _this = this;
                 _super.call(this);
-                this.$q = $q;
-                this.$state = $state;
-                this.$log = $log;
                 this.projects = new egrid.model.Collection();
 
                 this.itemsPerPage = 5;
                 this.predicate = 'updatedAt';
                 this.reverse = true;
 
-                this.$q.when(this.projects.retrieve(egrid.model.Project)).then(function (projects) {
+                $q.when(this.projects.retrieve(egrid.model.Project)).then(function (projects) {
+                    if (_this.projects.isDirty(egrid.model.Project)) {
+                        _this.projects.flush(egrid.model.Project);
+                    }
+
                     projects.forEach(function (p) {
-                        _this.projects.setItem(p);
+                        _this.projects.addItem(p);
                     });
                 });
             }
-            ProjectListController.prototype.sync = function () {
-                var _this = this;
-                this.$q.when(this.projects.flush(egrid.model.Project)).then(function () {
-                    _this.$log.debug('sync completed successfully');
-                    _this.$state.go('projects.all.list');
-                });
-            };
             return ProjectListController;
         })(egrid.app.PaginationController);
         app.ProjectListController = ProjectListController;
@@ -3996,7 +4026,7 @@ var egrid;
 var egrid;
 (function (egrid) {
     (function (app) {
-        angular.module('collaboegm', ['paginator', 'ui.router', "ui.bootstrap", 'angularLocalStorage', "pascalprecht.translate"]).directive('focusMe', [
+        angular.module('collaboegm', ['paginator', 'ui.router', "ui.bootstrap", "pascalprecht.translate"]).directive('focusMe', [
             '$timeout', function ($timeout) {
                 return {
                     link: function (scope, element, attrs, model) {
@@ -4224,7 +4254,7 @@ var egrid;
                     prefix: 'locations/',
                     suffix: '.json'
                 }).fallbackLanguage("en").preferredLanguage("ja");
-            }]).controller('CollaboratorCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$stateParams', '$state', '$log', '$scope', '$modal', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$stateParams', '$scope', '$location', '$modal', 'storage', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$stateParams', '$state', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$stateParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$state', '$stateParams', '$log', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$stateParams', '$state', '$modal', 'storage', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$state', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', '$state', '$log', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$stateParams', 'storage', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$stateParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$stateParams', '$state', '$log', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$stateParams', egrid.app.SemProjectQuestionnaireEditController]).run([
+            }]).controller('CollaboratorCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.CollaboratorCreateController]).controller('CollaboratorListController', ['$q', '$stateParams', '$state', '$log', '$scope', '$modal', egrid.app.CollaboratorListController]).controller('ParticipantController', ['$q', '$stateParams', '$scope', '$location', '$modal', egrid.app.ParticipantController]).controller('ParticipantCreateController', ['$q', '$stateParams', '$state', egrid.app.ParticipantCreateController]).controller('ParticipantGridController', ['$q', '$stateParams', '$scope', egrid.app.ParticipantGridController]).controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', egrid.app.ParticipantGridEditController]).controller('ParticipantListController', ['$q', '$state', '$stateParams', '$log', egrid.app.ParticipantListController]).controller('ProjectController', ['$q', '$stateParams', '$state', '$modal', '$scope', egrid.app.ProjectController]).controller('ProjectCreateController', ['$q', '$state', egrid.app.ProjectCreateController]).controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', egrid.app.ProjectGridController]).controller('ProjectListController', ['$q', egrid.app.ProjectListController]).controller('SemProjectController', ['$q', '$stateParams', egrid.app.SemProjectController]).controller('SemProjectAnalysisController', ['$q', '$stateParams', egrid.app.SemProjectAnalysisController]).controller('SemProjectCreateController', ['$q', '$stateParams', '$state', '$timeout', egrid.app.SemProjectCreateController]).controller('SemProjectListController', ['$q', '$stateParams', '$state', '$log', egrid.app.SemProjectListController]).controller('SemProjectQuestionnaireEditController', ['$q', '$stateParams', egrid.app.SemProjectQuestionnaireEditController]).run([
             '$rootScope', '$translate', '$http', function ($rootScope, $translate, $http) {
                 $rootScope.Url = egrid.app.Url;
 

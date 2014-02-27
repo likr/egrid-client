@@ -684,12 +684,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
   $templateCache.put('/partials/projects/list.html',
     "<div class=\"row\">\n" +
     "  <nav>\n" +
-    "    <form class=\"form-inline col-sm-1 col-sm-offset-7\" ng-submit=\"ctrl.sync()\">\n" +
-    "      <div class=\"input-group\">\n" +
-    "        <button class=\"btn btn-default\" type=\"submit\">Sync</button>\n" +
-    "      </div>\n" +
-    "    </form>\n" +
-    "    <form class=\"form-inline col-sm-4 search-control\">\n" +
+    "    <form class=\"form-inline col-sm-4 col-sm-offset-8 search-control\">\n" +
     "      <div class=\"input-group\">\n" +
     "        <input type=\"text\" class=\"form-control\" placeholder=\"{{'ACTION.SEARCH' | translate}}\" ng-model=\"ctrl.query.name\" />\n" +
     "        <span class=\"input-group-addon\"><span class=\"glyphicon glyphicon-search\"></span></span>\n" +
@@ -719,7 +714,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "      <td>{{project.name}}</td>\n" +
     "      <td>{{project.createdAt | date:'yyyy/MM/dd HH:mm'}}</td>\n" +
     "      <td>{{project.updatedAt | date:'yyyy/MM/dd HH:mm'}}</td>\n" +
-    "      <td><a ui-sref=\"projects.get.detail({ projectId: project.getKey() })\">{{'ACTION.SHOW' | translate}}</a>\n" +
+    "      <td><a ui-sref=\"projects.get.detail({ projectId: project.key })\">{{'ACTION.SHOW' | translate}}</a>\n" +
     "    </tr>\n" +
     "  </tbody>\n" +
     "</table>\n" +
