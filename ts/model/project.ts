@@ -60,7 +60,7 @@ module egrid.model {
      * @override
      * @param   object
      */
-    public deserialize(o: any): Entity {
+    public load(o: any): Entity {
       this.key = o.key;
 
       this.name = o.name;
@@ -75,7 +75,7 @@ module egrid.model {
     /**
      * @override
      */
-    public fetch(key: string): JQueryPromise<Project> {
+    public get(key: string): JQueryPromise<Project> {
       var $deferred = $.Deferred();
 
       $.ajax({
@@ -84,7 +84,7 @@ module egrid.model {
           dataFilter: data => {
             var obj : ApiProjectData = JSON.parse(data);
 
-            return this.deserialize(obj);
+            return this.load(obj);
           },
         })
         .then((project : Project) => {
@@ -93,7 +93,7 @@ module egrid.model {
           var target: Project = JSON
             .parse(window.localStorage.getItem(Collection.pluralize(this.getType())))
             .map((o: any) => {
-              return this.deserialize(o);
+              return this.load(o);
             })
             .filter((value: Project) => {
               return value.key === key;
@@ -120,7 +120,7 @@ module egrid.model {
      * @override
      * @throws  Error
      */
-    public publish(): JQueryPromise<Project> {
+    public save(): JQueryPromise<Project> {
       var $deferred = $.Deferred();
 
       return $.ajax({
@@ -135,7 +135,7 @@ module egrid.model {
           dataFilter: data => {
             var obj : ApiProjectData = JSON.parse(data);
 
-            return new Project().deserialize(obj);
+            return new Project().load(obj);
           },
         })
         .then((p: Project) => {

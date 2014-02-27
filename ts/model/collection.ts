@@ -39,7 +39,7 @@ module egrid.model {
      *
      * @param   type  new() => T  モデルのコンストラクタ (TypeScript の制限より)
      */
-    public retrieve(type: new() => T): JQueryPromise<T[]> {
+    public query(type: new() => T): JQueryPromise<T[]> {
       var $deferred = $.Deferred();
       var entity = new type(); // 申し訳ない
 
@@ -57,7 +57,7 @@ module egrid.model {
               .map((o: any) => {
                 var i = new type();
 
-                return i.deserialize(o);
+                return i.load(o);
               }));
         }, (...reasons: any[]) => {
           var objects = JSON.parse(window.localStorage.getItem(Collection.pluralize(entity.getType()))) || [];
@@ -67,7 +67,7 @@ module egrid.model {
               .map((o: any) => {
                 var i = new type();
 
-                return i.deserialize(o);
+                return i.load(o);
               }));
         });
 
@@ -75,7 +75,7 @@ module egrid.model {
     }
 
     /**
-     * this.collection に対し Entity.publish() を呼び出します。
+     * this.collection に対し Entity.save() を呼び出します。
      */
     public flush(type: new() => T): JQueryPromise<T[]> {
       var $deferred = $.Deferred();
@@ -86,17 +86,19 @@ module egrid.model {
       $.when.apply($, Object
         .keys(unsavedItems)
         .map((value: any, index: number, ar: any[]) => {
-          var item = new type();
+            var item = new type();
 
-          return item.deserialize(unsavedItems[value]).publish();
-        }))
+            return item.load(unsavedItems[value]).save();
+          }))
         .then((...items: T[]) => {
           window.localStorage.removeItem(k);
 
-          return $deferred.resolve(items);
-        }, () => {
-          return $deferred.reject();
-        });
+            window.localStorage.removeItem(k);
+
+            return $deferred.resolve(items);
+          }, () => {
+            return $deferred.reject();
+          });
 
       return $deferred.promise();
     }

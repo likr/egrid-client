@@ -7,7 +7,7 @@ module egrid.app {
     constructor(private $q, $stateParams, private $state, private $modal, $scope) {
       var key = $stateParams.projectId;
 
-      this.$q.when(this.project.fetch(key))
+      this.$q.when(this.project.get(key))
         .then((p: model.Project) => {
         }, (jqXHR: JQueryPromise<model.Project>, textStatus: string, errorThrown: string) => {
           // リダイレクト
@@ -15,7 +15,7 @@ module egrid.app {
     }
 
     public update() {
-      this.$q.when(this.project.publish())
+      this.$q.when(this.project.save())
         .then((project: model.Project) => {
           // バインドしてるから要らない気はする
           this.project.name = project.name;

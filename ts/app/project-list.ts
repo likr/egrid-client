@@ -14,7 +14,7 @@ module egrid.app {
       this.reverse = true;
 
       $q
-        .when(this.projects.retrieve(model.Project))
+        .when(this.projects.query(model.Project))
         .then((projects: model.Project[]) => {
           if (this.projects.isDirty(model.Project)) {
             // TODO: fulfilled, rejected を設定する

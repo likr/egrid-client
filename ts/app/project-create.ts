@@ -11,7 +11,7 @@ module egrid.app {
 
     submit() {
       var project = new model.Project(this);
-      this.$q.when(project.publish())
+      this.$q.when(project.save())
         .then(() => {
           this.$state.go('projects.get.detail', { projectId: project.key });
         }, () => {

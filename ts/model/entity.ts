@@ -23,7 +23,7 @@ module egrid.model {
      * @abstract
      * @param   object
      */
-    public deserialize(o: any): Entity {
+    public load(o: any): Entity {
       throw new Error('NotImplementedException');
     }
 
@@ -31,7 +31,7 @@ module egrid.model {
      * @abstract
      * @param key string プライマリ キー
      */
-    public fetch(key: string): JQueryPromise<Entity> {
+    public get(key: string): JQueryPromise<Entity> {
       throw new Error('NotImplementedException');
     }
 
@@ -51,7 +51,7 @@ module egrid.model {
      *
      * @abstract
      */
-    public publish(): JQueryPromise<Entity> {
+    public save(): JQueryPromise<Entity> {
       throw new Error('NotImplementedException');
     }
 

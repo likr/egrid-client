@@ -54,11 +54,11 @@ var egrid;
                 configurable: true
             });
 
-            Entity.prototype.deserialize = function (o) {
+            Entity.prototype.load = function (o) {
                 throw new Error('NotImplementedException');
             };
 
-            Entity.prototype.fetch = function (key) {
+            Entity.prototype.get = function (key) {
                 throw new Error('NotImplementedException');
             };
 
@@ -66,7 +66,7 @@ var egrid;
                 throw new Error('NotImplementedException');
             };
 
-            Entity.prototype.publish = function () {
+            Entity.prototype.save = function () {
                 throw new Error('NotImplementedException');
             };
 
@@ -136,7 +136,7 @@ var egrid;
                     this.updatedAt_ = new egrid.model.ValueObject(date);
             };
 
-            Project.prototype.deserialize = function (o) {
+            Project.prototype.load = function (o) {
                 this.key = o.key;
 
                 this.name = o.name;
@@ -148,7 +148,7 @@ var egrid;
                 return this;
             };
 
-            Project.prototype.fetch = function (key) {
+            Project.prototype.get = function (key) {
                 var _this = this;
                 var $deferred = $.Deferred();
 
@@ -158,13 +158,13 @@ var egrid;
                     dataFilter: function (data) {
                         var obj = JSON.parse(data);
 
-                        return _this.deserialize(obj);
+                        return _this.load(obj);
                     }
                 }).then(function (project) {
                     return $deferred.resolve(project);
                 }, function () {
                     var target = JSON.parse(window.localStorage.getItem(egrid.model.Collection.pluralize(_this.getType()))).map(function (o) {
-                        return _this.deserialize(o);
+                        return _this.load(o);
                     }).filter(function (value) {
                         return value.key === key;
                     });
@@ -179,7 +179,7 @@ var egrid;
                 return 'Project';
             };
 
-            Project.prototype.publish = function () {
+            Project.prototype.save = function () {
                 var _this = this;
                 var $deferred = $.Deferred();
 
@@ -195,7 +195,7 @@ var egrid;
                     dataFilter: function (data) {
                         var obj = JSON.parse(data);
 
-                        return new Project().deserialize(obj);
+                        return new Project().load(obj);
                     }
                 }).then(function (p) {
                     return $deferred.resolve(p);
@@ -3064,13 +3064,13 @@ var egrid;
                 this.project = new egrid.model.Project();
                 var key = $stateParams.projectId;
 
-                this.$q.when(this.project.fetch(key)).then(function (p) {
+                this.$q.when(this.project.get(key)).then(function (p) {
                 }, function (jqXHR, textStatus, errorThrown) {
                 });
             }
             ProjectController.prototype.update = function () {
                 var _this = this;
-                this.$q.when(this.project.publish()).then(function (project) {
+                this.$q.when(this.project.save()).then(function (project) {
                     _this.project.name = project.name;
                     _this.project.note = project.note;
                 });
@@ -3117,7 +3117,7 @@ var egrid;
             ProjectCreateController.prototype.submit = function () {
                 var _this = this;
                 var project = new egrid.model.Project(this);
-                this.$q.when(project.publish()).then(function () {
+                this.$q.when(project.save()).then(function () {
                     _this.$state.go('projects.get.detail', { projectId: project.key });
                 }, function () {
                     _this.$state.go('projects.all.list');
@@ -3321,7 +3321,7 @@ var egrid;
                 return this.pairs.getItem(n);
             };
 
-            Collection.prototype.retrieve = function (type) {
+            Collection.prototype.query = function (type) {
                 var $deferred = $.Deferred();
                 var entity = new type();
 
@@ -3336,7 +3336,7 @@ var egrid;
                     return $deferred.resolve(objects.map(function (o) {
                         var i = new type();
 
-                        return i.deserialize(o);
+                        return i.load(o);
                     }));
                 }, function () {
                     var reasons = [];
@@ -3348,7 +3348,7 @@ var egrid;
                     return $deferred.resolve(objects.map(function (o) {
                         var i = new type();
 
-                        return i.deserialize(o);
+                        return i.load(o);
                     }));
                 });
 
@@ -3364,7 +3364,7 @@ var egrid;
                 $.when.apply($, Object.keys(unsavedItems).map(function (value, index, ar) {
                     var item = new type();
 
-                    return item.deserialize(unsavedItems[value]).publish();
+                    return item.load(unsavedItems[value]).save();
                 })).then(function () {
                     var items = [];
                     for (var _i = 0; _i < (arguments.length - 0); _i++) {
@@ -3415,7 +3415,7 @@ var egrid;
                 this.predicate = 'updatedAt';
                 this.reverse = true;
 
-                $q.when(this.projects.retrieve(egrid.model.Project)).then(function (projects) {
+                $q.when(this.projects.query(egrid.model.Project)).then(function (projects) {
                     if (_this.projects.isDirty(egrid.model.Project)) {
                         _this.projects.flush(egrid.model.Project);
                     }
