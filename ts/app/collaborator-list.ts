@@ -1,30 +1,33 @@
 /// <reference path="../model/collaborator.ts"/>
+/// <reference path="../model/collaborator-collection.ts"/>
 
 module egrid.app {
   export class CollaboratorListController {
-    projectId : string;
-    list : model.Collaborator[];
+    public projectId : string;
+    public collaborators = new model.CollaboratorCollection();
 
     constructor(private $q, $stateParams, private $state, private $log, private $scope, private $modal) {
       this.projectId = $stateParams.projectId;
-      this.$q.when(model.Collaborator.query(this.projectId))
-        .then((collaborators : model.Collaborator[]) => {
-          this.list = collaborators;
-        });
-    }
 
-    sync() {
-      this.$q.when(model.Collaborator.flush())
-        .then(() => { return model.Collaborator.query(this.projectId); })
+      $q
+        .when(this.collaborators.query(this.projectId))
         .then((collaborators: model.Collaborator[]) => {
-          this.list = collaborators;
+          collaborators.forEach((v) => {
+              this.collaborators.addItem(v);
+            });
 
-          this.$log.debug('sync completed successfully');
-          this.$state.go('projects.get.collaborators.all.list');
+          if (this.collaborators.isDirty())
+            this.collaborators
+              .flush()
+              .then((ps) => {
+                  ps.forEach((p) => {
+                      this.collaborators.addItem(p);
+                    });
+                });
         });
     }
 
-    public confirm(index) {
+    public confirm(key: string) {
       var modalInstance = this.$modal.open({
         templateUrl: '/partials/remove-item-dialog.html',
         controller: ($scope, $modalInstance) => {
@@ -37,13 +40,13 @@ module egrid.app {
         }
       });
 
-      modalInstance.result.then(() => { this.remove(index); });
+      modalInstance.result.then(() => { this.remove(key); });
     }
 
-    private remove(index) {
-      this.$q.when(this.list[index].remove())
+    private remove(key) {
+      this.$q.when(this.collaborators.getItem(key).remove())
         .then(() => {
-          this.list.splice(index, 1);
+          this.collaborators.removeItem(key);
         });
     }
   }

@@ -1,4 +1,6 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="collection-base.ts"/>
+/// <reference path="value-object.ts"/>
 /// <reference path="project.ts"/>
 /// <reference path="user.ts"/>
 
@@ -17,184 +19,158 @@ module egrid.model {
   }
 
 
-  export class Collaborator implements CollaboratorData {
-    private key_ : string;
+  export class Collaborator extends Entity {
+    private createdAt_: ValueObject<Date>;
+    private updatedAt_: ValueObject<Date>;
+
     public isManager : boolean;
     public project : ProjectData;
     public projectKey : string;
     public user : UserData;
     public userEmail : string;
 
-    constructor(obj : CollaboratorData) {
-      this.isManager = obj.isManager;
-      this.project = obj.project;
-      this.projectKey = obj.projectKey;
-      this.user = obj.user;
-      this.userEmail = obj.userEmail;
+    constructor(obj? : CollaboratorData) {
+      super();
+
+      if (obj) {
+        this.isManager = obj.isManager;
+        this.project = obj.project;
+        this.projectKey = obj.projectKey;
+        this.user = obj.user;
+        this.userEmail = obj.userEmail;
+      }
     }
 
-    key() : string {
-      return this.key_;
+    public get createdAt() : Date {
+      return this.createdAt_.value;
     }
 
-    remove() : JQueryXHR {
-      return $.ajax({
-        url: Collaborator.url(this.projectKey, this.key()),
-        type: 'DELETE',
-      });
+    public get updatedAt() : Date {
+      return this.updatedAt_.value;
     }
 
-    static get(projectKey : string, collaboratorKey : string) : JQueryPromise<Collaborator> {
+    private setCreatedAt(date: Date) : void {
+      if (!this.createdAt_)
+        this.createdAt_ = new ValueObject<Date>(date);
+    }
+
+    private setUpdatedAt(date: Date) : void {
+      if (!this.updatedAt_)
+        this.updatedAt_ = new ValueObject<Date>(date);
+    }
+
+    /**
+     * Object から Participant に変換します。
+     *
+     * @override
+     * @param   object
+     */
+    public load(o: any): Collaborator {
+      this.key = o.key;
+
+      this.project = o.project;
+
+      this.setCreatedAt(o.createdAt);
+      this.setUpdatedAt(o.updatedAt);
+
+      return this;
+    }
+
+    /**
+     * @override
+     */
+    public get(key: string): JQueryPromise<Collaborator> {
       var $deferred = $.Deferred();
 
       $.ajax({
-          url: Collaborator.url(projectKey, collaboratorKey),
+          url: this.url(key),
           type: 'GET',
           dataFilter: data => {
             var obj = JSON.parse(data);
-            return Collaborator.load(obj);
+
+            return this.load(obj);
           },
         })
-        .then((collaborator: Collaborator) => {
+        .then((collaborator : Collaborator) => {
           return $deferred.resolve(collaborator);
         }, () => {
-          var target: Collaborator = JSON
-            .parse(window.localStorage.getItem('collaborators'))
-            .map(Collaborator.load)
-            .filter((value: Collaborator) => {
-              return value.key() === collaboratorKey;
-            });
+          var k = CollectionBase.pluralize(Collaborator.type);
+          var objects = window.localStorage.getItem(k) || [];
+          var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
 
-          return target ? $deferred.resolve(target[0]) : $deferred.reject();
+          var target = $.extend(JSON.parse(objects), JSON.parse(unsaved));
+
+          return target[key] ? $deferred.resolve(this.load(target[key])) : $deferred.reject();
         });
 
       return $deferred.promise();
-    }
-
-    static query(projectKey : string) : JQueryPromise<Collaborator[]> {
-      var $deferred = $.Deferred();
-
-      $.ajax({
-          url: Collaborator.url(projectKey),
-          type: 'GET',
-          dataFilter: data => {
-            var objs = JSON.parse(data);
-            return objs.map((obj : ApiCollaboratorData) => {
-              return Collaborator.load(obj);
-            });
-          },
-        })
-        .then((collaborators: Collaborator[]) => {
-          window.localStorage.setItem('collaborators', JSON.stringify(collaborators));
-
-          return $deferred.resolve(collaborators);
-        }, () => {
-          return $deferred.resolve(JSON.parse(window.localStorage.getItem('collaborators')).map(Collaborator.load));
-        });
-
-      return $deferred.promise();
-    }
-
-    private static load(obj : ApiCollaboratorData) : Collaborator {
-      var collaborator = new Collaborator(obj);
-      collaborator.key_ = obj.key;
-      return collaborator;
-    }
-
-    private static url(projectKey : string, key? : string) : string {
-      if (key) {
-        return '/api/projects/'  + projectKey + '/collaborators/' + key;
-      } else {
-        return '/api/projects/'  + projectKey + '/collaborators';
-      }
     }
 
     /**
      * POST/PUT リクエストを発行します。
      *
-     * TODO: StorableBase<T> に移動…するかも
+     * @override
      * @throws  Error
      */
-    public publish() : JQueryPromise<Collaborator> {
+    public save(): JQueryPromise<Collaborator> {
       var $deferred = $.Deferred();
 
       return $.ajax({
-          url: Collaborator.url(this.projectKey, this.key()),
-          type: this.key() ? 'PUT' : 'POST',
+          url: this.url(this.projectKey),
+          type: this.key ? 'PUT' : 'POST',
           contentType: 'application/json',
           data: JSON.stringify({
-            key: this.key(),
+            key: this.key,
             isManager: this.isManager,
             projectKey: this.projectKey,
             userEmail: this.userEmail,
           }),
           dataFilter: data => {
             var obj : ApiCollaboratorData = JSON.parse(data);
-            this.key_ = obj.key;
-            return this;
+
+            return new Collaborator(obj).load(obj);
           },
         })
-        .then((p: Collaborator) => {
-          return $deferred.resolve(p);
-        }, () => {
-          return $deferred.reject();
-        });
+        .then((c: Collaborator) => {
+            return $deferred.resolve(c);
+          }, (...reasons) => {
+            var o = {};
+            var key = 'unsavedItems.' + CollectionBase.pluralize(Collaborator.type);
+            var unsavedItems: any[];
+
+            o[this.key] = this;
+
+            unsavedItems = $.extend({}, JSON.parse(window.localStorage.getItem(key)), o);
+
+            window.localStorage.setItem(key, JSON.stringify(unsavedItems));
+
+            return $deferred.reject();
+          });
 
       return $deferred.promise();
     }
 
     /**
-     * localStorage に格納されている各要素に対して publish メソッドを発行します。
-     *
-     * TODO: Collection<T> に IFlushable を実装…かも
-     * @see Collaborator.publish
+     * @override
+     * @param   key   string  Project Key
      */
-    public static flush() : JQueryPromise<Collaborator[]> {
-      var $deferred = $.Deferred();
-      var unsavedItems: any[];
-
-      unsavedItems = JSON.parse(window.localStorage.getItem('unsavedCollaborators')) || [];
-
-      $.when.apply($, unsavedItems
-        .map((o: any) => {
-          var p = Collaborator.load(o);
-
-          return p.publish();
-        }))
-        .then((...collaborators: Collaborator[]) => {
-          window.localStorage.removeItem('unsavedCollaborators');
-
-          return $deferred.resolve(collaborators);
-        }, () => {
-          return $deferred.reject();
-        });
-
-      return $deferred.promise();
+    public static listUrl(key? : string) : string {
+      return Project.listUrl() + '/' + key + '/collaborators';
     }
 
     /**
-     * localStorage と this を保存するラッパーメソッドです。
-     * flush メソッドを実行します。
-     *
-     * TODO: StorableBase<T> に移動…するかも
-     * @see Collaborator.flush
+     * @override
+     * @param   key   string  Collaborator Key
      */
-    public save() : JQueryPromise<Collaborator> {
-      var $deferred = $.Deferred();
-      var items = JSON.parse(window.localStorage.getItem('unsavedCollaborators')) || [];
+    public url(key? : string) : string {
+      return Collaborator.listUrl(this.projectKey) + '/' + key;
+    }
 
-      items.push(this);
-
-      window.localStorage.setItem('unsavedCollaborators', JSON.stringify(items));
-
-      Collaborator.flush()
-        .then(() => {
-          return $deferred.resolve();
-        }, () => {
-          return $deferred.reject();
-        });
-
-      return $deferred.promise();
+    public remove() : JQueryXHR {
+      return $.ajax({
+        url: this.url(this.key),
+        type: 'DELETE',
+      });
     }
   }
 }

@@ -1,13 +1,4 @@
 <div class="tab-pane active">
-  <div class="row">
-    <nav>
-      <form class="form-inline col-sm-1 col-sm-offset-11" ng-submit="collaborators.sync()">
-        <div class="input-group">
-          <button class="btn btn-default" type="submit">Sync</button>
-        </div>
-      </form>
-    </nav>
-  </div>
   <table class="table">
     <thead>
       <tr>
@@ -18,7 +9,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr ng-repeat="collaborator in collaborators.list">
+      <tr ng-repeat="collaborator in collaborators.collaborators.toArray()">
         <td>{{ $index + 1 }}</td>
         <td>{{collaborator.user.nickname}}</td>
         <td>{{collaborator.isManager}}</td>

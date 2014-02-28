@@ -134,7 +134,7 @@ module egrid.model {
             return new Participant(obj).load(obj);
           },
         })
-        .then((p: Project) => {
+        .then((p: Participant) => {
             return $deferred.resolve(p);
           }, (...reasons) => {
             var o = {};

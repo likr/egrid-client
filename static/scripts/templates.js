@@ -360,15 +360,6 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('/partials/project/collaborators/list.html',
     "<div class=\"tab-pane active\">\n" +
-    "  <div class=\"row\">\n" +
-    "    <nav>\n" +
-    "      <form class=\"form-inline col-sm-1 col-sm-offset-11\" ng-submit=\"collaborators.sync()\">\n" +
-    "        <div class=\"input-group\">\n" +
-    "          <button class=\"btn btn-default\" type=\"submit\">Sync</button>\n" +
-    "        </div>\n" +
-    "      </form>\n" +
-    "    </nav>\n" +
-    "  </div>\n" +
     "  <table class=\"table\">\n" +
     "    <thead>\n" +
     "      <tr>\n" +
@@ -379,7 +370,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "      </tr>\n" +
     "    </thead>\n" +
     "    <tbody>\n" +
-    "      <tr ng-repeat=\"collaborator in collaborators.list\">\n" +
+    "      <tr ng-repeat=\"collaborator in collaborators.collaborators.toArray()\">\n" +
     "        <td>{{ $index + 1 }}</td>\n" +
     "        <td>{{collaborator.user.nickname}}</td>\n" +
     "        <td>{{collaborator.isManager}}</td>\n" +

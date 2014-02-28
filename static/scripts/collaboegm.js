@@ -106,16 +106,19 @@ var egrid;
                 return this.pairs[k];
             };
 
+            Dictionary.prototype.removeItem = function (k) {
+                delete this.pairs[k];
+            };
+
             Dictionary.prototype.setItem = function (k, v) {
                 this.pairs[k] = v;
             };
 
             Dictionary.prototype.toArray = function () {
                 var _this = this;
-                var test = Object.keys(this.pairs).map(function (v, i, ar) {
+                return Object.keys(this.pairs).map(function (v, i, ar) {
                     return _this.pairs[v];
                 });
-                return test;
             };
 
             Dictionary.prototype.toJSON = function () {
@@ -161,8 +164,12 @@ var egrid;
                 this.pairs.value.setItem(item.key, item);
             };
 
-            CollectionBase.prototype.getItem = function (n) {
-                return this.pairs.value.getItem(n);
+            CollectionBase.prototype.getItem = function (k) {
+                return this.pairs.value.getItem(k);
+            };
+
+            CollectionBase.prototype.removeItem = function (k) {
+                return this.pairs.value.removeItem(k);
             };
 
             CollectionBase.prototype.query = function (key) {
@@ -351,156 +358,141 @@ var egrid;
 var egrid;
 (function (egrid) {
     (function (model) {
-        var Collaborator = (function () {
+        var Collaborator = (function (_super) {
+            __extends(Collaborator, _super);
             function Collaborator(obj) {
-                this.isManager = obj.isManager;
-                this.project = obj.project;
-                this.projectKey = obj.projectKey;
-                this.user = obj.user;
-                this.userEmail = obj.userEmail;
+                _super.call(this);
+
+                if (obj) {
+                    this.isManager = obj.isManager;
+                    this.project = obj.project;
+                    this.projectKey = obj.projectKey;
+                    this.user = obj.user;
+                    this.userEmail = obj.userEmail;
+                }
             }
-            Collaborator.prototype.key = function () {
-                return this.key_;
+            Object.defineProperty(Collaborator.prototype, "createdAt", {
+                get: function () {
+                    return this.createdAt_.value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+
+            Object.defineProperty(Collaborator.prototype, "updatedAt", {
+                get: function () {
+                    return this.updatedAt_.value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+
+            Collaborator.prototype.setCreatedAt = function (date) {
+                if (!this.createdAt_)
+                    this.createdAt_ = new egrid.model.ValueObject(date);
             };
 
-            Collaborator.prototype.remove = function () {
-                return $.ajax({
-                    url: Collaborator.url(this.projectKey, this.key()),
-                    type: 'DELETE'
-                });
+            Collaborator.prototype.setUpdatedAt = function (date) {
+                if (!this.updatedAt_)
+                    this.updatedAt_ = new egrid.model.ValueObject(date);
             };
 
-            Collaborator.get = function (projectKey, collaboratorKey) {
+            Collaborator.prototype.load = function (o) {
+                this.key = o.key;
+
+                this.project = o.project;
+
+                this.setCreatedAt(o.createdAt);
+                this.setUpdatedAt(o.updatedAt);
+
+                return this;
+            };
+
+            Collaborator.prototype.get = function (key) {
+                var _this = this;
                 var $deferred = $.Deferred();
 
                 $.ajax({
-                    url: Collaborator.url(projectKey, collaboratorKey),
+                    url: this.url(key),
                     type: 'GET',
                     dataFilter: function (data) {
                         var obj = JSON.parse(data);
-                        return Collaborator.load(obj);
+
+                        return _this.load(obj);
                     }
                 }).then(function (collaborator) {
                     return $deferred.resolve(collaborator);
                 }, function () {
-                    var target = JSON.parse(window.localStorage.getItem('collaborators')).map(Collaborator.load).filter(function (value) {
-                        return value.key() === collaboratorKey;
-                    });
+                    var k = egrid.model.CollectionBase.pluralize(Collaborator.type);
+                    var objects = window.localStorage.getItem(k) || [];
+                    var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
 
-                    return target ? $deferred.resolve(target[0]) : $deferred.reject();
-                });
+                    var target = $.extend(JSON.parse(objects), JSON.parse(unsaved));
 
-                return $deferred.promise();
-            };
-
-            Collaborator.query = function (projectKey) {
-                var $deferred = $.Deferred();
-
-                $.ajax({
-                    url: Collaborator.url(projectKey),
-                    type: 'GET',
-                    dataFilter: function (data) {
-                        var objs = JSON.parse(data);
-                        return objs.map(function (obj) {
-                            return Collaborator.load(obj);
-                        });
-                    }
-                }).then(function (collaborators) {
-                    window.localStorage.setItem('collaborators', JSON.stringify(collaborators));
-
-                    return $deferred.resolve(collaborators);
-                }, function () {
-                    return $deferred.resolve(JSON.parse(window.localStorage.getItem('collaborators')).map(Collaborator.load));
-                });
-
-                return $deferred.promise();
-            };
-
-            Collaborator.load = function (obj) {
-                var collaborator = new Collaborator(obj);
-                collaborator.key_ = obj.key;
-                return collaborator;
-            };
-
-            Collaborator.url = function (projectKey, key) {
-                if (key) {
-                    return '/api/projects/' + projectKey + '/collaborators/' + key;
-                } else {
-                    return '/api/projects/' + projectKey + '/collaborators';
-                }
-            };
-
-            Collaborator.prototype.publish = function () {
-                var _this = this;
-                var $deferred = $.Deferred();
-
-                return $.ajax({
-                    url: Collaborator.url(this.projectKey, this.key()),
-                    type: this.key() ? 'PUT' : 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({
-                        key: this.key(),
-                        isManager: this.isManager,
-                        projectKey: this.projectKey,
-                        userEmail: this.userEmail
-                    }),
-                    dataFilter: function (data) {
-                        var obj = JSON.parse(data);
-                        _this.key_ = obj.key;
-                        return _this;
-                    }
-                }).then(function (p) {
-                    return $deferred.resolve(p);
-                }, function () {
-                    return $deferred.reject();
-                });
-
-                return $deferred.promise();
-            };
-
-            Collaborator.flush = function () {
-                var $deferred = $.Deferred();
-                var unsavedItems;
-
-                unsavedItems = JSON.parse(window.localStorage.getItem('unsavedCollaborators')) || [];
-
-                $.when.apply($, unsavedItems.map(function (o) {
-                    var p = Collaborator.load(o);
-
-                    return p.publish();
-                })).then(function () {
-                    var collaborators = [];
-                    for (var _i = 0; _i < (arguments.length - 0); _i++) {
-                        collaborators[_i] = arguments[_i + 0];
-                    }
-                    window.localStorage.removeItem('unsavedCollaborators');
-
-                    return $deferred.resolve(collaborators);
-                }, function () {
-                    return $deferred.reject();
+                    return target[key] ? $deferred.resolve(_this.load(target[key])) : $deferred.reject();
                 });
 
                 return $deferred.promise();
             };
 
             Collaborator.prototype.save = function () {
+                var _this = this;
                 var $deferred = $.Deferred();
-                var items = JSON.parse(window.localStorage.getItem('unsavedCollaborators')) || [];
 
-                items.push(this);
+                return $.ajax({
+                    url: this.url(this.projectKey),
+                    type: this.key ? 'PUT' : 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        key: this.key,
+                        isManager: this.isManager,
+                        projectKey: this.projectKey,
+                        userEmail: this.userEmail
+                    }),
+                    dataFilter: function (data) {
+                        var obj = JSON.parse(data);
 
-                window.localStorage.setItem('unsavedCollaborators', JSON.stringify(items));
-
-                Collaborator.flush().then(function () {
-                    return $deferred.resolve();
+                        return new Collaborator(obj).load(obj);
+                    }
+                }).then(function (c) {
+                    return $deferred.resolve(c);
                 }, function () {
+                    var reasons = [];
+                    for (var _i = 0; _i < (arguments.length - 0); _i++) {
+                        reasons[_i] = arguments[_i + 0];
+                    }
+                    var o = {};
+                    var key = 'unsavedItems.' + egrid.model.CollectionBase.pluralize(Collaborator.type);
+                    var unsavedItems;
+
+                    o[_this.key] = _this;
+
+                    unsavedItems = $.extend({}, JSON.parse(window.localStorage.getItem(key)), o);
+
+                    window.localStorage.setItem(key, JSON.stringify(unsavedItems));
+
                     return $deferred.reject();
                 });
 
                 return $deferred.promise();
             };
+
+            Collaborator.listUrl = function (key) {
+                return egrid.model.Project.listUrl() + '/' + key + '/collaborators';
+            };
+
+            Collaborator.prototype.url = function (key) {
+                return Collaborator.listUrl(this.projectKey) + '/' + key;
+            };
+
+            Collaborator.prototype.remove = function () {
+                return $.ajax({
+                    url: this.url(this.key),
+                    type: 'DELETE'
+                });
+            };
             return Collaborator;
-        })();
+        })(egrid.model.Entity);
         model.Collaborator = Collaborator;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
@@ -872,6 +864,88 @@ var egrid;
 })(egrid || (egrid = {}));
 var egrid;
 (function (egrid) {
+    (function (model) {
+        var CollaboratorCollection = (function (_super) {
+            __extends(CollaboratorCollection, _super);
+            function CollaboratorCollection() {
+                _super.call(this, new egrid.model.Dictionary());
+            }
+            CollaboratorCollection.prototype.query = function (projectKey) {
+                var _this = this;
+                var $deferred = $.Deferred();
+                var k = egrid.model.CollectionBase.pluralize(egrid.model.Collaborator.type);
+                var mapper = function (o) {
+                    var item = new egrid.model.Collaborator(o).load(o);
+
+                    _this.pairs.value.setItem(item.key, item);
+
+                    return item;
+                };
+
+                $.ajax({
+                    url: egrid.model.Collaborator.listUrl(projectKey),
+                    type: 'GET'
+                }).then(function (result) {
+                    var objects = JSON.parse(result) || [];
+
+                    objects.map(mapper);
+
+                    window.localStorage.setItem(k, JSON.stringify(_this.pairs));
+
+                    return $deferred.resolve(_this.pairs.value.toArray());
+                }, function () {
+                    var reasons = [];
+                    for (var _i = 0; _i < (arguments.length - 0); _i++) {
+                        reasons[_i] = arguments[_i + 0];
+                    }
+                    var objects = window.localStorage.getItem(k) || [];
+                    var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
+
+                    $.extend(egrid.model.NotationDeserializer.load(objects), egrid.model.NotationDeserializer.load(unsaved)).map(mapper);
+
+                    return $deferred.resolve(_this.pairs.value.toArray());
+                });
+
+                return $deferred.promise();
+            };
+
+            CollaboratorCollection.prototype.flush = function () {
+                var _this = this;
+                var $deferred = $.Deferred();
+                var k = 'unsavedItems.' + egrid.model.CollectionBase.pluralize(egrid.model.Collaborator.type);
+                var unsavedItems = JSON.parse(window.localStorage.getItem(k)) || {};
+
+                $.when(Object.keys(unsavedItems).map(function (value, index, ar) {
+                    var item = new egrid.model.Collaborator();
+
+                    return item.load(unsavedItems[value]).save();
+                })).then(function () {
+                    var items = [];
+                    for (var _i = 0; _i < (arguments.length - 0); _i++) {
+                        items[_i] = arguments[_i + 0];
+                    }
+                    return $deferred.resolve(_this.toArray());
+                }, function () {
+                    return $deferred.reject();
+                });
+
+                return $deferred.promise();
+            };
+
+            CollaboratorCollection.prototype.isDirty = function () {
+                var k = 'unsavedItems.' + egrid.model.CollectionBase.pluralize(egrid.model.Collaborator.type);
+                var unsavedItems = JSON.parse(window.localStorage.getItem(k)) || {};
+
+                return !!Object.keys(unsavedItems).length;
+            };
+            return CollaboratorCollection;
+        })(egrid.model.CollectionBase);
+        model.CollaboratorCollection = CollaboratorCollection;
+    })(egrid.model || (egrid.model = {}));
+    var model = egrid.model;
+})(egrid || (egrid = {}));
+var egrid;
+(function (egrid) {
     (function (app) {
         var CollaboratorListController = (function () {
             function CollaboratorListController($q, $stateParams, $state, $log, $scope, $modal) {
@@ -881,24 +955,23 @@ var egrid;
                 this.$log = $log;
                 this.$scope = $scope;
                 this.$modal = $modal;
+                this.collaborators = new egrid.model.CollaboratorCollection();
                 this.projectId = $stateParams.projectId;
-                this.$q.when(egrid.model.Collaborator.query(this.projectId)).then(function (collaborators) {
-                    _this.list = collaborators;
+
+                $q.when(this.collaborators.query(this.projectId)).then(function (collaborators) {
+                    collaborators.forEach(function (v) {
+                        _this.collaborators.addItem(v);
+                    });
+
+                    if (_this.collaborators.isDirty())
+                        _this.collaborators.flush().then(function (ps) {
+                            ps.forEach(function (p) {
+                                _this.collaborators.addItem(p);
+                            });
+                        });
                 });
             }
-            CollaboratorListController.prototype.sync = function () {
-                var _this = this;
-                this.$q.when(egrid.model.Collaborator.flush()).then(function () {
-                    return egrid.model.Collaborator.query(_this.projectId);
-                }).then(function (collaborators) {
-                    _this.list = collaborators;
-
-                    _this.$log.debug('sync completed successfully');
-                    _this.$state.go('projects.get.collaborators.all.list');
-                });
-            };
-
-            CollaboratorListController.prototype.confirm = function (index) {
+            CollaboratorListController.prototype.confirm = function (key) {
                 var _this = this;
                 var modalInstance = this.$modal.open({
                     templateUrl: '/partials/remove-item-dialog.html',
@@ -912,14 +985,14 @@ var egrid;
                 });
 
                 modalInstance.result.then(function () {
-                    _this.remove(index);
+                    _this.remove(key);
                 });
             };
 
-            CollaboratorListController.prototype.remove = function (index) {
+            CollaboratorListController.prototype.remove = function (key) {
                 var _this = this;
-                this.$q.when(this.list[index].remove()).then(function () {
-                    _this.list.splice(index, 1);
+                this.$q.when(this.collaborators.getItem(key).remove()).then(function () {
+                    _this.collaborators.removeItem(key);
                 });
             };
             return CollaboratorListController;
