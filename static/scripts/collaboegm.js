@@ -143,7 +143,7 @@ var egrid;
 
                 return b ? Object.keys(b).map(function (v, i, ar) {
                     return b[v];
-                }) : {};
+                }) : [];
             };
             return NotationDeserializer;
         })();
@@ -447,7 +447,7 @@ var egrid;
                         o[Object.keys(unsavedItems).length] = _this;
                     }
 
-                    irregulars = $.extend({}, unsavedItems, o);
+                    irregulars = $.extend(true, {}, unsavedItems, o);
 
                     window.localStorage.setItem(storageKey, JSON.stringify(irregulars));
 
@@ -898,7 +898,7 @@ var egrid;
                     }
                     var objects = window.localStorage.getItem(k);
                     var unsaved = window.localStorage.getItem('unsavedItems.' + k);
-                    var serials = $.extend(egrid.model.NotationDeserializer.load(objects), egrid.model.NotationDeserializer.load(unsaved));
+                    var serials = $.merge(egrid.model.NotationDeserializer.load(objects), egrid.model.NotationDeserializer.load(unsaved));
 
                     for (var i = 0, j = Object.keys(serials), l = j.length; i < l; i++) {
                         mapper(serials[j[i]]);
@@ -3119,7 +3119,7 @@ var egrid;
                     }
                     var objects = window.localStorage.getItem(k);
                     var unsaved = window.localStorage.getItem('unsavedItems.' + k);
-                    var serials = $.extend(egrid.model.NotationDeserializer.load(objects), egrid.model.NotationDeserializer.load(unsaved));
+                    var serials = $.merge(egrid.model.NotationDeserializer.load(objects), egrid.model.NotationDeserializer.load(unsaved));
 
                     for (var i = 0, j = Object.keys(serials), l = j.length; i < l; i++) {
                         mapper(serials[j[i]]);
@@ -3488,7 +3488,7 @@ var egrid;
                     }
                     var objects = window.localStorage.getItem(k);
                     var unsaved = window.localStorage.getItem('unsavedItems.' + k);
-                    var serials = $.extend(egrid.model.NotationDeserializer.load(objects), egrid.model.NotationDeserializer.load(unsaved));
+                    var serials = $.merge(egrid.model.NotationDeserializer.load(objects), egrid.model.NotationDeserializer.load(unsaved));
 
                     for (var i = 0, j = Object.keys(serials), l = j.length; i < l; i++) {
                         mapper(serials[j[i]]);
@@ -4162,7 +4162,7 @@ var egrid;
                     }
                     var objects = window.localStorage.getItem(k);
                     var unsaved = window.localStorage.getItem('unsavedItems.' + k);
-                    var serials = $.extend(egrid.model.NotationDeserializer.load(objects), egrid.model.NotationDeserializer.load(unsaved));
+                    var serials = $.merge(egrid.model.NotationDeserializer.load(objects), egrid.model.NotationDeserializer.load(unsaved));
 
                     for (var i = 0, j = Object.keys(serials), l = j.length; i < l; i++) {
                         mapper(serials[j[i]]);

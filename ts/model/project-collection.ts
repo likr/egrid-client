@@ -48,7 +48,7 @@ module egrid.model {
         }, (...reasons: any[]) => {
           var objects = window.localStorage.getItem(k);
           var unsaved = window.localStorage.getItem('unsavedItems.' + k);
-          var serials = $.extend(NotationDeserializer.load(objects), NotationDeserializer.load(unsaved));
+          var serials = $.merge(NotationDeserializer.load(objects), NotationDeserializer.load(unsaved));
 
           for (var i = 0, j = Object.keys(serials), l = j.length; i < l; i++) {
             mapper(serials[j[i]]);

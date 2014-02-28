@@ -125,7 +125,7 @@ module egrid.model {
               o[Object.keys(unsavedItems).length] = this; // FIXME
             }
 
-            irregulars = $.extend({}, unsavedItems, o);
+            irregulars = $.extend(true, {}, unsavedItems, o);
 
             window.localStorage.setItem(storageKey, JSON.stringify(irregulars));
 

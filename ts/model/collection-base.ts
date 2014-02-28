@@ -35,7 +35,7 @@ module egrid.model {
   }
 
   export class NotationDeserializer {
-    public static load(o: any): any {
+    public static load(o: any): any[] {
       var b = JSON.parse(o);
 
       return b
@@ -43,7 +43,7 @@ module egrid.model {
             .map((v, i, ar) => {
                 return b[v];
               })
-        : {};
+        : [];
     }
   }
 
