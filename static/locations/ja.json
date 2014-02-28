@@ -38,6 +38,7 @@
     "COLLABORATOR": "コラボレーター",
     "ROLE": {
       "MANAGER": "管理者",
+      "USER": "通常",
       "ROLE": "役割"
     }
   },
