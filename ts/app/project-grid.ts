@@ -156,7 +156,7 @@ module egrid.app {
         })
         ;
 
-      $q.when(this.participants.query())
+      $q.when(this.participants.query(this.projectKey))
         .then((participants : model.Participant[]) => {
           participants.forEach((v) => {
               this.participants.addItem(v);

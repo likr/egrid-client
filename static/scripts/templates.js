@@ -39,7 +39,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "  <div class=\"navbar navbar-default navbar-fixed-top\" style=\"top: 50px;\">\n" +
     "    <div class=\"container\">\n" +
     "      <form class=\"navbar-form navbar-left\">\n" +
-    "        <a class=\"btn btn-default\" id=\"quitButton\" href=\"/#{{Url.projectUrl(projectGrid.projectKey)}}\">{{'ACTION.QUIT' | translate}}</a>\n" +
+    "        <a class=\"btn btn-default\" id=\"quitButton\" ui-sref=\"projects.get.evaluation\">{{'ACTION.QUIT' | translate}}</a>\n" +
     "      </form>\n" +
     "      <form class=\"navbar-form navbar-right\">\n" +
     "        <a class=\"btn btn-default\" id=\"filterButton\">{{'ACTION.FILTER' | translate}}</a>\n" +
@@ -419,7 +419,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "<div class=\"navbar navbar-default\">\n" +
     "  <div class=\"navbar-collapse\">\n" +
     "    <form class=\"navbar-form\">\n" +
-    "      <a href=\"/#{{Url.projectGridUrl(project.projectKey)}}\" class=\"btn btn-primary\">{{'ACTION.SHOW' | translate}}</a>\n" +
+    "      <a ui-sref=\"projects.get.grid\" class=\"btn btn-primary\">{{'ACTION.SHOW' | translate}}</a>\n" +
     "    </form>\n" +
     "  </div>\n" +
     "</div>\n"

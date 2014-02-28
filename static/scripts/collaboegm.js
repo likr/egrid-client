@@ -3408,7 +3408,7 @@ var egrid;
                     _this.egm.nodes(nodes).links(links).draw().focusCenter();
                 });
 
-                $q.when(this.participants.query()).then(function (participants) {
+                $q.when(this.participants.query(this.projectKey)).then(function (participants) {
                     participants.forEach(function (v) {
                         _this.participants.addItem(v);
 
