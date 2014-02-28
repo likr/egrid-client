@@ -303,7 +303,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('/partials/project/analyses/analysis/analyses.html',
-    "<div tab heading=\"{{'SEM.ANALYSIS' | translate}}\" select=\"drawSemAnalysis()\">\n" +
+    "<div class=\"tab-pane active\" select=\"drawSemAnalysis()\">\n" +
     "  <div id=\"sem-analysis-display\">\n" +
     "    <div class=\"row\">\n" +
     "      <div class=\"span10\">\n" +
@@ -316,6 +316,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "              <label class=\"checkbox\">\n" +
     "                <input type=\"checkbox\" ng-model=\"item.active\" ng-change=\"removeNode()\"/>{{ item.text }}\n" +
     "              </label>\n" +
+    "            </td>\n" +
     "          </tr>\n" +
     "        </table>\n" +
     "      </div>\n" +
