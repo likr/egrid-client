@@ -5,14 +5,11 @@ module egrid.app {
   export class ParticipantController implements model.ParticipantData {
     name : string;
     note : string;
-    participantKey : string;
     project : model.ProjectData;
     projectKey : string;
     participant : model.Participant;
 
     constructor(private $q, $stateParams, private $scope, private $state, private $modal) {
-      var key = $stateParams.projectId;
-
       this.participant = new model.Participant({ projectKey: $stateParams.projectId });
 
       this.$q.when(this.participant.get($stateParams.participantId))

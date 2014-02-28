@@ -96,6 +96,7 @@ module egrid.app {
           url: '/list',
           views: {
             'content@projects.get.analyses.all': {
+              controller: 'SemProjectListController as ctrl',
               templateUrl: '/partials/project/analyses/list.html',
             },
           },

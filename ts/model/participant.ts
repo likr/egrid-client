@@ -22,7 +22,6 @@ module egrid.model {
   export class Participant extends Entity {
     private createdAt_: ValueObject<Date>;
     private updatedAt_: ValueObject<Date>;
-    private projectKey_: ValueObject<string>;
 
     public name : string;
     public note : string;
@@ -59,11 +58,6 @@ module egrid.model {
     private setUpdatedAt(date: Date) : void {
       if (!this.updatedAt_)
         this.updatedAt_ = new ValueObject<Date>(date);
-    }
-
-    private setProjectKey(k: string) : void {
-      if (!this.projectKey_)
-        this.projectKey_ = new ValueObject<string>(k);
     }
 
     /**
@@ -122,7 +116,7 @@ module egrid.model {
      * @override
      * @throws  Error
      */
-    public save(): JQueryPromise<Project> {
+    public save(): JQueryPromise<Participant> {
       var $deferred = $.Deferred();
 
       return $.ajax({

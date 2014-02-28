@@ -6,16 +6,14 @@ module egrid.app {
     name : string;
     project : model.ProjectData;
     projectKey : string;
-    semProjectKey : string;
+    semProject : model.SemProject;
 
     constructor($q, $stateParams, storage) {
-      this.projectKey = $stateParams.projectId;
-      this.semProjectKey = $stateParams.semProjectId;
+      this.semProject = new model.SemProject({ projectKey: $stateParams.projectId });
 
-      $q.when(model.SemProject.get(this.projectKey, this.semProjectKey))
+      $q.when(this.semProject.get($stateParams.semProjectId))
         .then((p: model.SemProject) => {
-          this.name = p.name;
-          this.project = p.project;
+        }, (jqXHR: JQueryPromise<model.Project>, textStatus: string, errorThrown: string) => {
         });
     }
   }

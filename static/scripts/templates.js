@@ -145,22 +145,20 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('/partials/project/analyses/analysis/analyses.html',
     "<div tab heading=\"{{'SEM.ANALYSIS' | translate}}\" select=\"drawSemAnalysis()\">\n" +
-    "  <div ng-controller=\"SemProjectAnalysisController as analysis\">\n" +
-    "    <div id=\"sem-analysis-display\">\n" +
-    "      <div class=\"row\">\n" +
-    "        <div class=\"span10\">\n" +
-    "          <svg width=\"100%\" height=\"500px\"></svg>\n" +
-    "        </div>\n" +
-    "        <div class=\"span2\">\n" +
-    "          <table class=\"table\">\n" +
-    "            <tr ng-repeat=\"item in items\">\n" +
-    "              <td>\n" +
-    "                <label class=\"checkbox\">\n" +
-    "                  <input type=\"checkbox\" ng-model=\"item.active\" ng-change=\"removeNode()\"/>{{ item.text }}\n" +
-    "                </label>\n" +
-    "            </tr>\n" +
-    "          </table>\n" +
-    "        </div>\n" +
+    "  <div id=\"sem-analysis-display\">\n" +
+    "    <div class=\"row\">\n" +
+    "      <div class=\"span10\">\n" +
+    "        <svg width=\"100%\" height=\"500px\"></svg>\n" +
+    "      </div>\n" +
+    "      <div class=\"span2\">\n" +
+    "        <table class=\"table\">\n" +
+    "          <tr ng-repeat=\"item in items\">\n" +
+    "            <td>\n" +
+    "              <label class=\"checkbox\">\n" +
+    "                <input type=\"checkbox\" ng-model=\"item.active\" ng-change=\"removeNode()\"/>{{ item.text }}\n" +
+    "              </label>\n" +
+    "          </tr>\n" +
+    "        </table>\n" +
     "      </div>\n" +
     "    </div>\n" +
     "  </div>\n" +
@@ -170,17 +168,17 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('/partials/project/analyses/analysis/analysis.html',
     "<div>\n" +
-    "  <h2>{{ semProject.name }}</h2>\n" +
+    "  <h2>{{ semProject.semProject.name }}</h2>\n" +
     "\n" +
     "  <ol class=\"breadcrumb\">\n" +
     "    <li>\n" +
     "      <a ui-sref=\"projects.all.list\">{{ 'PROJECT.PROJECTS' | translate }}</a>\n" +
     "    </li>\n" +
     "    <li>\n" +
-    "      <a ui-sref=\"projects.get.detail\">{{semProject.project.name}}</a>\n" +
+    "      <a ui-sref=\"projects.get.detail\">{{semProject.semProject.project.name}}</a>\n" +
     "    </li>\n" +
     "    <li class=\"active\">\n" +
-    "      {{ semProject.name }}\n" +
+    "      {{ semProject.semProject.name }}\n" +
     "    </li>\n" +
     "  </ol>\n" +
     "\n" +
@@ -294,16 +292,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('/partials/project/analyses/list.html',
-    "<div class=\"tab-pane active\" ng-controller=\"SemProjectListController as semProjects\">\n" +
-    "  <div class=\"row\">\n" +
-    "    <nav>\n" +
-    "      <form class=\"form-inline col-sm-1 col-sm-offset-11\" ng-submit=\"semProjects.sync()\">\n" +
-    "        <div class=\"input-group\">\n" +
-    "          <button class=\"btn btn-default\" type=\"submit\">Sync</button>\n" +
-    "        </div>\n" +
-    "      </form>\n" +
-    "    </nav>\n" +
-    "  </div>\n" +
+    "<div class=\"tab-pane active\">\n" +
     "  <table class=\"table\">\n" +
     "    <thead>\n" +
     "      <tr>\n" +
@@ -313,10 +302,10 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "      </tr>\n" +
     "    </thead>\n" +
     "    <tbody>\n" +
-    "      <tr ng-repeat=\"semProject in semProjects.list\">\n" +
+    "      <tr ng-repeat=\"semProject in ctrl.semProjects.toArray()\">\n" +
     "        <td>{{ $index + 1 }}</td>\n" +
     "        <td>{{ semProject.name }}</td>\n" +
-    "        <td><a href=\"/#{{Url.semProjectUrl(semProject, 'design')}}\">{{ 'ACTION.SHOW' | translate }}</a>\n" +
+    "        <td><a ui-sref=\"projects.get.analyses.get.design({ semProjectId: semProject.key })\">{{ 'ACTION.SHOW' | translate }}</a>\n" +
     "      </tr>\n" +
     "    </tbody>\n" +
     "  </table>\n" +

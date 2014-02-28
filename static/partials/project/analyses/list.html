@@ -1,13 +1,4 @@
-<div class="tab-pane active" ng-controller="SemProjectListController as semProjects">
-  <div class="row">
-    <nav>
-      <form class="form-inline col-sm-1 col-sm-offset-11" ng-submit="semProjects.sync()">
-        <div class="input-group">
-          <button class="btn btn-default" type="submit">Sync</button>
-        </div>
-      </form>
-    </nav>
-  </div>
+<div class="tab-pane active">
   <table class="table">
     <thead>
       <tr>
@@ -17,10 +8,10 @@
       </tr>
     </thead>
     <tbody>
-      <tr ng-repeat="semProject in semProjects.list">
+      <tr ng-repeat="semProject in ctrl.semProjects.toArray()">
         <td>{{ $index + 1 }}</td>
         <td>{{ semProject.name }}</td>
-        <td><a href="/#{{Url.semProjectUrl(semProject, 'design')}}">{{ 'ACTION.SHOW' | translate }}</a>
+        <td><a ui-sref="projects.get.analyses.get.design({ semProjectId: semProject.key })">{{ 'ACTION.SHOW' | translate }}</a>
       </tr>
     </tbody>
   </table>

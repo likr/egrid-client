@@ -1,4 +1,6 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="collection-base.ts"/>
+/// <reference path="value-object.ts"/>
 /// <reference path="project.ts"/>
 
 module egrid.model {
@@ -14,181 +16,150 @@ module egrid.model {
   }
 
 
-  export class SemProject implements SemProjectData {
-    private key_ : string;
+  export class SemProject extends Entity {
+    private createdAt_: ValueObject<Date>;
+    private updatedAt_: ValueObject<Date>;
+
     public name : string;
     public project : ProjectData;
     public projectKey : string;
 
+    public static type: string = 'SemProject';
+    public static url: string = '/api/projects/:projectId/sem-projects/:semProjectId';
 
-    constructor(obj : SemProjectData) {
-      this.name = obj.name;
-      this.project = obj.project;
-      this.projectKey = obj.projectKey;
-    }
+    constructor(obj? : SemProjectData) {
+      super();
 
-    key() : string {
-      return this.key_;
-    }
-
-    static get(projectKey : string, semProjectKey : string) : JQueryPromise<SemProject> {
-      var $deferred = $.Deferred();
-
-      $.ajax({
-          url: SemProject.url(projectKey, semProjectKey),
-          type: 'GET',
-          dataFilter: data => {
-            var obj : ApiSemProjectData = JSON.parse(data);
-            return SemProject.load(obj);
-          },
-        })
-        .then((semProject: SemProject) => {
-          return $deferred.resolve(semProject);
-        }, () => {
-          var target: SemProject = JSON
-            .parse(window.localStorage.getItem('semProjects'))
-            .map(SemProject.import)
-            .filter((value: SemProject) => {
-              return value.key() === semProjectKey;
-            });
-
-          return target ? $deferred.resolve(target[0]) : $deferred.reject();
-        });
-
-      return $deferred.promise();
-    }
-
-    static query(projectKey : string) : JQueryPromise<SemProject[]> {
-      var $deferred = $.Deferred();
-
-      $.ajax({
-          url: SemProject.url(projectKey),
-          type: 'GET',
-          dataFilter: data => {
-            var objs = JSON.parse(data);
-            return objs.map((obj : ApiSemProjectData) => {
-              return SemProject.load(obj);
-            });
-          },
-        })
-        .then((semProjects: SemProject[]) => {
-          window.localStorage.setItem('semProjects', JSON.stringify(semProjects));
-
-          return $deferred.resolve(semProjects);
-        }, () => {
-          return $deferred.resolve(JSON.parse(window.localStorage.getItem('semProjects')).map(SemProject.import));
-        });
-
-      return $deferred.promise();
-    }
-
-    private static load(obj : ApiSemProjectData) : SemProject {
-      var semProject = new SemProject(obj);
-      semProject.key_ = obj.key;
-      return semProject;
-    }
-
-    private static url(projectKey : string, semProjectKey? : string) : string {
-      if (semProjectKey) {
-        return '/api/projects/' + projectKey + '/sem-projects/' + semProjectKey;
-      } else {
-        return '/api/projects/' + projectKey + '/sem-projects';
+      if (obj) {
+        this.name = obj.name;
+        this.project = obj.project;
+        this.projectKey = obj.projectKey;
       }
     }
 
-    static import(o: any) : SemProject {
-      var p: SemProject = new SemProject(o);
+    public get createdAt() : Date {
+      return this.createdAt_.value;
+    }
 
-      p.key_ = o.key_;
+    public get updatedAt() : Date {
+      return this.updatedAt_.value;
+    }
 
-      return p;
+    private setCreatedAt(date: Date) : void {
+      if (!this.createdAt_)
+        this.createdAt_ = new ValueObject<Date>(date);
+    }
+
+    private setUpdatedAt(date: Date) : void {
+      if (!this.updatedAt_)
+        this.updatedAt_ = new ValueObject<Date>(date);
+    }
+
+    /**
+     * Object から Participant に変換します。
+     *
+     * @override
+     * @param   object
+     */
+    public load(o: any): SemProject {
+      this.key = o.key;
+
+      this.name = o.name;
+
+      this.project = o.project;
+
+      this.setCreatedAt(o.createdAt);
+      this.setUpdatedAt(o.updatedAt);
+
+      return this;
+    }
+
+    /**
+     * @override
+     */
+    public get(key: string): JQueryPromise<SemProject> {
+      var $deferred = $.Deferred();
+
+      $.ajax({
+          url: this.url(key),
+          type: 'GET',
+          dataFilter: data => {
+            var obj = JSON.parse(data);
+
+            return this.load(obj);
+          },
+        })
+        .then((semProject : SemProject) => {
+          return $deferred.resolve(semProject);
+        }, () => {
+          var k = CollectionBase.pluralize(SemProject.type);
+          var objects = window.localStorage.getItem(k) || [];
+          var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
+
+          var target = $.extend(JSON.parse(objects), JSON.parse(unsaved));
+
+          return target[key] ? $deferred.resolve(this.load(target[key])) : $deferred.reject();
+        });
+
+      return $deferred.promise();
     }
 
     /**
      * POST/PUT リクエストを発行します。
      *
-     * TODO: StorableBase<T> に移動…するかも
+     * @override
      * @throws  Error
      */
-    public publish() : JQueryPromise<SemProject> {
+    public save(): JQueryPromise<SemProject> {
       var $deferred = $.Deferred();
 
       return $.ajax({
-          url: SemProject.url(this.projectKey, this.key()),
-          type: this.key() ? 'PUT' : 'POST',
+          url: this.url(this.projectKey),
+          type: this.key ? 'PUT' : 'POST',
           contentType: 'application/json',
           data: JSON.stringify({
-            key: this.key(),
+            key: this.key,
             name: this.name,
           }),
           dataFilter: data => {
             var obj : ApiSemProjectData = JSON.parse(data);
-            this.key_ = obj.key;
-            return this;
+
+            return new SemProject(obj).load(obj);
           },
         })
-        .then((p: SemProject) => {
-          return $deferred.resolve(p);
-        }, () => {
-          return $deferred.reject();
-        });
+        .then((p: Project) => {
+            return $deferred.resolve(p);
+          }, (...reasons) => {
+            var o = {};
+            var key = 'unsavedItems.' + CollectionBase.pluralize(SemProject.type);
+            var unsavedItems: any[];
+
+            o[this.key] = this;
+
+            unsavedItems = $.extend({}, JSON.parse(window.localStorage.getItem(key)), o);
+
+            window.localStorage.setItem(key, JSON.stringify(unsavedItems));
+
+            return $deferred.reject();
+          });
 
       return $deferred.promise();
     }
 
     /**
-     * localStorage に格納されている各要素に対して publish メソッドを発行します。
-     *
-     * TODO: Collection<T> に IFlushable を実装…かも
-     * @see SemProject.publish
+     * @override
+     * @param   key   string  Project Key
      */
-    public static flush() : JQueryPromise<SemProject[]> {
-      var $deferred = $.Deferred();
-      var unsavedItems: any[];
-
-      unsavedItems = JSON.parse(window.localStorage.getItem('unsavedSemProjects')) || [];
-
-      $.when.apply($, unsavedItems
-        .map((o: any) => {
-          var p = SemProject.import(o);
-
-          return p.publish();
-        }))
-        .then((...projects: SemProject[]) => {
-          window.localStorage.removeItem('unsavedSemProjects');
-
-          return $deferred.resolve(projects);
-        }, () => {
-          return $deferred.reject();
-        });
-
-      return $deferred.promise();
+    public static listUrl(key? : string) : string {
+      return Project.listUrl() + '/' + key + '/sem-projects';
     }
 
     /**
-     * localStorage と this を保存するラッパーメソッドです。
-     * flush メソッドを実行します。
-     *
-     * TODO: StorableBase<T> に移動…するかも
-     * @see SemProject.flush
+     * @override
+     * @param   key   string  SemProject Key
      */
-    public save() : JQueryPromise<SemProject> {
-      var $deferred = $.Deferred();
-
-      var items = JSON.parse(window.localStorage.getItem('unsavedSemProjects')) || [];
-
-      items.push(this);
-
-      window.localStorage.setItem('unsavedSemProjects', JSON.stringify(items));
-
-      SemProject.flush()
-        .then(() => {
-          return $deferred.resolve();
-        }, () => {
-          return $deferred.reject();
-        });
-
-      return $deferred.promise();
+    public url(key? : string) : string {
+      return SemProject.listUrl(this.projectKey) + '/' + key;
     }
   }
 }

@@ -546,11 +546,6 @@ var egrid;
                     this.updatedAt_ = new egrid.model.ValueObject(date);
             };
 
-            Participant.prototype.setProjectKey = function (k) {
-                if (!this.projectKey_)
-                    this.projectKey_ = new egrid.model.ValueObject(k);
-            };
-
             Participant.prototype.load = function (o) {
                 this.key = o.key;
 
@@ -658,154 +653,134 @@ var egrid;
 var egrid;
 (function (egrid) {
     (function (model) {
-        var SemProject = (function () {
+        var SemProject = (function (_super) {
+            __extends(SemProject, _super);
             function SemProject(obj) {
-                this.name = obj.name;
-                this.project = obj.project;
-                this.projectKey = obj.projectKey;
+                _super.call(this);
+
+                if (obj) {
+                    this.name = obj.name;
+                    this.project = obj.project;
+                    this.projectKey = obj.projectKey;
+                }
             }
-            SemProject.prototype.key = function () {
-                return this.key_;
+            Object.defineProperty(SemProject.prototype, "createdAt", {
+                get: function () {
+                    return this.createdAt_.value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+
+            Object.defineProperty(SemProject.prototype, "updatedAt", {
+                get: function () {
+                    return this.updatedAt_.value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+
+            SemProject.prototype.setCreatedAt = function (date) {
+                if (!this.createdAt_)
+                    this.createdAt_ = new egrid.model.ValueObject(date);
             };
 
-            SemProject.get = function (projectKey, semProjectKey) {
+            SemProject.prototype.setUpdatedAt = function (date) {
+                if (!this.updatedAt_)
+                    this.updatedAt_ = new egrid.model.ValueObject(date);
+            };
+
+            SemProject.prototype.load = function (o) {
+                this.key = o.key;
+
+                this.name = o.name;
+
+                this.project = o.project;
+
+                this.setCreatedAt(o.createdAt);
+                this.setUpdatedAt(o.updatedAt);
+
+                return this;
+            };
+
+            SemProject.prototype.get = function (key) {
+                var _this = this;
                 var $deferred = $.Deferred();
 
                 $.ajax({
-                    url: SemProject.url(projectKey, semProjectKey),
+                    url: this.url(key),
                     type: 'GET',
                     dataFilter: function (data) {
                         var obj = JSON.parse(data);
-                        return SemProject.load(obj);
+
+                        return _this.load(obj);
                     }
                 }).then(function (semProject) {
                     return $deferred.resolve(semProject);
                 }, function () {
-                    var target = JSON.parse(window.localStorage.getItem('semProjects')).map(SemProject.import).filter(function (value) {
-                        return value.key() === semProjectKey;
-                    });
+                    var k = egrid.model.CollectionBase.pluralize(SemProject.type);
+                    var objects = window.localStorage.getItem(k) || [];
+                    var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
 
-                    return target ? $deferred.resolve(target[0]) : $deferred.reject();
-                });
+                    var target = $.extend(JSON.parse(objects), JSON.parse(unsaved));
 
-                return $deferred.promise();
-            };
-
-            SemProject.query = function (projectKey) {
-                var $deferred = $.Deferred();
-
-                $.ajax({
-                    url: SemProject.url(projectKey),
-                    type: 'GET',
-                    dataFilter: function (data) {
-                        var objs = JSON.parse(data);
-                        return objs.map(function (obj) {
-                            return SemProject.load(obj);
-                        });
-                    }
-                }).then(function (semProjects) {
-                    window.localStorage.setItem('semProjects', JSON.stringify(semProjects));
-
-                    return $deferred.resolve(semProjects);
-                }, function () {
-                    return $deferred.resolve(JSON.parse(window.localStorage.getItem('semProjects')).map(SemProject.import));
-                });
-
-                return $deferred.promise();
-            };
-
-            SemProject.load = function (obj) {
-                var semProject = new SemProject(obj);
-                semProject.key_ = obj.key;
-                return semProject;
-            };
-
-            SemProject.url = function (projectKey, semProjectKey) {
-                if (semProjectKey) {
-                    return '/api/projects/' + projectKey + '/sem-projects/' + semProjectKey;
-                } else {
-                    return '/api/projects/' + projectKey + '/sem-projects';
-                }
-            };
-
-            SemProject.import = function (o) {
-                var p = new SemProject(o);
-
-                p.key_ = o.key_;
-
-                return p;
-            };
-
-            SemProject.prototype.publish = function () {
-                var _this = this;
-                var $deferred = $.Deferred();
-
-                return $.ajax({
-                    url: SemProject.url(this.projectKey, this.key()),
-                    type: this.key() ? 'PUT' : 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({
-                        key: this.key(),
-                        name: this.name
-                    }),
-                    dataFilter: function (data) {
-                        var obj = JSON.parse(data);
-                        _this.key_ = obj.key;
-                        return _this;
-                    }
-                }).then(function (p) {
-                    return $deferred.resolve(p);
-                }, function () {
-                    return $deferred.reject();
-                });
-
-                return $deferred.promise();
-            };
-
-            SemProject.flush = function () {
-                var $deferred = $.Deferred();
-                var unsavedItems;
-
-                unsavedItems = JSON.parse(window.localStorage.getItem('unsavedSemProjects')) || [];
-
-                $.when.apply($, unsavedItems.map(function (o) {
-                    var p = SemProject.import(o);
-
-                    return p.publish();
-                })).then(function () {
-                    var projects = [];
-                    for (var _i = 0; _i < (arguments.length - 0); _i++) {
-                        projects[_i] = arguments[_i + 0];
-                    }
-                    window.localStorage.removeItem('unsavedSemProjects');
-
-                    return $deferred.resolve(projects);
-                }, function () {
-                    return $deferred.reject();
+                    return target[key] ? $deferred.resolve(_this.load(target[key])) : $deferred.reject();
                 });
 
                 return $deferred.promise();
             };
 
             SemProject.prototype.save = function () {
+                var _this = this;
                 var $deferred = $.Deferred();
 
-                var items = JSON.parse(window.localStorage.getItem('unsavedSemProjects')) || [];
+                return $.ajax({
+                    url: this.url(this.projectKey),
+                    type: this.key ? 'PUT' : 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        key: this.key,
+                        name: this.name
+                    }),
+                    dataFilter: function (data) {
+                        var obj = JSON.parse(data);
 
-                items.push(this);
-
-                window.localStorage.setItem('unsavedSemProjects', JSON.stringify(items));
-
-                SemProject.flush().then(function () {
-                    return $deferred.resolve();
+                        return new SemProject(obj).load(obj);
+                    }
+                }).then(function (p) {
+                    return $deferred.resolve(p);
                 }, function () {
+                    var reasons = [];
+                    for (var _i = 0; _i < (arguments.length - 0); _i++) {
+                        reasons[_i] = arguments[_i + 0];
+                    }
+                    var o = {};
+                    var key = 'unsavedItems.' + egrid.model.CollectionBase.pluralize(SemProject.type);
+                    var unsavedItems;
+
+                    o[_this.key] = _this;
+
+                    unsavedItems = $.extend({}, JSON.parse(window.localStorage.getItem(key)), o);
+
+                    window.localStorage.setItem(key, JSON.stringify(unsavedItems));
+
                     return $deferred.reject();
                 });
 
                 return $deferred.promise();
             };
+
+            SemProject.listUrl = function (key) {
+                return egrid.model.Project.listUrl() + '/' + key + '/sem-projects';
+            };
+
+            SemProject.prototype.url = function (key) {
+                return SemProject.listUrl(this.projectKey) + '/' + key;
+            };
+            SemProject.type = 'SemProject';
+            SemProject.url = '/api/projects/:projectId/sem-projects/:semProjectId';
             return SemProject;
-        })();
+        })(egrid.model.Entity);
         model.SemProject = SemProject;
     })(egrid.model || (egrid.model = {}));
     var model = egrid.model;
@@ -852,7 +827,7 @@ var egrid;
             };
 
             Url.semProjectUrl = function (semProject, action) {
-                return action ? '/projects/' + semProject.projectKey + '/sem-projects/' + semProject.key() + '/' + action : '/projects/' + semProject.projectKey + '/sem-projects/' + semProject.key();
+                return action ? '/projects/' + semProject.projectKey + '/sem-projects/' + semProject.key + '/' + action : '/projects/' + semProject.projectKey + '/sem-projects/' + semProject.key;
             };
             Url.participantUrlBase = '/projects/:projectId/participants/:participantId';
             Url.participantGridUrlBase = '/projects/:projectId/participants/:participantId/grid';
@@ -962,8 +937,6 @@ var egrid;
                 this.$scope = $scope;
                 this.$state = $state;
                 this.$modal = $modal;
-                var key = $stateParams.projectId;
-
                 this.participant = new egrid.model.Participant({ projectKey: $stateParams.projectId });
 
                 this.$q.when(this.participant.get($stateParams.participantId)).then(function (p) {
@@ -3532,13 +3505,10 @@ var egrid;
     (function (app) {
         var SemProjectController = (function () {
             function SemProjectController($q, $stateParams, storage) {
-                var _this = this;
-                this.projectKey = $stateParams.projectId;
-                this.semProjectKey = $stateParams.semProjectId;
+                this.semProject = new egrid.model.SemProject({ projectKey: $stateParams.projectId });
 
-                $q.when(egrid.model.SemProject.get(this.projectKey, this.semProjectKey)).then(function (p) {
-                    _this.name = p.name;
-                    _this.project = p.project;
+                $q.when(this.semProject.get($stateParams.semProjectId)).then(function (p) {
+                }, function (jqXHR, textStatus, errorThrown) {
                 });
             }
             return SemProjectController;
@@ -4094,6 +4064,88 @@ var egrid;
 })(egrid || (egrid = {}));
 var egrid;
 (function (egrid) {
+    (function (model) {
+        var SemProjectCollection = (function (_super) {
+            __extends(SemProjectCollection, _super);
+            function SemProjectCollection() {
+                _super.call(this, new egrid.model.Dictionary());
+            }
+            SemProjectCollection.prototype.query = function (projectKey) {
+                var _this = this;
+                var $deferred = $.Deferred();
+                var k = egrid.model.CollectionBase.pluralize(egrid.model.SemProject.type);
+                var mapper = function (o) {
+                    var item = new egrid.model.SemProject(o).load(o);
+
+                    _this.pairs.value.setItem(item.key, item);
+
+                    return item;
+                };
+
+                $.ajax({
+                    url: egrid.model.SemProject.listUrl(projectKey),
+                    type: 'GET'
+                }).then(function (result) {
+                    var objects = JSON.parse(result) || [];
+
+                    objects.map(mapper);
+
+                    window.localStorage.setItem(k, JSON.stringify(_this.pairs));
+
+                    return $deferred.resolve(_this.pairs.value.toArray());
+                }, function () {
+                    var reasons = [];
+                    for (var _i = 0; _i < (arguments.length - 0); _i++) {
+                        reasons[_i] = arguments[_i + 0];
+                    }
+                    var objects = window.localStorage.getItem(k) || [];
+                    var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
+
+                    $.extend(egrid.model.NotationDeserializer.load(objects), egrid.model.NotationDeserializer.load(unsaved)).map(mapper);
+
+                    return $deferred.resolve(_this.pairs.value.toArray());
+                });
+
+                return $deferred.promise();
+            };
+
+            SemProjectCollection.prototype.flush = function () {
+                var _this = this;
+                var $deferred = $.Deferred();
+                var k = 'unsavedItems.' + egrid.model.CollectionBase.pluralize(egrid.model.SemProject.type);
+                var unsavedItems = JSON.parse(window.localStorage.getItem(k)) || {};
+
+                $.when(Object.keys(unsavedItems).map(function (value, index, ar) {
+                    var item = new egrid.model.SemProject();
+
+                    return item.load(unsavedItems[value]).save();
+                })).then(function () {
+                    var items = [];
+                    for (var _i = 0; _i < (arguments.length - 0); _i++) {
+                        items[_i] = arguments[_i + 0];
+                    }
+                    return $deferred.resolve(_this.toArray());
+                }, function () {
+                    return $deferred.reject();
+                });
+
+                return $deferred.promise();
+            };
+
+            SemProjectCollection.prototype.isDirty = function () {
+                var k = 'unsavedItems.' + egrid.model.CollectionBase.pluralize(egrid.model.SemProject.type);
+                var unsavedItems = JSON.parse(window.localStorage.getItem(k)) || {};
+
+                return !!Object.keys(unsavedItems).length;
+            };
+            return SemProjectCollection;
+        })(egrid.model.CollectionBase);
+        model.SemProjectCollection = SemProjectCollection;
+    })(egrid.model || (egrid.model = {}));
+    var model = egrid.model;
+})(egrid || (egrid = {}));
+var egrid;
+(function (egrid) {
     (function (app) {
         var SemProjectListController = (function () {
             function SemProjectListController($q, $stateParams, $state, $log) {
@@ -4101,23 +4153,22 @@ var egrid;
                 this.$q = $q;
                 this.$state = $state;
                 this.$log = $log;
+                this.semProjects = new egrid.model.SemProjectCollection();
                 this.projectId = $stateParams.projectId;
 
-                this.$q.when(egrid.model.SemProject.query(this.projectId)).then(function (semProjects) {
-                    _this.list = semProjects;
+                this.$q.when(this.semProjects.query(this.projectId)).then(function (semProjects) {
+                    semProjects.forEach(function (v) {
+                        _this.semProjects.addItem(v);
+                    });
+
+                    if (_this.semProjects.isDirty())
+                        _this.semProjects.flush().then(function (ps) {
+                            ps.forEach(function (p) {
+                                _this.semProjects.addItem(p);
+                            });
+                        });
                 });
             }
-            SemProjectListController.prototype.sync = function () {
-                var _this = this;
-                this.$q.when(egrid.model.SemProject.flush()).then(function () {
-                    return egrid.model.SemProject.query(_this.projectId);
-                }).then(function (semProjects) {
-                    _this.list = semProjects;
-
-                    _this.$log.debug('sync completed successfully');
-                    _this.$state.go('projects.get.analyses.all.list');
-                });
-            };
             return SemProjectListController;
         })();
         app.SemProjectListController = SemProjectListController;
@@ -4195,6 +4246,7 @@ var egrid;
                     url: '/list',
                     views: {
                         'content@projects.get.analyses.all': {
+                            controller: 'SemProjectListController as ctrl',
                             templateUrl: '/partials/project/analyses/list.html'
                         }
                     }
