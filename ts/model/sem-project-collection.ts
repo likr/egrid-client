@@ -53,6 +53,8 @@ module egrid.model {
 
     /**
      * this.collection に対し Entity.save() を呼び出します。
+     *
+     * @override
      */
     public flush(): JQueryPromise<SemProject[]> {
       var $deferred = $.Deferred();
@@ -75,13 +77,6 @@ module egrid.model {
           });
 
       return $deferred.promise();
-    }
-
-    public isDirty(): boolean {
-      var k = 'unsavedItems.' + CollectionBase.pluralize(SemProject.type);
-      var unsavedItems: any = JSON.parse(window.localStorage.getItem(k)) || {};
-
-      return !!Object.keys(unsavedItems).length;
     }
   }
 }

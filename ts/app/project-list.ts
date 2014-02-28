@@ -19,16 +19,6 @@ module egrid.app {
           projects.forEach((v) => {
               this.projects.addItem(v);
             });
-
-          if (this.projects.isDirty())
-            // どうすればいいかわからない
-            this.projects
-              .flush()
-              .then((ps) => {
-                  ps.forEach((p) => {
-                      this.projects.addItem(p);
-                    });
-                });
         });
     }
   }

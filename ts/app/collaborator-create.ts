@@ -4,17 +4,16 @@
 module egrid.app {
   export class CollaboratorCreateController {
     public projectKey : string;
-    public userEmail : string;
-    public isManager : string;
+    public data : model.Collaborator;
 
     constructor(private $q, $stateParams, private $state, private $timeout) {
       this.projectKey = $stateParams.projectId;
+      this.data = new model.Collaborator({ projectKey: this.projectKey });
     }
 
     submit() {
-      var c = new model.Collaborator(this);
 
-      this.$q.when(c.save())
+      this.$q.when(this.data.save())
         .then(
             (() => {
               this.$timeout(() => {

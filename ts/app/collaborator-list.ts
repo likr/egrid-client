@@ -15,15 +15,6 @@ module egrid.app {
           collaborators.forEach((v) => {
               this.collaborators.addItem(v);
             });
-
-          if (this.collaborators.isDirty())
-            this.collaborators
-              .flush()
-              .then((ps) => {
-                  ps.forEach((p) => {
-                      this.collaborators.addItem(p);
-                    });
-                });
         });
     }
 

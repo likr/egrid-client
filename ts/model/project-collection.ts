@@ -33,16 +33,26 @@ module egrid.model {
           objects
             .map(mapper);
 
-          window.localStorage.setItem(k, JSON.stringify(this.pairs));
+          window.localStorage.setItem(k, JSON.stringify(this.pairs.value));
+
+          this
+            .flush()
+            .then((ps) => {
+                ps.forEach((p) => {
+                    this.addItem(p);
+                  });
+              });
 
           return $deferred
             .resolve(this.pairs.value.toArray());
         }, (...reasons: any[]) => {
-          var objects = window.localStorage.getItem(k) || [];
-          var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
+          var objects = window.localStorage.getItem(k);
+          var unsaved = window.localStorage.getItem('unsavedItems.' + k);
+          var serials = $.extend(NotationDeserializer.load(objects), NotationDeserializer.load(unsaved));
 
-          $.extend(NotationDeserializer.load(objects), NotationDeserializer.load(unsaved))
-            .map(mapper);
+          for (var i = 0, j = Object.keys(serials), l = j.length; i < l; i++) {
+            mapper(serials[j[i]]);
+          }
 
           return $deferred
             .resolve(this.pairs.value.toArray());
@@ -58,6 +68,10 @@ module egrid.model {
       var $deferred = $.Deferred();
       var k = 'unsavedItems.' + CollectionBase.pluralize(Project.type);
       var unsavedItems: any = JSON.parse(window.localStorage.getItem(k)) || {};
+
+      // 未送信データがある場合
+      if (Object.keys(unsavedItems).length) {
+      }
 
       $.when(Object
         .keys(unsavedItems)
@@ -75,13 +89,6 @@ module egrid.model {
           });
 
       return $deferred.promise();
-    }
-
-    public isDirty(): boolean {
-      var k = 'unsavedItems.' + CollectionBase.pluralize(Project.type);
-      var unsavedItems: any = JSON.parse(window.localStorage.getItem(k)) || {};
-
-      return !!Object.keys(unsavedItems).length;
     }
   }
 }

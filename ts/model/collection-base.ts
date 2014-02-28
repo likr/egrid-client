@@ -37,10 +37,13 @@ module egrid.model {
   export class NotationDeserializer {
     public static load(o: any): any {
       var b = JSON.parse(o);
-      return Object.keys(b)
-        .map((v, i, ar) => {
-            return b[v];
-          });
+
+      return b
+        ? Object.keys(b)
+            .map((v, i, ar) => {
+                return b[v];
+              })
+        : {};
     }
   }
 
@@ -84,15 +87,10 @@ module egrid.model {
      * this.collection に対し Entity.save() を呼び出します。
      *
      * @abstract
+     * @access    protected
+     * @note      protected にできない
      */
-    public flush(type: new() => T): JQueryPromise<T[]> {
-      throw new Error('NotImplementedException');
-    }
-
-    /**
-     * @abstract
-     */
-    public isDirty(): boolean {
+    public flush(): JQueryPromise<T[]> {
       throw new Error('NotImplementedException');
     }
 

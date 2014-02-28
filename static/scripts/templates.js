@@ -333,7 +333,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "    <div class=\"form-group\">\n" +
     "      <label class=\"col-sm-2 control-label\" for=\"name\">{{'COLLABORATOR.ATTRIBUTES.USER' | translate}}</label>\n" +
     "      <div class=\"col-sm-10\">\n" +
-    "        <input class=\"col-sm-10 form-control\" type=\"text\" name=\"name\" placeholder=\"{{'COLLABORATOR.ATTRIBUTES.PLACEHOLDERS.USER' | translate }}\" ng-model=\"newCollaborator.userEmail\"/>\n" +
+    "        <input class=\"col-sm-10 form-control\" type=\"text\" name=\"name\" placeholder=\"{{'COLLABORATOR.ATTRIBUTES.PLACEHOLDERS.USER' | translate }}\" ng-model=\"newCollaborator.data.userEmail\"/>\n" +
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
@@ -342,7 +342,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "      <div class=\"col-sm-10\">\n" +
     "        <div class=\"checkbox\">\n" +
     "          <label>\n" +
-    "            <input type=\"checkbox\" ng-model=\"newCollaborator.isManager\"/>{{'COLLABORATOR.ROLE.MANAGER' | translate}}\n" +
+    "            <input type=\"checkbox\" ng-model=\"newCollaborator.data.isManager\"/>{{'COLLABORATOR.ROLE.MANAGER' | translate}}\n" +
     "          </label>\n" +
     "        </div>\n" +
     "      </div>\n" +

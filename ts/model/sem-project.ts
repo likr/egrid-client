@@ -38,11 +38,11 @@ module egrid.model {
     }
 
     public get createdAt() : Date {
-      return this.createdAt_.value;
+      return this.createdAt_ ? this.createdAt_.value : null;
     }
 
     public get updatedAt() : Date {
-      return this.updatedAt_.value;
+      return this.updatedAt_ ? this.updatedAt_.value : null;
     }
 
     private setCreatedAt(date: Date) : void {

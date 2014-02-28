@@ -39,11 +39,11 @@ module egrid.model {
     }
 
     public get createdAt() : Date {
-      return this.createdAt_.value;
+      return this.createdAt_ ? this.createdAt_.value : null;
     }
 
     public get updatedAt() : Date {
-      return this.updatedAt_.value;
+      return this.updatedAt_ ? this.updatedAt_.value : null;
     }
 
     // Accessors は同じ Accessibility を持っていなければいけないのでメソッドを用意する
@@ -135,14 +135,19 @@ module egrid.model {
             return $deferred.resolve(p);
           }, (...reasons) => {
             var o = {};
-            var key = 'unsavedItems.' + CollectionBase.pluralize(Project.type);
-            var unsavedItems: any[];
+            var storageKey = 'unsavedItems.' + CollectionBase.pluralize(Project.type);
+            var unsavedItems = JSON.parse(window.localStorage.getItem(storageKey)) || {};
+            var irregulars: any;
 
-            o[this.key] = this;
+            if (this.key) {
+              o[this.key] = this;
+            } else {
+              o[Object.keys(unsavedItems).length] = this; // FIXME
+            }
 
-            unsavedItems = $.extend({}, JSON.parse(window.localStorage.getItem(key)), o);
+            irregulars = $.extend({}, unsavedItems, o);
 
-            window.localStorage.setItem(key, JSON.stringify(unsavedItems));
+            window.localStorage.setItem(storageKey, irregulars);
 
             return $deferred.reject();
           });

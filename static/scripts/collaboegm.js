@@ -140,9 +140,10 @@ var egrid;
             }
             NotationDeserializer.load = function (o) {
                 var b = JSON.parse(o);
-                return Object.keys(b).map(function (v, i, ar) {
+
+                return b ? Object.keys(b).map(function (v, i, ar) {
                     return b[v];
-                });
+                }) : {};
             };
             return NotationDeserializer;
         })();
@@ -176,11 +177,7 @@ var egrid;
                 throw new Error('NotImplementedException');
             };
 
-            CollectionBase.prototype.flush = function (type) {
-                throw new Error('NotImplementedException');
-            };
-
-            CollectionBase.prototype.isDirty = function () {
+            CollectionBase.prototype.flush = function () {
                 throw new Error('NotImplementedException');
             };
 
@@ -218,7 +215,7 @@ var egrid;
             }
             Object.defineProperty(Project.prototype, "createdAt", {
                 get: function () {
-                    return this.createdAt_.value;
+                    return this.createdAt_ ? this.createdAt_.value : null;
                 },
                 enumerable: true,
                 configurable: true
@@ -226,7 +223,7 @@ var egrid;
 
             Object.defineProperty(Project.prototype, "updatedAt", {
                 get: function () {
-                    return this.updatedAt_.value;
+                    return this.updatedAt_ ? this.updatedAt_.value : null;
                 },
                 enumerable: true,
                 configurable: true
@@ -308,14 +305,19 @@ var egrid;
                         reasons[_i] = arguments[_i + 0];
                     }
                     var o = {};
-                    var key = 'unsavedItems.' + egrid.model.CollectionBase.pluralize(Project.type);
-                    var unsavedItems;
+                    var storageKey = 'unsavedItems.' + egrid.model.CollectionBase.pluralize(Project.type);
+                    var unsavedItems = JSON.parse(window.localStorage.getItem(storageKey)) || {};
+                    var irregulars;
 
-                    o[_this.key] = _this;
+                    if (_this.key) {
+                        o[_this.key] = _this;
+                    } else {
+                        o[Object.keys(unsavedItems).length] = _this;
+                    }
 
-                    unsavedItems = $.extend({}, JSON.parse(window.localStorage.getItem(key)), o);
+                    irregulars = $.extend({}, unsavedItems, o);
 
-                    window.localStorage.setItem(key, JSON.stringify(unsavedItems));
+                    window.localStorage.setItem(storageKey, irregulars);
 
                     return $deferred.reject();
                 });
@@ -489,7 +491,7 @@ var egrid;
             }
             Object.defineProperty(Participant.prototype, "createdAt", {
                 get: function () {
-                    return this.createdAt_.value;
+                    return this.createdAt_ ? this.createdAt_.value : null;
                 },
                 enumerable: true,
                 configurable: true
@@ -497,7 +499,7 @@ var egrid;
 
             Object.defineProperty(Participant.prototype, "updatedAt", {
                 get: function () {
-                    return this.updatedAt_.value;
+                    return this.updatedAt_ ? this.updatedAt_.value : null;
                 },
                 enumerable: true,
                 configurable: true
@@ -634,7 +636,7 @@ var egrid;
             }
             Object.defineProperty(SemProject.prototype, "createdAt", {
                 get: function () {
-                    return this.createdAt_.value;
+                    return this.createdAt_ ? this.createdAt_.value : null;
                 },
                 enumerable: true,
                 configurable: true
@@ -642,7 +644,7 @@ var egrid;
 
             Object.defineProperty(SemProject.prototype, "updatedAt", {
                 get: function () {
-                    return this.updatedAt_.value;
+                    return this.updatedAt_ ? this.updatedAt_.value : null;
                 },
                 enumerable: true,
                 configurable: true
@@ -819,12 +821,11 @@ var egrid;
                 this.$state = $state;
                 this.$timeout = $timeout;
                 this.projectKey = $stateParams.projectId;
+                this.data = new egrid.model.Collaborator({ projectKey: this.projectKey });
             }
             CollaboratorCreateController.prototype.submit = function () {
                 var _this = this;
-                var c = new egrid.model.Collaborator(this);
-
-                this.$q.when(c.save()).then((function () {
+                this.$q.when(this.data.save()).then((function () {
                     _this.$timeout(function () {
                         _this.$state.go('projects.get.collaborators.all.list', null, { reload: true });
                     }, 200);
@@ -907,13 +908,6 @@ var egrid;
 
                 return $deferred.promise();
             };
-
-            CollaboratorCollection.prototype.isDirty = function () {
-                var k = 'unsavedItems.' + egrid.model.CollectionBase.pluralize(egrid.model.Collaborator.type);
-                var unsavedItems = JSON.parse(window.localStorage.getItem(k)) || {};
-
-                return !!Object.keys(unsavedItems).length;
-            };
             return CollaboratorCollection;
         })(egrid.model.CollectionBase);
         model.CollaboratorCollection = CollaboratorCollection;
@@ -938,13 +932,6 @@ var egrid;
                     collaborators.forEach(function (v) {
                         _this.collaborators.addItem(v);
                     });
-
-                    if (_this.collaborators.isDirty())
-                        _this.collaborators.flush().then(function (ps) {
-                            ps.forEach(function (p) {
-                                _this.collaborators.addItem(p);
-                            });
-                        });
                 });
             }
             CollaboratorListController.prototype.confirm = function (key) {
@@ -3131,13 +3118,6 @@ var egrid;
 
                 return $deferred.promise();
             };
-
-            ParticipantCollection.prototype.isDirty = function () {
-                var k = 'unsavedItems.' + egrid.model.CollectionBase.pluralize(egrid.model.Participant.type);
-                var unsavedItems = JSON.parse(window.localStorage.getItem(k)) || {};
-
-                return !!Object.keys(unsavedItems).length;
-            };
             return ParticipantCollection;
         })(egrid.model.CollectionBase);
         model.ParticipantCollection = ParticipantCollection;
@@ -3186,13 +3166,6 @@ var egrid;
                     participants.forEach(function (v) {
                         _this.participants.addItem(v);
                     });
-
-                    if (_this.participants.isDirty())
-                        _this.participants.flush().then(function (ps) {
-                            ps.forEach(function (p) {
-                                _this.participants.addItem(p);
-                            });
-                        });
                 });
             }
             return ParticipantListController;
@@ -3462,7 +3435,13 @@ var egrid;
 
                     objects.map(mapper);
 
-                    window.localStorage.setItem(k, JSON.stringify(_this.pairs));
+                    window.localStorage.setItem(k, JSON.stringify(_this.pairs.value));
+
+                    _this.flush().then(function (ps) {
+                        ps.forEach(function (p) {
+                            _this.addItem(p);
+                        });
+                    });
 
                     return $deferred.resolve(_this.pairs.value.toArray());
                 }, function () {
@@ -3470,10 +3449,13 @@ var egrid;
                     for (var _i = 0; _i < (arguments.length - 0); _i++) {
                         reasons[_i] = arguments[_i + 0];
                     }
-                    var objects = window.localStorage.getItem(k) || [];
-                    var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
+                    var objects = window.localStorage.getItem(k);
+                    var unsaved = window.localStorage.getItem('unsavedItems.' + k);
+                    var serials = $.extend(egrid.model.NotationDeserializer.load(objects), egrid.model.NotationDeserializer.load(unsaved));
 
-                    $.extend(egrid.model.NotationDeserializer.load(objects), egrid.model.NotationDeserializer.load(unsaved)).map(mapper);
+                    for (var i = 0, j = Object.keys(serials), l = j.length; i < l; i++) {
+                        mapper(serials[j[i]]);
+                    }
 
                     return $deferred.resolve(_this.pairs.value.toArray());
                 });
@@ -3486,6 +3468,9 @@ var egrid;
                 var $deferred = $.Deferred();
                 var k = 'unsavedItems.' + egrid.model.CollectionBase.pluralize(egrid.model.Project.type);
                 var unsavedItems = JSON.parse(window.localStorage.getItem(k)) || {};
+
+                if (Object.keys(unsavedItems).length) {
+                }
 
                 $.when(Object.keys(unsavedItems).map(function (value, index, ar) {
                     var item = new egrid.model.Project();
@@ -3502,13 +3487,6 @@ var egrid;
                 });
 
                 return $deferred.promise();
-            };
-
-            ProjectCollection.prototype.isDirty = function () {
-                var k = 'unsavedItems.' + egrid.model.CollectionBase.pluralize(egrid.model.Project.type);
-                var unsavedItems = JSON.parse(window.localStorage.getItem(k)) || {};
-
-                return !!Object.keys(unsavedItems).length;
             };
             return ProjectCollection;
         })(egrid.model.CollectionBase);
@@ -3534,13 +3512,6 @@ var egrid;
                     projects.forEach(function (v) {
                         _this.projects.addItem(v);
                     });
-
-                    if (_this.projects.isDirty())
-                        _this.projects.flush().then(function (ps) {
-                            ps.forEach(function (p) {
-                                _this.projects.addItem(p);
-                            });
-                        });
                 });
             }
             return ProjectListController;
@@ -4180,13 +4151,6 @@ var egrid;
 
                 return $deferred.promise();
             };
-
-            SemProjectCollection.prototype.isDirty = function () {
-                var k = 'unsavedItems.' + egrid.model.CollectionBase.pluralize(egrid.model.SemProject.type);
-                var unsavedItems = JSON.parse(window.localStorage.getItem(k)) || {};
-
-                return !!Object.keys(unsavedItems).length;
-            };
             return SemProjectCollection;
         })(egrid.model.CollectionBase);
         model.SemProjectCollection = SemProjectCollection;
@@ -4209,13 +4173,6 @@ var egrid;
                     semProjects.forEach(function (v) {
                         _this.semProjects.addItem(v);
                     });
-
-                    if (_this.semProjects.isDirty())
-                        _this.semProjects.flush().then(function (ps) {
-                            ps.forEach(function (p) {
-                                _this.semProjects.addItem(p);
-                            });
-                        });
                 });
             }
             return SemProjectListController;

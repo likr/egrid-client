@@ -21,16 +21,6 @@ module egrid.app {
           participants.forEach((v) => {
               this.participants.addItem(v);
             });
-
-          if (this.participants.isDirty())
-            // どうすればいいかわからない
-            this.participants
-              .flush()
-              .then((ps) => {
-                  ps.forEach((p) => {
-                      this.participants.addItem(p);
-                    });
-                });
         });
     }
   }

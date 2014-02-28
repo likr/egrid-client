@@ -14,16 +14,6 @@ module egrid.app {
           semProjects.forEach((v) => {
               this.semProjects.addItem(v);
             });
-
-          if (this.semProjects.isDirty())
-            // どうすればいいかわからない
-            this.semProjects
-              .flush()
-              .then((ps) => {
-                  ps.forEach((p) => {
-                      this.semProjects.addItem(p);
-                    });
-                });
         });
     }
   }
