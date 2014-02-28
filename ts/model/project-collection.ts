@@ -63,6 +63,8 @@ module egrid.model {
 
     /**
      * this.collection に対し Entity.save() を呼び出します。
+     *
+     * @override
      */
     public flush(): JQueryPromise<Project[]> {
       var $deferred = $.Deferred();

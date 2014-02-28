@@ -94,10 +94,10 @@ module egrid.model {
           return $deferred.resolve(project);
         }, () => {
           var k = CollectionBase.pluralize(Project.type);
-          var objects = window.localStorage.getItem(k) || [];
-          var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
+          var objects = JSON.parse(window.localStorage.getItem(k)) || '';
+          var unsaved = JSON.parse(window.localStorage.getItem('unsavedItems.' + k)) || '';
 
-          var target = $.extend(JSON.parse(objects), JSON.parse(unsaved));
+          var target = $.extend(objects, unsaved);
 
           return target[key] ? $deferred.resolve(this.load(target[key])) : $deferred.reject();
         });
