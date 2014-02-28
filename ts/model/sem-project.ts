@@ -93,10 +93,10 @@ module egrid.model {
           return $deferred.resolve(semProject);
         }, () => {
           var k = CollectionBase.pluralize(SemProject.type);
-          var objects = window.localStorage.getItem(k) || [];
-          var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
+          var objects = JSON.parse(window.localStorage.getItem(k)) || '';
+          var unsaved = JSON.parse(window.localStorage.getItem('unsavedItems.' + k)) || '';
 
-          var target = $.extend(JSON.parse(objects), JSON.parse(unsaved));
+          var target = $.extend(objects, unsaved);
 
           return target[key] ? $deferred.resolve(this.load(target[key])) : $deferred.reject();
         });
@@ -116,10 +116,10 @@ module egrid.model {
 
       return $.ajax({
           url: key ? this.url(key) : SemProject.listUrl(this.projectKey),
-          type: this.key ? 'PUT' : 'POST',
+          type: key ? 'PUT' : 'POST',
           contentType: 'application/json',
           data: JSON.stringify({
-            key: this.key,
+            key: key,
             name: this.name,
           }),
           dataFilter: data => {
@@ -132,14 +132,19 @@ module egrid.model {
             return $deferred.resolve(p);
           }, (...reasons) => {
             var o = {};
-            var key = 'unsavedItems.' + CollectionBase.pluralize(SemProject.type);
-            var unsavedItems: any[];
+            var storageKey = 'unsavedItems.' + CollectionBase.pluralize(SemProject.type);
+            var unsavedItems = JSON.parse(window.localStorage.getItem(storageKey)) || {};
+            var irregulars: any;
 
-            o[this.key] = this;
+            if (this.key) {
+              o[this.key] = this;
+            } else {
+              o[Object.keys(unsavedItems).length] = this; // FIXME
+            }
 
-            unsavedItems = $.extend({}, JSON.parse(window.localStorage.getItem(key)), o);
+            irregulars = $.extend({}, unsavedItems, o);
 
-            window.localStorage.setItem(key, JSON.stringify(unsavedItems));
+            window.localStorage.setItem(storageKey, JSON.stringify(irregulars));
 
             return $deferred.reject();
           });

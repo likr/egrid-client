@@ -33,16 +33,26 @@ module egrid.model {
           objects
             .map(mapper);
 
-          window.localStorage.setItem(k, JSON.stringify(this.pairs));
+          window.localStorage.setItem(k, JSON.stringify(this.pairs.value));
+
+          this
+            .flush()
+            .then((ps) => {
+                ps.forEach((p) => {
+                    this.addItem(p);
+                  });
+              });
 
           return $deferred
             .resolve(this.pairs.value.toArray());
         }, (...reasons: any[]) => {
-          var objects = window.localStorage.getItem(k) || [];
-          var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
+          var objects = window.localStorage.getItem(k);
+          var unsaved = window.localStorage.getItem('unsavedItems.' + k);
+          var serials = $.extend(NotationDeserializer.load(objects), NotationDeserializer.load(unsaved));
 
-          $.extend(NotationDeserializer.load(objects), NotationDeserializer.load(unsaved))
-            .map(mapper);
+          for (var i = 0, j = Object.keys(serials), l = j.length; i < l; i++) {
+            mapper(serials[j[i]]);
+          }
 
           return $deferred
             .resolve(this.pairs.value.toArray());
@@ -64,12 +74,12 @@ module egrid.model {
       $.when(Object
         .keys(unsavedItems)
         .map((value: any, index: number, ar: any[]) => {
-            var item = new SemProject();
+            var item = new SemProject(unsavedItems[value]);
 
             return item.load(unsavedItems[value]).save();
           }))
         .then((...items: SemProject[]) => {
-            // window.localStorage.removeItem(k);
+            window.localStorage.removeItem(k);
 
             return $deferred.resolve(this.toArray());
           }, () => {
