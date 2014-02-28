@@ -5,8 +5,12 @@ module egrid.model {
   export class Dictionary<TValue> {
     private pairs = {};
 
-    public getItem(k: string) {
+    public getItem(k: string): TValue {
       return this.pairs[k];
+    }
+
+    public removeItem(k: string) {
+      delete this.pairs[k];
     }
 
     public setItem(k: string, v: TValue) {
@@ -14,10 +18,9 @@ module egrid.model {
     }
 
     public toArray(): TValue[] {
-      var test = Object.keys(this.pairs).map((v: string, i: number, ar: string[]) => {
+      return Object.keys(this.pairs).map((v: string, i: number, ar: string[]) => {
         return this.pairs[v];
       });
-      return test;
     }
 
     public toJSON(): any {
@@ -59,8 +62,12 @@ module egrid.model {
       this.pairs.value.setItem(item.key, item);
     }
 
-    public getItem(n: string): T {
-      return this.pairs.value.getItem(n);
+    public getItem(k: string): T {
+      return this.pairs.value.getItem(k);
+    }
+
+    public removeItem(k: string) {
+      return this.pairs.value.removeItem(k);
     }
 
     /**
