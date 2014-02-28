@@ -398,10 +398,10 @@ var egrid;
                     return $deferred.resolve(collaborator);
                 }, function () {
                     var k = egrid.model.CollectionBase.pluralize(Collaborator.type);
-                    var objects = window.localStorage.getItem(k) || [];
-                    var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
+                    var objects = JSON.parse(window.localStorage.getItem(k)) || '';
+                    var unsaved = JSON.parse(window.localStorage.getItem('unsavedItems.' + k)) || '';
 
-                    var target = $.extend(JSON.parse(objects), JSON.parse(unsaved));
+                    var target = $.extend(objects, unsaved);
 
                     return target[key] ? $deferred.resolve(_this.load(target[key])) : $deferred.reject();
                 });
@@ -416,10 +416,10 @@ var egrid;
 
                 return $.ajax({
                     url: key ? this.url(key) : Collaborator.listUrl(this.projectKey),
-                    type: this.key ? 'PUT' : 'POST',
+                    type: key ? 'PUT' : 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
-                        key: this.key,
+                        key: key,
                         isManager: this.isManager,
                         projectKey: this.projectKey,
                         userEmail: this.userEmail
@@ -437,14 +437,19 @@ var egrid;
                         reasons[_i] = arguments[_i + 0];
                     }
                     var o = {};
-                    var key = 'unsavedItems.' + egrid.model.CollectionBase.pluralize(Collaborator.type);
-                    var unsavedItems;
+                    var storageKey = 'unsavedItems.' + egrid.model.CollectionBase.pluralize(Collaborator.type);
+                    var unsavedItems = JSON.parse(window.localStorage.getItem(storageKey)) || {};
+                    var irregulars;
 
-                    o[_this.key] = _this;
+                    if (_this.key) {
+                        o[_this.key] = _this;
+                    } else {
+                        o[Object.keys(unsavedItems).length] = _this;
+                    }
 
-                    unsavedItems = $.extend({}, JSON.parse(window.localStorage.getItem(key)), o);
+                    irregulars = $.extend({}, unsavedItems, o);
 
-                    window.localStorage.setItem(key, JSON.stringify(unsavedItems));
+                    window.localStorage.setItem(storageKey, JSON.stringify(irregulars));
 
                     return $deferred.reject();
                 });
@@ -877,7 +882,13 @@ var egrid;
 
                     objects.map(mapper);
 
-                    window.localStorage.setItem(k, JSON.stringify(_this.pairs));
+                    window.localStorage.setItem(k, JSON.stringify(_this.pairs.value));
+
+                    _this.flush().then(function (ps) {
+                        ps.forEach(function (p) {
+                            _this.addItem(p);
+                        });
+                    });
 
                     return $deferred.resolve(_this.pairs.value.toArray());
                 }, function () {
@@ -885,10 +896,13 @@ var egrid;
                     for (var _i = 0; _i < (arguments.length - 0); _i++) {
                         reasons[_i] = arguments[_i + 0];
                     }
-                    var objects = window.localStorage.getItem(k) || [];
-                    var unsaved = window.localStorage.getItem('unsavedItems.' + k) || [];
+                    var objects = window.localStorage.getItem(k);
+                    var unsaved = window.localStorage.getItem('unsavedItems.' + k);
+                    var serials = $.extend(egrid.model.NotationDeserializer.load(objects), egrid.model.NotationDeserializer.load(unsaved));
 
-                    $.extend(egrid.model.NotationDeserializer.load(objects), egrid.model.NotationDeserializer.load(unsaved)).map(mapper);
+                    for (var i = 0, j = Object.keys(serials), l = j.length; i < l; i++) {
+                        mapper(serials[j[i]]);
+                    }
 
                     return $deferred.resolve(_this.pairs.value.toArray());
                 });
@@ -903,7 +917,7 @@ var egrid;
                 var unsavedItems = JSON.parse(window.localStorage.getItem(k)) || {};
 
                 $.when(Object.keys(unsavedItems).map(function (value, index, ar) {
-                    var item = new egrid.model.Collaborator();
+                    var item = new egrid.model.Collaborator(unsavedItems[value]);
 
                     return item.load(unsavedItems[value]).save();
                 })).then(function () {
@@ -911,7 +925,9 @@ var egrid;
                     for (var _i = 0; _i < (arguments.length - 0); _i++) {
                         items[_i] = arguments[_i + 0];
                     }
-                    return $deferred.resolve(_this.toArray());
+                    window.localStorage.removeItem(k);
+
+                    return $deferred.resolve(_this.pairs.value.toArray());
                 }, function () {
                     return $deferred.reject();
                 });
