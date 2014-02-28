@@ -114,9 +114,10 @@ module egrid.model {
      */
     public save(): JQueryPromise<Collaborator> {
       var $deferred = $.Deferred();
+      var key = this.key;
 
       return $.ajax({
-          url: this.url(this.projectKey),
+          url: key ? this.url(key) : Collaborator.listUrl(this.projectKey),
           type: this.key ? 'PUT' : 'POST',
           contentType: 'application/json',
           data: JSON.stringify({
@@ -128,7 +129,7 @@ module egrid.model {
           dataFilter: data => {
             var obj : ApiCollaboratorData = JSON.parse(data);
 
-            return new Collaborator(obj).load(obj);
+            return this.load(obj);
           },
         })
         .then((c: Collaborator) => {

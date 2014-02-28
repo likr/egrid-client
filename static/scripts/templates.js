@@ -455,21 +455,6 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('/partials/project/participants/list.html',
     "<div class=\"tab-pane active\">\n" +
-    "  <div class=\"row\">\n" +
-    "    <nav>\n" +
-    "      <form class=\"form-inline col-sm-1 col-sm-offset-7\" ng-submit=\"ctrl.sync()\">\n" +
-    "        <div class=\"input-group\">\n" +
-    "          <button class=\"btn btn-default\" type=\"submit\">Sync</button>\n" +
-    "        </div>\n" +
-    "      </form>\n" +
-    "      <form class=\"form-inline col-sm-4 search-control\">\n" +
-    "        <div class=\"input-group\">\n" +
-    "          <input type=\"text\" class=\"form-control\" placeholder=\"{{'ACTION.SEARCH' | translate}}\" ng-model=\"ctrl.query.name\" />\n" +
-    "          <span class=\"input-group-addon\"><span class=\"glyphicon glyphicon-search\"></span></span>\n" +
-    "        </div>\n" +
-    "      </form>\n" +
-    "    </nav>\n" +
-    "  </div>\n" +
     "  <table class=\"table table-bordered\">\n" +
     "    <thead>\n" +
     "      <tr>\n" +

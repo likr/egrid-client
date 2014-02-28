@@ -118,20 +118,21 @@ module egrid.model {
      */
     public save(): JQueryPromise<Participant> {
       var $deferred = $.Deferred();
+      var key = this.key;
 
       return $.ajax({
-          url: this.url(this.projectKey),
+          url: key ? this.url(key) : Participant.listUrl(this.projectKey),
           type: this.key ? 'PUT' : 'POST',
           contentType: 'application/json',
           data: JSON.stringify({
-            key: this.key,
+            key: key,
             name: this.name,
             note: this.note,
           }),
           dataFilter: data => {
             var obj : ApiParticipantData = JSON.parse(data);
 
-            return new Participant(obj).load(obj);
+            return this.load(obj);
           },
         })
         .then((p: Participant) => {

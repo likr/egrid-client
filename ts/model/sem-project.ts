@@ -112,9 +112,10 @@ module egrid.model {
      */
     public save(): JQueryPromise<SemProject> {
       var $deferred = $.Deferred();
+      var key = this.key;
 
       return $.ajax({
-          url: this.url(this.projectKey),
+          url: key ? this.url(key) : SemProject.listUrl(this.projectKey),
           type: this.key ? 'PUT' : 'POST',
           contentType: 'application/json',
           data: JSON.stringify({
@@ -124,7 +125,7 @@ module egrid.model {
           dataFilter: data => {
             var obj : ApiSemProjectData = JSON.parse(data);
 
-            return new SemProject(obj).load(obj);
+            return this.load(obj);
           },
         })
         .then((p: Project) => {

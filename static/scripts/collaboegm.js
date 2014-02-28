@@ -284,20 +284,21 @@ var egrid;
             Project.prototype.save = function () {
                 var _this = this;
                 var $deferred = $.Deferred();
+                var key = this.key;
 
                 return $.ajax({
-                    url: this.url(this.key),
-                    type: this.key ? 'PUT' : 'POST',
+                    url: key ? this.url(key) : Project.listUrl(),
+                    type: key ? 'PUT' : 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
-                        key: this.key,
+                        key: key,
                         name: this.name,
                         note: this.note
                     }),
                     dataFilter: function (data) {
                         var obj = JSON.parse(data);
 
-                        return new Project().load(obj);
+                        return _this.load(obj);
                     }
                 }).then(function (p) {
                     return $deferred.resolve(p);
@@ -438,9 +439,10 @@ var egrid;
             Collaborator.prototype.save = function () {
                 var _this = this;
                 var $deferred = $.Deferred();
+                var key = this.key;
 
                 return $.ajax({
-                    url: this.url(this.projectKey),
+                    url: key ? this.url(key) : Collaborator.listUrl(this.projectKey),
                     type: this.key ? 'PUT' : 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
@@ -452,7 +454,7 @@ var egrid;
                     dataFilter: function (data) {
                         var obj = JSON.parse(data);
 
-                        return new Collaborator(obj).load(obj);
+                        return _this.load(obj);
                     }
                 }).then(function (c) {
                     return $deferred.resolve(c);
@@ -582,20 +584,21 @@ var egrid;
             Participant.prototype.save = function () {
                 var _this = this;
                 var $deferred = $.Deferred();
+                var key = this.key;
 
                 return $.ajax({
-                    url: this.url(this.projectKey),
+                    url: key ? this.url(key) : Participant.listUrl(this.projectKey),
                     type: this.key ? 'PUT' : 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
-                        key: this.key,
+                        key: key,
                         name: this.name,
                         note: this.note
                     }),
                     dataFilter: function (data) {
                         var obj = JSON.parse(data);
 
-                        return new Participant(obj).load(obj);
+                        return _this.load(obj);
                     }
                 }).then(function (p) {
                     return $deferred.resolve(p);
@@ -725,9 +728,10 @@ var egrid;
             SemProject.prototype.save = function () {
                 var _this = this;
                 var $deferred = $.Deferred();
+                var key = this.key;
 
                 return $.ajax({
-                    url: this.url(this.projectKey),
+                    url: key ? this.url(key) : SemProject.listUrl(this.projectKey),
                     type: this.key ? 'PUT' : 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
@@ -737,7 +741,7 @@ var egrid;
                     dataFilter: function (data) {
                         var obj = JSON.parse(data);
 
-                        return new SemProject(obj).load(obj);
+                        return _this.load(obj);
                     }
                 }).then(function (p) {
                     return $deferred.resolve(p);

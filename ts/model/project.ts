@@ -113,20 +113,22 @@ module egrid.model {
      */
     public save(): JQueryPromise<Project> {
       var $deferred = $.Deferred();
+      var key = this.key;
 
+      // url と dataFiletr をデリゲートとか
       return $.ajax({
-          url: this.url(this.key),
-          type: this.key ? 'PUT' : 'POST',
+          url: key ? this.url(key) : Project.listUrl(),
+          type: key ? 'PUT' : 'POST',
           contentType: 'application/json',
           data: JSON.stringify({
-            key: this.key,
+            key: key,
             name: this.name,
             note: this.note,
           }),
           dataFilter: data => {
             var obj : ApiProjectData = JSON.parse(data);
 
-            return new Project().load(obj);
+            return this.load(obj);
           },
         })
         .then((p: Project) => {
