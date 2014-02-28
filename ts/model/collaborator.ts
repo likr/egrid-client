@@ -20,14 +20,14 @@ module egrid.model {
 
 
   export class Collaborator extends Entity {
-    private createdAt_: ValueObject<Date>;
-    private updatedAt_: ValueObject<Date>;
-
     public isManager : boolean;
     public project : ProjectData;
     public projectKey : string;
     public user : UserData;
     public userEmail : string;
+
+    public static type: string = 'Collaborator';
+    public static url: string = '/api/projects/:projectId/collaborators/:collaboratorId';
 
     constructor(obj? : CollaboratorData) {
       super();
@@ -41,24 +41,6 @@ module egrid.model {
       }
     }
 
-    public get createdAt() : Date {
-      return this.createdAt_.value;
-    }
-
-    public get updatedAt() : Date {
-      return this.updatedAt_.value;
-    }
-
-    private setCreatedAt(date: Date) : void {
-      if (!this.createdAt_)
-        this.createdAt_ = new ValueObject<Date>(date);
-    }
-
-    private setUpdatedAt(date: Date) : void {
-      if (!this.updatedAt_)
-        this.updatedAt_ = new ValueObject<Date>(date);
-    }
-
     /**
      * Object から Participant に変換します。
      *
@@ -69,9 +51,6 @@ module egrid.model {
       this.key = o.key;
 
       this.project = o.project;
-
-      this.setCreatedAt(o.createdAt);
-      this.setUpdatedAt(o.updatedAt);
 
       return this;
     }

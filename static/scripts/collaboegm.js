@@ -372,39 +372,10 @@ var egrid;
                     this.userEmail = obj.userEmail;
                 }
             }
-            Object.defineProperty(Collaborator.prototype, "createdAt", {
-                get: function () {
-                    return this.createdAt_.value;
-                },
-                enumerable: true,
-                configurable: true
-            });
-
-            Object.defineProperty(Collaborator.prototype, "updatedAt", {
-                get: function () {
-                    return this.updatedAt_.value;
-                },
-                enumerable: true,
-                configurable: true
-            });
-
-            Collaborator.prototype.setCreatedAt = function (date) {
-                if (!this.createdAt_)
-                    this.createdAt_ = new egrid.model.ValueObject(date);
-            };
-
-            Collaborator.prototype.setUpdatedAt = function (date) {
-                if (!this.updatedAt_)
-                    this.updatedAt_ = new egrid.model.ValueObject(date);
-            };
-
             Collaborator.prototype.load = function (o) {
                 this.key = o.key;
 
                 this.project = o.project;
-
-                this.setCreatedAt(o.createdAt);
-                this.setUpdatedAt(o.updatedAt);
 
                 return this;
             };
@@ -493,6 +464,8 @@ var egrid;
                     type: 'DELETE'
                 });
             };
+            Collaborator.type = 'Collaborator';
+            Collaborator.url = '/api/projects/:projectId/collaborators/:collaboratorId';
             return Collaborator;
         })(egrid.model.Entity);
         model.Collaborator = Collaborator;
@@ -846,15 +819,14 @@ var egrid;
                 this.$state = $state;
                 this.$timeout = $timeout;
                 this.projectKey = $stateParams.projectId;
-                this.data = new egrid.model.Collaborator({
-                    projectKey: this.projectKey
-                });
             }
             CollaboratorCreateController.prototype.submit = function () {
                 var _this = this;
-                this.$q.when(this.data.save()).then((function () {
+                var c = new egrid.model.Collaborator(this);
+
+                this.$q.when(c.save()).then((function () {
                     _this.$timeout(function () {
-                        _this.$state.go('projects.get.collaborators.all.list');
+                        _this.$state.go('projects.get.collaborators.all.list', null, { reload: true });
                     }, 200);
                 }), (function () {
                     console.log('error');
