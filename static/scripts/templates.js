@@ -532,7 +532,8 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "      <tr ng-repeat=\"collaborator in collaborators.collaborators.toArray()\">\n" +
     "        <td>{{ $index + 1 }}</td>\n" +
     "        <td>{{collaborator.user.nickname}}</td>\n" +
-    "        <td>{{collaborator.isManager}}</td>\n" +
+    "        <td ng-if=\"collaborator.isManager\">{{'COLLABORATOR.ROLE.MANAGER' | translate}}</td>\n" +
+    "        <td ng-if=\"!collaborator.isManager\">{{'COLLABORATOR.ROLE.USER' | translate}}</td>\n" +
     "        <td><a href ng-click=\"collaborators.confirm(collaborator.key)\">{{'ACTION.REMOVE' | translate}}</td>\n" +
     "      </tr>\n" +
     "    </tbody>\n" +
