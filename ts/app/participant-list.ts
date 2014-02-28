@@ -1,10 +1,11 @@
 /// <reference path="../model/participant.ts"/>
+/// <reference path="../model/participant-collection.ts"/>
 /// <reference path="pagination.ts"/>
 
 module egrid.app {
   export class ParticipantListController extends PaginationController {
     public projectId : string;
-    public participants: model.Participant[] = [];
+    public participants = new model.ParticipantCollection();
 
     constructor($q, $stateParams) {
       super();
@@ -14,11 +15,13 @@ module egrid.app {
       this.predicate = 'updatedAt';
       this.reverse = true;
 
-      $q.when(model.Participant.query(this.projectId))
-        .then((participants : model.Participant[]) => {
-          this.participants = participants;
-        })
-        ;
+      $q
+        .when(this.participants.query(this.projectId))
+        .then((participants: model.Participant[]) => {
+          participants.forEach((v) => {
+              this.participants.addItem(v);
+            });
+        });
     }
   }
 }

@@ -1,15 +1,15 @@
 <div>
-  <h2>{{ semProject.name }}</h2>
+  <h2>{{ semProject.semProject.name }}</h2>
 
   <ol class="breadcrumb">
     <li>
       <a ui-sref="projects.all.list">{{ 'PROJECT.PROJECTS' | translate }}</a>
     </li>
     <li>
-      <a ui-sref="projects.get.detail">{{semProject.project.name}}</a>
+      <a ui-sref="projects.get.detail">{{semProject.semProject.project.name}}</a>
     </li>
     <li class="active">
-      {{ semProject.name }}
+      {{ semProject.semProject.name }}
     </li>
   </ol>
 

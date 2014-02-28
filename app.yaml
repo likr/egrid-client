@@ -14,6 +14,11 @@ handlers:
   upload: /
   login: required
 
+- url: /(.+\.appcache)
+  static_files: static/\1
+  mime_type: text/cache-manifest
+  upload: static/(.+\.appcache)
+
 - url: /img
   static_dir: static/img
 

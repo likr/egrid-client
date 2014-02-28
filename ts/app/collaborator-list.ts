@@ -1,20 +1,24 @@
 /// <reference path="../model/collaborator.ts"/>
+/// <reference path="../model/collaborator-collection.ts"/>
 
 module egrid.app {
   export class CollaboratorListController {
-    projectKey : string;
-    list : model.Collaborator[];
+    public projectId : string;
+    public collaborators = new model.CollaboratorCollection();
 
-    constructor(private $q, $stateParams, private $scope, private $modal) {
-      this.projectKey = $stateParams.projectId;
-      this.$q.when(model.Collaborator.query(this.projectKey))
-        .then((collaborators : model.Collaborator[]) => {
-          this.list = collaborators;
-        })
-        ;
+    constructor(private $q, $stateParams, private $state, private $log, private $scope, private $modal) {
+      this.projectId = $stateParams.projectId;
+
+      $q
+        .when(this.collaborators.query(this.projectId))
+        .then((collaborators: model.Collaborator[]) => {
+          collaborators.forEach((v) => {
+              this.collaborators.addItem(v);
+            });
+        });
     }
 
-    public confirm(index) {
+    public confirm(key: string) {
       var modalInstance = this.$modal.open({
         templateUrl: '/partials/remove-item-dialog.html',
         controller: ($scope, $modalInstance) => {
@@ -27,13 +31,13 @@ module egrid.app {
         }
       });
 
-      modalInstance.result.then(() => { this.remove(index); });
+      modalInstance.result.then(() => { this.remove(key); });
     }
 
-    private remove(index) {
-      this.$q.when(this.list[index].remove())
+    private remove(key) {
+      this.$q.when(this.collaborators.getItem(key).remove())
         .then(() => {
-          this.list.splice(index, 1);
+          this.collaborators.removeItem(key);
         });
     }
   }

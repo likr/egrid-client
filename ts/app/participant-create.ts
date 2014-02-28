@@ -16,7 +16,9 @@ module egrid.app {
       var participant = new model.Participant(this);
       this.$q.when(participant.save())
         .then(() => {
-          this.$state.go('projects.get.participants.get.detail', { participantId: participant.key() });
+          this.$state.go('projects.get.participants.get.detail', { projectId: this.projectKey, participantId: participant.key });
+        }, () => {
+          this.$state.go('projects.get.participants.all.list');
         })
         ;
     }

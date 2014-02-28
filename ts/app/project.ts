@@ -1,33 +1,25 @@
 /// <reference path="../model/project.ts"/>
 
 module egrid.app {
-  export class ProjectController implements model.ProjectData {
-    projectKey : string;
-    name : string;
-    note : string;
+  export class ProjectController {
+    public project: model.Project = new model.Project();
 
-    constructor(private $q, $stateParams, private $location, private $scope, private $modal) {
-      this.projectKey = $stateParams.projectId;
-      this.$q.when(model.Project.get(this.projectKey))
-        .then(project => {
-          this.name = project.name;
-          this.note = project.note;
-        })
-        ;
+    constructor(private $q, $stateParams, private $state, private $modal, $scope) {
+      var key = $stateParams.projectId;
+
+      this.$q.when(this.project.get(key))
+        .then((p: model.Project) => {
+        }, (jqXHR: JQueryPromise<model.Project>, textStatus: string, errorThrown: string) => {
+          // リダイレクト
+        });
     }
 
     public update() {
-      this.$q.when(model.Project.get(this.projectKey))
-        .then((project: model.Project) => {
-          project.name = this.name;
-          project.note = this.note;
-
-          return project.save();
-        })
+      this.$q.when(this.project.save())
         .then((project: model.Project) => {
           // バインドしてるから要らない気はする
-          this.name = project.name;
-          this.note = project.note;
+          this.project.name = project.name;
+          this.project.note = project.note;
         });
     }
 
@@ -48,13 +40,9 @@ module egrid.app {
     }
 
     private remove() {
-      this.$q.when(model.Project.get(this.projectKey))
-        .then((project: model.Project) => {
-          return project.remove();
-        })
+      this.$q.when(this.project.remove())
         .then(() => {
-          this.$location.path(egrid.app.Url.projectListUrl());
-          this.$scope.$apply();
+          this.$state.go('projects.all.list');
         });
     }
   }

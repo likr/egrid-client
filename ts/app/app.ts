@@ -68,7 +68,7 @@ module egrid.app {
           url: Url.projectUrlBase,
           views: {
             '@': {
-              controller: 'ProjectController as project',
+              controller: 'ProjectController as ctrl',
               templateUrl: '/partials/project/project.html',
             },
           },
@@ -98,6 +98,7 @@ module egrid.app {
           url: '/list',
           views: {
             'content@projects.get.analyses.all': {
+              controller: 'SemProjectListController as ctrl',
               templateUrl: '/partials/project/analyses/list.html',
             },
           },
@@ -258,7 +259,7 @@ module egrid.app {
           url: '/:participantId',
           views: {
             '@': {
-              controller: 'ParticipantController as participant',
+              controller: 'ParticipantController as ctrl',
               templateUrl: '/partials/project/participants/participant/participant.html',
             },
           },
@@ -279,15 +280,14 @@ module egrid.app {
             },
           },
         })
-        .state('grid', {
-          url: Url.projectGridUrlBase,
-          controller: 'ProjectGridController as projectGrid',
-          templateUrl: '/partials/project-grid-edit.html',
-        })
-        .state('gridedit', {
-          url: Url.participantGridUrlBase,
-          controller: 'ParticipantGridEditController as participantGrid',
-          templateUrl: '/partials/egm-edit.html',
+        .state('projects.get.participants.get.grid', {
+          url: '/grid?disableCompletion',
+          views: {
+            '@': {
+              controller: 'ParticipantGridEditController as participantGrid',
+              templateUrl: '/partials/egm-edit.html',
+            },
+          },
         })
         .state("help", {
           templateUrl: '/partials/help.html',
@@ -315,13 +315,13 @@ module egrid.app {
         .preferredLanguage("ja");
     }])
     .controller('CollaboratorCreateController', ['$q', '$stateParams', '$state', '$timeout', CollaboratorCreateController])
-    .controller('CollaboratorListController', ['$q', '$stateParams', '$scope', '$modal', CollaboratorListController])
+    .controller('CollaboratorListController', ['$q', '$stateParams', '$state', '$log', '$scope', '$modal', CollaboratorListController])
     .controller('ParticipantController', ['$q', '$stateParams', '$scope', '$state', '$modal', ParticipantController])
     .controller('ParticipantCreateController', ['$q', '$stateParams', '$state', ParticipantCreateController])
     .controller('ParticipantGridController', ['$q', '$stateParams', '$scope', ParticipantGridController])
     .controller('ParticipantGridEditController', ['$q', '$stateParams', '$state', '$modal', '$scope', ParticipantGridEditController])
     .controller('ParticipantListController', ['$q', '$stateParams', ParticipantListController])
-    .controller('ProjectController', ['$q', '$stateParams', '$location', '$scope', '$modal', ProjectController])
+    .controller('ProjectController', ['$q', '$stateParams', '$state', '$modal', '$scope', ProjectController])
     .controller('ProjectCreateController', ['$q', '$state', ProjectCreateController])
     .controller('ProjectGridCreateController', ['$q', '$stateParams', '$state', ProjectGridCreateController])
     .controller('ProjectGridEditController', ['$q', '$stateParams', '$modal', '$scope', '$state', ProjectGridEditController])
@@ -330,7 +330,7 @@ module egrid.app {
     .controller('SemProjectController', ['$q', '$stateParams', SemProjectController])
     .controller('SemProjectAnalysisController', ['$q', '$stateParams', SemProjectAnalysisController])
     .controller('SemProjectCreateController', ['$q', '$stateParams', '$state', '$timeout', SemProjectCreateController])
-    .controller('SemProjectListController', ['$q', '$stateParams', SemProjectListController])
+    .controller('SemProjectListController', ['$q', '$stateParams', '$state', '$log', SemProjectListController])
     .controller('SemProjectQuestionnaireEditController', ['$q', '$stateParams', SemProjectQuestionnaireEditController])
     .run(['$rootScope', '$translate', '$http', ($rootScope, $translate, $http) => {
       $rootScope.Url = Url;

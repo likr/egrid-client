@@ -1,15 +1,20 @@
 /// <reference path="../model/sem-project.ts"/>
+/// <reference path="../model/sem-project-collection.ts"/>
 
 module egrid.app {
   export class SemProjectListController {
-    list : model.SemProject[];
+    public projectId : string;
+    public semProjects = new model.SemProjectCollection();
 
-    constructor($q, $stateParams) {
-      var projectId = $stateParams.projectId;
-      $q.when(model.SemProject.query(projectId))
+    constructor(private $q, $stateParams, private $state, private $log) {
+      this.projectId = $stateParams.projectId;
+
+      this.$q.when(this.semProjects.query(this.projectId))
         .then((semProjects : model.SemProject[]) => {
-          this.list = semProjects;
-        })
+          semProjects.forEach((v) => {
+              this.semProjects.addItem(v);
+            });
+        });
     }
   }
 }

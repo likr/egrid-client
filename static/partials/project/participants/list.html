@@ -1,14 +1,4 @@
 <div class="tab-pane active">
-  <div class="row">
-    <nav class="col-sm-4 col-sm-offset-8 search-control">
-      <form class="form-inline">
-        <div class="input-group">
-          <input type="text" class="form-control" placeholder="{{'ACTION.SEARCH' | translate}}" ng-model="ctrl.query.name" />
-          <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
-        </div>
-      </form>
-    </nav>
-  </div>
   <table class="table table-bordered">
     <thead>
       <tr>
@@ -26,14 +16,14 @@
       </tr>
     </thead>
     <tbody>
-      <tr ng-repeat="participant in ctrl.participants | filter:ctrl.query | orderBy:ctrl.predicate:ctrl.reverse | pager:ctrl.currentPage:ctrl.itemsPerPage">
+      <tr ng-repeat="participant in ctrl.participants.toArray() | filter:ctrl.query | orderBy:ctrl.predicate:ctrl.reverse | pager:ctrl.currentPage:ctrl.itemsPerPage">
         <td>{{$index + 1 + ctrl.itemsPerPage * (ctrl.currentPage - 1)}}</td>
         <td>{{participant.name}}</td>
         <td>{{participant.createdAt | date:'yyyy/MM/dd HH:mm'}}</td>
         <td>{{participant.updatedAt | date:'yyyy/MM/dd HH:mm'}}</td>
-        <td><a href="/#{{Url.participantUrl(participant, null, 'detail')}}">{{'ACTION.SHOW' | translate}}</a>
+        <td><a ui-sref="projects.get.participants.get.detail({ participantId: participant.key })">{{'ACTION.SHOW' | translate}}</a>
       </tr>
     </tbody>
   </table>
-  <pagination total-items="ctrl.participants | filter:ctrl.query | count" page="ctrl.currentPage" items-per-page="ctrl.itemsPerPage"></pagination>
+  <pagination total-items="ctrl.participants.toArray() | filter:ctrl.query | count" page="ctrl.currentPage" items-per-page="ctrl.itemsPerPage"></pagination>
 </div>

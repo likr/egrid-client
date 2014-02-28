@@ -9,11 +9,11 @@
       </tr>
     </thead>
     <tbody>
-      <tr ng-repeat="collaborator in collaborators.list">
+      <tr ng-repeat="collaborator in collaborators.collaborators.toArray()">
         <td>{{ $index + 1 }}</td>
         <td>{{collaborator.user.nickname}}</td>
         <td>{{collaborator.isManager}}</td>
-        <td><a href ng-click="collaborators.confirm($index)">{{'ACTION.REMOVE' | translate}}</td>
+        <td><a href ng-click="collaborators.confirm(collaborator.key)">{{'ACTION.REMOVE' | translate}}</td>
       </tr>
     </tbody>
   </table>

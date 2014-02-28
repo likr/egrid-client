@@ -3,8 +3,8 @@
   <div class="navbar navbar-default">
     <div class="navbar-collapse">
       <form class="navbar-form">
-        <a href="/#{{Url.participantGridUrl(participant.projectKey, participant.participantKey)}}" class="btn btn-primary">{{'ACTION.EDIT' | translate}}</a>
-        <a href="/#{{Url.participantGridUrl(participant.projectKey, participant.participantKey)}}?disableCompletion=1" class="btn btn-default">{{'ACTION.EDIT' | translate}}(テキスト補完なし)</a>
+        <a ui-sref="projects.get.participants.get.grid" class="btn btn-primary">{{'ACTION.EDIT' | translate}}</a>
+        <a ui-sref="projects.get.participants.get.grid({ disableCompletion: 1 })" class="btn btn-default">{{'ACTION.EDIT' | translate}}(テキスト補完なし)</a>
       </form>
     </div>
   </div>

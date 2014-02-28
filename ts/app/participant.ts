@@ -5,33 +5,25 @@ module egrid.app {
   export class ParticipantController implements model.ParticipantData {
     name : string;
     note : string;
-    participantKey : string;
     project : model.ProjectData;
     projectKey : string;
+    participant : model.Participant;
 
-    constructor(private $q, $stateParams, private $scope, private $location, private $modal) {
-      this.participantKey = $stateParams.participantId;
-      this.projectKey = $stateParams.projectId;
-      this.$q.when(model.Participant.get(this.projectKey, this.participantKey))
-        .then((participant : model.Participant) => {
-          this.name = participant.name;
-          this.note = participant.note;
-          this.project = participant.project;
-        })
-        ;
+    constructor(private $q, $stateParams, private $scope, private $state, private $modal) {
+      this.participant = new model.Participant({ projectKey: $stateParams.projectId });
+
+      this.$q.when(this.participant.get($stateParams.participantId))
+        .then((p: model.Participant) => {
+        }, (jqXHR: JQueryPromise<model.Project>, textStatus: string, errorThrown: string) => {
+        });
     }
 
     public update() {
-      this.$q.when(model.Participant.get(this.projectKey, this.participantKey))
+      this.$q.when(this.participant.save())
         .then((participant: model.Participant) => {
-          participant.name = this.name;
-          participant.note = this.note;
-
-          return participant.save();
-        })
-        .then((participant: model.Participant) => {
-          this.name = participant.name;
-          this.note = participant.note;
+          // バインドしてるから要らない気はする
+          this.participant.name = participant.name;
+          this.participant.note = participant.note;
         });
     }
 
@@ -52,13 +44,9 @@ module egrid.app {
     }
 
     private remove() {
-      this.$q.when(model.Participant.get(this.projectKey, this.participantKey))
-        .then((participant: model.Participant) => {
-          return participant.remove();
-        })
+      this.$q.when(this.participant.remove())
         .then(() => {
-          this.$location.path(egrid.app.Url.projectUrl(this.projectKey));
-          this.$scope.$apply();
+          this.$state.go('projects.get.participants.all.list');
         });
     }
   }
