@@ -16,7 +16,7 @@
     <tr ng-repeat="text in texts | filter:result" ng-dblclick="close(text.text)">
       <td>{{text.text}}</td>
       <td>{{text.weight}}</td>
-      <td><button class="btn" ng-click="close(text.text)">{{'ACTION.SELECT' | translate}}</button></td>
+      <td><button class="btn btn-default" ng-click="close(text.text)">{{'ACTION.SELECT' | translate}}</button></td>
     </li>
   </table>
 </div>

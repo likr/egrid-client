@@ -1,5 +1,6 @@
 /// <reference path="../model/participant.ts"/>
 /// <reference path="../model/project.ts"/>
+/// <reference path="../model/project-grid.ts"/>
 /// <reference path="../model/sem-project.ts"/>
 
 module egrid.app {
@@ -7,7 +8,8 @@ module egrid.app {
     static participantUrlBase = '/projects/:projectId/participants/:participantId';
     static participantGridUrlBase = '/projects/:projectId/participants/:participantId/grid';
     static projectUrlBase = '/projects/:projectId';
-    static projectGridUrlBase = '/projects/:projectId/grid';
+    static projectGridUrlBase = '/projects/:projectKey/grid/:projectGridKey';
+    static projectGridListUrlBase = '/projects/:projectKey/grid';
     static projectListUrlBase = '/projects';
     static semProjectUrlBase = '/projects/:projectId/sem-projects/:semProjectId';
 
@@ -50,10 +52,17 @@ module egrid.app {
       return action ? result + '/' + action : result;
     }
 
-    static projectGridUrl(projectKey : string) : string;
-    static projectGridUrl(project : model.Project) : string;
-    static projectGridUrl(project : any) : string {
-      return Url.projectUrl(project) + '/grid';
+    static projectGridUrl(projectKey : string, projectGridKey : string) : string;
+    static projectGridUrl(projectGrid : model.ProjectGrid) : string;
+    static projectGridUrl(arg : any, projectGridKey? : string) : string {
+      var projectKey;
+      if (projectGridKey === undefined) {
+        projectKey = arg.projectKey;
+        projectGridKey = arg.key;
+      } else {
+        projectKey = arg;
+      }
+      return '/projects/' + projectKey + '/grid/' + projectGridKey;
     }
 
     static semProjectUrl(semProject : model.SemProject, action?: string) : string {

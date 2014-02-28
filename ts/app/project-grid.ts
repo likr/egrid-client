@@ -7,20 +7,22 @@
 /// <reference path="../model/project-grid.ts"/>
 
 module egrid.app {
-  export class ProjectGridController {
+  export class ProjectGridEditController {
     projectKey : string;
+    projectGridKey : string;
     egm : EGM;
     filter : {} = {};
     participants = new model.ParticipantCollection();
     participantState : {} = {};
 
     constructor($q, $stateParams, $modal, private $scope) {
+      var __this = this;
       this.projectKey = $stateParams.projectId;
+      this.projectGridKey = $stateParams.projectGridKey;
 
       var egmui = egrid.egmui();
       this.egm = egmui.egm();
       this.egm.showRemoveLinkButton(true);
-      this.egm.options().scalingConnection = false;
       var calcHeight = () => {
         return $(window).height() - 100; //XXX
       };
@@ -29,7 +31,7 @@ module egrid.app {
           width: $(window).width(),
           height: calcHeight(),
         })
-        .call(this.egm.display($(window).width(), calcHeight()))
+        .call(this.egm.display($(window).width(), calcHeight() - 50))
         ;
       d3.select(window)
         .on('resize', () => {
@@ -61,15 +63,17 @@ module egrid.app {
 
       d3.select("#exportSVG")
         .on("click", function() {
-          // unescape はそのうち変えよう
-          d3.select(this).attr("href", "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(
-            d3.select("#display")
-              .attr("version", "1.1")
-              .attr("xmlns", "http://www.w3.org/2000/svg")
-              .attr("xmlns:xmlns:xlink", "http://www.w3.org/1999/xlink")
-              .node()
-              .outerHTML
-          ))));
+          __this.hideNodeController();
+          __this.egm.graphicize(() => {
+            d3.select(this).attr("href", "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(
+              d3.select("#display")
+                .attr("version", "1.1")
+                .attr("xmlns", "http://www.w3.org/2000/svg")
+                .attr("xmlns:xmlns:xlink", "http://www.w3.org/1999/xlink")
+                .node()
+                .outerHTML
+            ))));
+          });
         });
 
       d3.select("#removeNodeButton")
@@ -109,7 +113,7 @@ module egrid.app {
           });
           m.result.then(result => {
             this.egm.nodes().forEach(d => {
-              m.active = m.participants.some(key => result[key]);
+              d.active = d.participants.some(key => result[key]);
             });
             this.egm
               .draw()
@@ -131,13 +135,18 @@ module egrid.app {
               $scope.options = this.egm.options();
               $scope.ViewMode = egrid.ViewMode;
               $scope.InactiveNode = egrid.InactiveNode;
+              $scope.RankDirection = egrid.RankDirection;
+              $scope.ScaleType = egrid.ScaleType;
               $scope.close = () => {
                 $modalInstance.close();
               }
             },
           });
           m.result.then(() => {
-            this.egm.draw();
+            this.egm
+              .draw()
+              .focusCenter()
+              ;
           });
           $scope.$apply();
         })
@@ -196,7 +205,7 @@ module egrid.app {
 
     public exportJSON($event) {
       $($event.currentTarget).attr("href", "data:application/json;charset=utf-8," + encodeURIComponent(
-        JSON.stringify(this.egm.export())
+        JSON.stringify(this.egm.grid().toJSON())
       ));
     }
   }

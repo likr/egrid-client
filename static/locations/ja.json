@@ -52,12 +52,22 @@
       "INPUT_EVALUATION_FACTOR": "評価項目を入力してください",
       "LAYOUT_SETTINGS": "レイアウト設定",
       "LINE_UP": "整列",
+      "MINIMUM_WEIGHT": "最小想起数",
+      "RANK_DIRECTION": {
+        "LR": "左右",
+        "RANK_DIRECTION": "方向",
+        "TB": "上下"
+      },
       "SCALING": {
         "CONNECTION": "接続数",
-        "SCALING": "評価項目の拡大"
+        "MAX": "最大拡大率",
+        "NONE": "なし",
+        "SCALING": "評価項目の拡大",
+        "WEIGHT": "想起数"
       },
       "VIEWS": {
-        "EDGE": "端のみ",
+        "EDGE": "最下位・最上位項目のみ",
+        "EDGE_AND_ORIGINAL": "最下位・最上位項目とオリジナル項目のみ",
         "NORMAL": "通常",
         "VIEWS": "表示方法"
       }
@@ -96,6 +106,16 @@
       "PLACEHOLDERS": {
         "NAME": "プロジェクト名",
         "NOTE": "備考"
+      }
+    }
+  },
+  "PROJECT_GRID": {
+    "ATTRIBUTES": {
+      "NAME": "メモ",
+      "CREATED_AT": "追加日時",
+      "UPDATED_AT": "更新日時",
+      "PLACEHOLDERS": {
+        "NAME": "メモ"
       }
     }
   },

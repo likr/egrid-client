@@ -6,7 +6,8 @@
 module egrid {
   export enum ViewMode {
     Normal,
-    Edge
+    Edge,
+    EdgeAndOriginal,
   }
 
 
@@ -16,24 +17,23 @@ module egrid {
   }
 
 
-  export class EgmOption {
-    public viewMode : ViewMode;
-    public inactiveNode : InactiveNode;
-    public scalingConnection : boolean;
-    public lineUpTop : boolean;
-    public lineUpBottom : boolean;
-    public showGuide : boolean;
+  export enum ScaleType {
+    Connection,
+    None,
+    Weight,
+  }
 
-    static default() : EgmOption {
-      var option = new EgmOption;
-      option.viewMode = ViewMode.Normal;
-      option.inactiveNode = InactiveNode.Transparent;
-      option.scalingConnection = true;
-      option.lineUpTop = true;
-      option.lineUpBottom = true;
-      option.showGuide = false;
-      return option;
-    }
+
+  export class EgmOption {
+    public viewMode : ViewMode = ViewMode.Normal;
+    public inactiveNode : InactiveNode = InactiveNode.Transparent;
+    public maxScale : number = 3;
+    public scaleType : ScaleType = ScaleType.Weight;
+    public lineUpTop : boolean = true;
+    public lineUpBottom : boolean = true;
+    public showGuide : boolean = false;
+    public rankDirection : RankDirection = RankDirection.LR;
+    public minimumWeight : number = 1;
   }
 
 
@@ -73,7 +73,7 @@ module egrid {
      */
     constructor () {
       super();
-      this.options_ = EgmOption.default();
+      this.options_ = new EgmOption;
     }
 
 
@@ -92,6 +92,102 @@ module egrid {
 
 
     /**
+     * @method graphicize
+     * @param c Function callback
+     * @see EGM.ungraphicize
+     */
+    graphicize(c : Function) : EGM {
+      var nodesSelection;
+      var left = d3.min(this.nodes(), node => {
+        return node.left().x;
+      });
+      var right = d3.max(this.nodes(), node => {
+        return node.right().x;
+      });
+      var top = d3.min(this.nodes(), node => {
+        return node.top().y;
+      });
+      var bottom = d3.max(this.nodes(), node => {
+        return node.bottom().y;
+      });
+      var margin = new Svg.Transform.Translate(EGM.rx, EGM.rx);
+      var defaults = { w: this.displayWidth, h: this.displayHeight };
+
+      this.unselectElement();
+      this.showRemoveLinkButton(false);
+      this.contentsZoomBehavior.scale(1);
+      this.resize((right - left) + EGM.rx * 2, (bottom - top) + EGM.rx * 2);
+      this
+        .contentsSelection
+        .attr("transform", "scale(1) " + margin.toString());
+      this.rootSelection.select('.guide')
+        .style('visibility', 'hidden')
+        ;
+
+      nodesSelection = this.contentsSelection
+        .select(".nodes")
+        .selectAll(".element")
+        ;
+
+      nodesSelection.selectAll("text")
+        .style("font-size", "2em")
+        ;
+
+      nodesSelection.selectAll("rect")
+        .style("fill", "white")
+        .style("stroke", "#323a48")
+        .style("stroke-width", 5)
+        ;
+
+      this.contentsSelection
+        .select(".links")
+        .selectAll(".link")
+        .style("fill", "none")
+        .style("stroke", "#323a48")
+        ;
+
+      c();
+
+      return this.ungraphicize(defaults);
+    }
+
+    /**
+     * @method ungraphicize
+     */
+    private ungraphicize(d: any) : EGM {
+      var nodesSelection;
+
+      this.resize(d.w, d.h);
+
+      nodesSelection = this.contentsSelection
+        .select(".nodes")
+        .selectAll(".element")
+        ;
+
+      nodesSelection.selectAll("text")
+        .style("font-size", null)
+        ;
+
+      nodesSelection.selectAll("rect")
+        .style("fill", null)
+        .style("stroke", null)
+        .style("stroke-width", null)
+        ;
+
+      this.contentsSelection
+        .select(".links")
+        .selectAll(".link")
+        .style("fill", null)
+        .style("stroke", null)
+        ;
+
+      this.drawGuide();
+
+      return this;
+    }
+
+
+    /**
      * @method draw
      */
     draw() : EGM {
@@ -101,12 +197,12 @@ module egrid {
         .interpolate("basis")
         ;
 
+      this.grid()
+        .checkActive(this.options().inactiveNode == InactiveNode.Hidden)
+        .minimumWeight(this.options().minimumWeight)
+        ;
       var nodes = this.nodes();
       var links = this.links();
-      if (this.options_.inactiveNode == InactiveNode.Hidden) {
-        nodes = nodes.filter(d => d.active);
-        links = links.filter(d => d.source.active && d.target.active);
-      }
 
       var nodesSelection = this.contentsSelection
         .select(".nodes")
@@ -126,7 +222,7 @@ module egrid {
       var nodeSizeScale = this.nodeSizeScale();
       nodesSelection.each(node => {
         var rect = this.calcRect(node.text);
-        var n = this.grid().numConnectedNodes(node.index, true);
+        var n = this.scaleValue(node);
         node.baseWidth = rect.width;
         node.baseHeight = rect.height;
         node.width = node.baseWidth * nodeSizeScale(n);
@@ -136,7 +232,6 @@ module egrid {
         .text(d => d.text)
         .attr("x", d => EGM.rx - d.baseWidth / 2)
         .attr("y", d => EGM.rx)
-        .style("font-size", "2em")
         ;
       nodesSelection.selectAll("rect")
         .attr("x", d => - d.baseWidth / 2)
@@ -144,9 +239,6 @@ module egrid {
         .attr("rx", d => (d.original || d.isTop || d.isBottom) ? 0 : EGM.rx)
         .attr("width", d => d.baseWidth)
         .attr("height", d => d.baseHeight)
-        .style("fill", "none")
-        .style("stroke", "purple")
-        .style("stroke-width", 5)
         ;
 
       var linksSelection = this.contentsSelection
@@ -163,7 +255,7 @@ module egrid {
         .append("g")
         .classed("link", true)
         .each(link => {
-          link.points = [link.source.right(), link.target.left()];
+          link.points = [link.source.center(), link.target.center()];
         })
         .call(selection => {
           selection.append("path");
@@ -172,16 +264,13 @@ module egrid {
           }
         })
         ;
-      linksSelection
-        .style("fill", "none")
-        .style("stroke", "purple")
-        ;
 
       this.grid()
-        .layout(
-            this.options_.inactiveNode == InactiveNode.Hidden,
-            this.options_.lineUpTop,
-            this.options_.lineUpBottom);
+        .layout({
+          lineUpTop: this.options_.lineUpTop,
+          lineUpBottom: this.options_.lineUpBottom,
+          rankDirection: this.options_.rankDirection,
+        });
 
       this.rootSelection.selectAll(".contents .links .link path")
         .filter(link => link.previousPoints.length != link.points.length)
@@ -207,7 +296,7 @@ module egrid {
         .attr("transform", (node : egrid.Node) : string => {
           return (new Svg.Transform.Translate(node.center().x, node.center().y)).toString()
             + (new Svg.Transform.Rotate(node.theta / Math.PI * 180)).toString()
-            + (new Svg.Transform.Scale(nodeSizeScale(this.grid().numConnectedNodes(node.index, true)))).toString();
+            + (new Svg.Transform.Scale(nodeSizeScale(this.scaleValue(node)))).toString();
         })
         ;
       transition.selectAll(".link path")
@@ -319,6 +408,7 @@ module egrid {
           .on("click", (d) => {
             this.grid().removeLink(d.index);
             this.draw();
+            this.drawNodeConnection();
           })
           .call(selection => {
             selection.append("circle")
@@ -339,13 +429,24 @@ module egrid {
     }
 
 
+    private scaleValue(node : Node) : number {
+      switch (this.options_.scaleType) {
+        case ScaleType.Connection:
+          return this.grid().numConnectedNodes(node.index);
+        case ScaleType.Weight:
+          return node.weight;
+        case ScaleType.None:
+        default:
+          return 1;
+      }
+    }
+
+
     private nodeSizeScale() : D3.Scale.Scale {
       return d3.scale
         .linear()
-        .domain(d3.extent(this.nodes(), node => {
-          return this.grid().numConnectedNodes(node.index, true);
-        }))
-        .range([1, this.options_.scalingConnection ? 3 : 1])
+        .domain(d3.extent(this.nodes(), node => this.scaleValue(node)))
+        .range([1, this.options_.maxScale])
         ;
     }
 
@@ -362,9 +463,7 @@ module egrid {
 
 
     private rescale() : void {
-      var filterdNodes = this.options_.inactiveNode == InactiveNode.Hidden
-        ? this.nodes().filter(node => node.active)
-        : this.nodes()
+      var filterdNodes = this.nodes();
       var left = d3.min(filterdNodes, node => {
         return node.left().x;
       });
@@ -417,6 +516,7 @@ module egrid {
         selection.attr("viewBox", (new Svg.ViewBox(0, 0, this.displayWidth, this.displayHeight)).toString());
         selection.append("text")
           .classed("measure", true)
+          .style("visibility", "hidden")
           ;
 
         selection.append("rect")
@@ -620,7 +720,7 @@ module egrid {
     /**
      * @method focusCenter
      */
-    focusCenter() : EGM {
+    focusCenter(animate: boolean = true) : EGM {
       var left = d3.min(this.nodes(), node => {
         return node.left().x;
       });
@@ -644,9 +744,16 @@ module egrid {
       var scale = new Svg.Transform.Scale(s);
       this.contentsZoomBehavior.translate([translate.x, translate.y]);
       this.contentsZoomBehavior.scale(scale.sx);
-      this.contentsSelection
-        .transition()
-        .attr("transform", translate.toString() + scale.toString());
+      if (animate) {
+        this
+          .contentsSelection
+          .transition()
+          .attr("transform", translate.toString() + scale.toString());
+      } else {
+        this
+          .contentsSelection
+          .attr("transform", translate.toString() + scale.toString());
+      }
       return this;
     }
 
@@ -913,6 +1020,7 @@ module egrid {
         this.unselectElement();
         this.grid().removeNode(node.index);
         this.draw();
+        this.unselectElement();
         this.notify();
       }
       return this;

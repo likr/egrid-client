@@ -1,5 +1,8 @@
 doc
 node_modules
+static/scripts/collaboegm.js
+static/scripts/collaboegm.js.map
+egm.data
 
 [._]*.s[a-w][a-z]
 [._]s[a-w][a-z]

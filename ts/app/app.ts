@@ -9,7 +9,9 @@
 /// <reference path="participant-list.ts"/>
 /// <reference path="project.ts"/>
 /// <reference path="project-create.ts"/>
-/// <reference path="project-grid.ts"/>
+/// <reference path="project-grid-create.ts"/>
+/// <reference path="project-grid-edit.ts"/>
+/// <reference path="project-grid-list.ts"/>
 /// <reference path="project-list.ts"/>
 /// <reference path="sem-project.ts"/>
 /// <reference path="sem-project-analysis.ts"/>
@@ -25,7 +27,7 @@ module egrid.app {
          link: function (scope, element, attrs, model) {
             $timeout(function () {
               element[0].focus();
-            });
+            }, 10);
           }
       };
     }])
@@ -185,12 +187,39 @@ module egrid.app {
             },
           },
         })
-        .state('projects.get.grid', {
+        .state('projects.get.grids', {
+          abstract: true,
           url: '/grid',
+        })
+        .state('projects.get.grids.all', {
+          abstract: true,
+          url: '/all',
+          views: {
+            'content@projects.get': {
+              templateUrl: '/partials/project/participants/participants.html',
+            },
+          },
+        })
+        .state('projects.get.grids.all.list', {
+          abstract: true,
+          url: '/all',
+          views: {
+            'content@projects.get.grid.all': {
+              controller: 'ProjectGridEditController as projectGrid',
+              templateUrl: '/partials/project-grid-edit.html',
+            },
+          },
+        })
+        .state('projects.get.grids.get', {
+          abstract: true,
+          url: '/:projectGridKey',
+        })
+        .state('projects.get.grids.get.detail', {
+          url: '/detail',
           views: {
             '@': {
-              controller: 'ProjectGridController as projectGrid',
-              templateUrl: '/partials/egm-show-all.html',
+              controller: 'ProjectGridEditController as projectGrid',
+              templateUrl: '/partials/project-grid-edit.html',
             },
           },
         })
@@ -260,11 +289,13 @@ module egrid.app {
             },
           },
         })
-        .state("/help", {
+        .state("help", {
           templateUrl: '/partials/help.html',
+          url: '/help',
         })
-        .state("/about", {
+        .state("about", {
           templateUrl: '/partials/about.html',
+          url: '/about',
         });
 
       // ほんとは $state.go にしたい
@@ -288,11 +319,13 @@ module egrid.app {
     .controller('ParticipantController', ['$q', '$stateParams', '$scope', '$state', '$modal', ParticipantController])
     .controller('ParticipantCreateController', ['$q', '$stateParams', '$state', ParticipantCreateController])
     .controller('ParticipantGridController', ['$q', '$stateParams', '$scope', ParticipantGridController])
-    .controller('ParticipantGridEditController', ['$q', '$stateParams', '$location', '$modal', '$scope', ParticipantGridEditController])
+    .controller('ParticipantGridEditController', ['$q', '$stateParams', '$state', '$modal', '$scope', ParticipantGridEditController])
     .controller('ParticipantListController', ['$q', '$stateParams', ParticipantListController])
     .controller('ProjectController', ['$q', '$stateParams', '$state', '$modal', '$scope', ProjectController])
     .controller('ProjectCreateController', ['$q', '$state', ProjectCreateController])
-    .controller('ProjectGridController', ['$q', '$stateParams', '$modal', '$scope', ProjectGridController])
+    .controller('ProjectGridCreateController', ['$q', '$stateParams', '$state', ProjectGridCreateController])
+    .controller('ProjectGridEditController', ['$q', '$stateParams', '$modal', '$scope', '$state', ProjectGridEditController])
+    .controller('ProjectGridListController', ['$q', '$stateParams', ProjectGridListController])
     .controller('ProjectListController', ['$q', ProjectListController])
     .controller('SemProjectController', ['$q', '$stateParams', SemProjectController])
     .controller('SemProjectAnalysisController', ['$q', '$stateParams', SemProjectAnalysisController])
