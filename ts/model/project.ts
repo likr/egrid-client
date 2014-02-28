@@ -147,7 +147,7 @@ module egrid.model {
 
             irregulars = $.extend({}, unsavedItems, o);
 
-            window.localStorage.setItem(storageKey, irregulars);
+            window.localStorage.setItem(storageKey, JSON.stringify(irregulars));
 
             return $deferred.reject();
           });

@@ -69,10 +69,6 @@ module egrid.model {
       var k = 'unsavedItems.' + CollectionBase.pluralize(Project.type);
       var unsavedItems: any = JSON.parse(window.localStorage.getItem(k)) || {};
 
-      // 未送信データがある場合
-      if (Object.keys(unsavedItems).length) {
-      }
-
       $.when(Object
         .keys(unsavedItems)
         .map((value: any, index: number, ar: any[]) => {
@@ -81,7 +77,7 @@ module egrid.model {
             return item.load(unsavedItems[value]).save();
           }))
         .then((...items: Project[]) => {
-            // window.localStorage.removeItem(k);
+            window.localStorage.removeItem(k);
 
             return $deferred.resolve(this.pairs.value.toArray());
           }, () => {

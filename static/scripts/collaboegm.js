@@ -317,7 +317,7 @@ var egrid;
 
                     irregulars = $.extend({}, unsavedItems, o);
 
-                    window.localStorage.setItem(storageKey, irregulars);
+                    window.localStorage.setItem(storageKey, JSON.stringify(irregulars));
 
                     return $deferred.reject();
                 });
@@ -3469,9 +3469,6 @@ var egrid;
                 var k = 'unsavedItems.' + egrid.model.CollectionBase.pluralize(egrid.model.Project.type);
                 var unsavedItems = JSON.parse(window.localStorage.getItem(k)) || {};
 
-                if (Object.keys(unsavedItems).length) {
-                }
-
                 $.when(Object.keys(unsavedItems).map(function (value, index, ar) {
                     var item = new egrid.model.Project();
 
@@ -3481,6 +3478,8 @@ var egrid;
                     for (var _i = 0; _i < (arguments.length - 0); _i++) {
                         items[_i] = arguments[_i + 0];
                     }
+                    window.localStorage.removeItem(k);
+
                     return $deferred.resolve(_this.pairs.value.toArray());
                 }, function () {
                     return $deferred.reject();
