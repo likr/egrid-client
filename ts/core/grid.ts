@@ -156,17 +156,33 @@ module egrid {
   }
 
 
+  export enum RankDirection {
+    LR,
+    TB,
+  }
+
+
+  export interface LayoutOption {
+    lineUpTop? : boolean;
+    lineUpBottom? : boolean;
+    rankDirection? : RankDirection;
+  }
+
+
   /**
   @class egrid.Grid
   */
   export class Grid {
     private nodes_ : Node[];
     private links_ : Link[];
+    private paths : Link[];
     private linkMatrix : boolean[][];
     private pathMatrix : boolean[][];
     private undoStack : CommandTransaction[];
     private redoStack : CommandTransaction[];
     private transaction : CommandTransaction;
+    private checkActive_ : boolean;
+    private minimumWeight_ : number;
 
 
     /**
@@ -176,8 +192,11 @@ module egrid {
     constructor() {
       this.nodes_ = [];
       this.links_ = [];
+      this.paths = [];
       this.undoStack = [];
       this.redoStack = [];
+      this.linkMatrix = [];
+      this.pathMatrix = [];
     }
 
 
@@ -272,6 +291,34 @@ module egrid {
     }
 
 
+    updateNodeWeight(nodeIndex : number, newWeight : number) : void {
+      var node = this.nodes_[nodeIndex];
+      var oldWeight = node.weight;
+      this.execute({
+        execute: () => {
+          node.weight = newWeight;
+        },
+        revert: () => {
+          node.weight = oldWeight;
+        },
+      });
+    }
+
+
+    updateNodeParticipants(nodeIndex : number, newParticipants : string[]) : void {
+      var node = this.nodes_[nodeIndex];
+      var oldParticipants = node.participants;
+      this.execute({
+        execute: () => {
+          node.participants = newParticipants;
+        },
+        revert: () => {
+          node.participants = oldParticipants;
+        },
+      });
+    }
+
+
     updateLinkWeight(linkIndex : number, newWeight : number) : void {
       var link = this.links_[linkIndex];
       var oldWeight = link.weight;
@@ -313,6 +360,8 @@ module egrid {
         });
       this.transactionWith(() => {
         this.updateNodeText(toIndex, toNode.text + ", " + fromNode.text);
+        this.updateNodeWeight(toIndex, toNode.weight + fromNode.weight);
+        this.updateNodeParticipants(toIndex, toNode.participants.concat(fromNode.participants));
         this.removeNode(fromIndex);
         this.execute({
           execute : () => {
@@ -415,6 +464,13 @@ module egrid {
     }
 
 
+    activeNodes() : Node[] {
+      return this.nodes().filter(node => {
+        return (!this.checkActive_ || node.active) && node.weight >= this.minimumWeight_;
+      });
+    }
+
+
     findNode(text : string) : Node {
       var result = null;
       this.nodes_.forEach(node => {
@@ -439,6 +495,31 @@ module egrid {
     }
 
 
+    activeLinks() : Link[] {
+      var removeNodes = this.nodes().filter(node => {
+        return node.weight < this.minimumWeight_;
+      });
+      var newPathMatrix = this.linkMatrix.map(row => row.map(v => v));
+      removeNodes.forEach(node => {
+        var i, j, k = node.index, n = this.nodes_.length;
+        for (i = 0; i < n; ++i) {
+          for (j = 0; j < n; ++j) {
+            if (newPathMatrix[i][k] && newPathMatrix[k][j]) {
+              newPathMatrix[i][j] = true;
+            }
+          }
+        }
+      });
+      return this.paths.filter(link => {
+        return newPathMatrix[link.source.index][link.target.index]
+          && (!this.checkActive_ || link.source.active)
+          && link.source.weight >= this.minimumWeight_
+          && (!this.checkActive_ || link.target.active)
+          && link.target.weight >= this.minimumWeight_;
+      });
+    }
+
+
     link(linkIndex : number) : Link;
     link(fromNodeIndex : number, toNodeIndex : number) : Link;
     link(index1 : number, index2 : number=undefined) : Link {
@@ -456,20 +537,20 @@ module egrid {
     }
 
 
-    layout(checkActive : boolean = false, lineUpTop : boolean = true, lineUpBottom : boolean = true) : void {
-      var nodes = this.nodes_;
-      var links = this.links_;
-      if (checkActive) {
-        nodes = nodes.filter(node => node.active);
-        links = links.filter(link => link.source.active && link.target.active);
-      }
+    layout(options : LayoutOption) : void {
+      var lineUpTop = options.lineUpTop === undefined ? true : options.lineUpTop;
+      var lineUpBottom = options.lineUpBottom === undefined ? true : options.lineUpBottom;
+      var rankDirection = options.rankDirection === undefined || options.rankDirection == RankDirection.LR ? 'LR' : 'TB';
+
+      var nodes = this.activeNodes();
+      var links = this.activeLinks();
 
       dagre.layout()
         .nodes(nodes)
         .edges(links)
         .lineUpTop(lineUpTop)
         .lineUpBottom(lineUpBottom)
-        .rankDir("LR")
+        .rankDir(rankDirection)
         .rankSep(200)
         .edgeSep(20)
         .run()
@@ -485,8 +566,8 @@ module egrid {
       links.forEach(link => {
         link.previousPoints = link.points;
         link.points = link.dagre.points.map(p => p);
-        link.points.unshift(link.source.right());
-        link.points.push(link.target.left());
+        link.points.unshift(link.source.center());
+        link.points.push(link.target.center());
       });
     }
 
@@ -501,16 +582,38 @@ module egrid {
     }
 
 
-    numConnectedNodes(index : number, checkActive : boolean = false) : number {
+    numConnectedNodes(index : number) : number {
       var result = 0;
-      this.nodes_.forEach((node, j) => {
-        if (!checkActive || (checkActive && node.active)) {
-          if (this.pathMatrix[index][j] || this.pathMatrix[j][index]) {
-            result += 1;
-          }
+      this.activeNodes().forEach(node => {
+        if (this.pathMatrix[index][node.index] || this.pathMatrix[node.index][index]) {
+          result += 1;
         }
       })
       return result;
+    }
+
+
+    checkActive() : boolean;
+    checkActive(flag : boolean) : Grid;
+    checkActive(arg? : boolean) : any {
+      if (arg === undefined) {
+        return this.checkActive_;
+      } else {
+        this.checkActive_ = arg;
+        return this;
+      }
+    }
+
+
+    minimumWeight() : number;
+    minimumWeight(value : number) : Grid;
+    minimumWeight(arg? : number) : any {
+      if (arg === undefined) {
+        return this.minimumWeight_;
+      } else {
+        this.minimumWeight_ = arg;
+        return this;
+      }
     }
 
 
@@ -560,33 +663,36 @@ module egrid {
       this.links_.forEach(link => {
         this.linkMatrix[link.source.index][link.target.index] = true;
       });
-      this.nodes_.forEach(node => {
-        node.isTop = node.isBottom = true;
+
+      this.nodes_.forEach((node, index1) => {
+        node.isTop = this.nodes_.every((_, index2) => !this.linkMatrix[index2][index1]);
+        node.isBottom = this.nodes_.every((_, index2) => !this.linkMatrix[index1][index2]);
       });
-      this.pathMatrix = this.nodes_.map((fromNode, fromIndex) => {
-        return this.nodes_.map((toNode, toIndex) => {
-          var checkedFlags : boolean[] = this.nodes_.map(_ => false);
-          var front : number[] = [fromIndex];
-          while (front.length > 0) {
-            var nodeIndex = front.pop();
-            if (nodeIndex == toIndex) {
-              if (nodeIndex != fromIndex) {
-                fromNode.isBottom = false;
-                toNode.isTop = false;
-              }
-              return true;
-            }
-            if (!checkedFlags[nodeIndex]) {
-              this.nodes_.forEach((_, j) => {
-                if (this.linkMatrix[nodeIndex][j]) {
-                  front.push(j);
-                }
-              });
-            }
-          }
-          return false
+
+      this.pathMatrix = this.nodes_.map((_, fromIndex) => {
+        return this.nodes_.map((_, toIndex) => {
+          return fromIndex == toIndex || this.linkMatrix[fromIndex][toIndex];
         });
       });
+      var i, j, k, n = this.nodes_.length;
+      for (k = 0; k < n; ++k) {
+        for (i = 0; i < n; ++i) {
+          for (j = 0; j < n; ++j) {
+            if (this.pathMatrix[i][k] && this.pathMatrix[k][j]) {
+              this.pathMatrix[i][j] = true;
+            }
+          }
+        }
+      }
+
+      this.paths = this.links_.map(link => link);
+      for (i = 0; i < n; ++i) {
+        for (j = 0; j < n; ++j) {
+          if (this.pathMatrix[i][j] && !this.linkMatrix[i][j]) {
+            this.paths.push(new Link(this.nodes_[i], this.nodes_[j]));
+          }
+        }
+      }
     }
 
 

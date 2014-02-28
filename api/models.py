@@ -1,6 +1,6 @@
+import json
 from google.appengine.api import users
 from google.appengine.ext import db
-import calendar
 from version import VERSION
 from model_base import DeletableModelBase
 
@@ -48,6 +48,27 @@ class Project(EgridModel):
             'key': str(self.key()),
             'name': self.name,
             'note': self.note,
+            'createdAt': self.created_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            'updatedAt': self.updated_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        }
+
+
+class ProjectGrid(EgridModel):
+    name = db.StringProperty(required=True)
+    note = db.TextProperty()
+    json = db.TextProperty()
+    project = db.ReferenceProperty(Project)
+
+    def to_dict(self):
+        data = json.loads(self.json)
+        return {
+            'key': str(self.key()),
+            'name': self.name,
+            'note': self.note,
+            'project': self.project.to_dict(),
+            'projectKey': str(self.project.key()),
+            'nodes': data['nodes'],
+            'links': data['links'],
             'createdAt': self.created_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
             'updatedAt': self.updated_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
         }

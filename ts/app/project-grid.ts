@@ -6,8 +6,9 @@
 /// <reference path="../model/project-grid.ts"/>
 
 module egrid.app {
-  export class ProjectGridController {
+  export class ProjectGridEditController {
     projectKey : string;
+    projectGridKey : string;
     egm : EGM;
     filter : {} = {};
     participants : model.Participant[];
@@ -16,11 +17,11 @@ module egrid.app {
     constructor($q, $stateParams, $modal, private $scope) {
       var __this = this;
       this.projectKey = $stateParams.projectId;
+      this.projectGridKey = $stateParams.projectGridKey;
 
       var egmui = egrid.egmui();
       this.egm = egmui.egm();
       this.egm.showRemoveLinkButton(true);
-      this.egm.options().scalingConnection = false;
       var calcHeight = () => {
         return $(window).height() - 100; //XXX
       };
@@ -111,7 +112,7 @@ module egrid.app {
           });
           m.result.then(result => {
             this.egm.nodes().forEach(d => {
-              m.active = m.participants.some(key => result[key]);
+              d.active = d.participants.some(key => result[key]);
             });
             this.egm
               .draw()
@@ -133,13 +134,18 @@ module egrid.app {
               $scope.options = this.egm.options();
               $scope.ViewMode = egrid.ViewMode;
               $scope.InactiveNode = egrid.InactiveNode;
+              $scope.RankDirection = egrid.RankDirection;
+              $scope.ScaleType = egrid.ScaleType;
               $scope.close = () => {
                 $modalInstance.close();
               }
             },
           });
           m.result.then(() => {
-            this.egm.draw();
+            this.egm
+              .draw()
+              .focusCenter()
+              ;
           });
           $scope.$apply();
         })
