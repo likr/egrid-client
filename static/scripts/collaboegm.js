@@ -554,6 +554,11 @@ var egrid;
             Participant.prototype.load = function (o) {
                 this.key = o.key;
 
+                this.name = o.name;
+                this.note = o.note;
+
+                this.project = o.project;
+
                 this.setCreatedAt(o.createdAt);
                 this.setUpdatedAt(o.updatedAt);
 
@@ -565,7 +570,7 @@ var egrid;
                 var $deferred = $.Deferred();
 
                 $.ajax({
-                    url: this.url(this.projectKey),
+                    url: this.url(key),
                     type: 'GET',
                     dataFilter: function (data) {
                         var obj = JSON.parse(data);
@@ -4307,7 +4312,7 @@ var egrid;
                     url: '/:participantId',
                     views: {
                         '@': {
-                            controller: 'ParticipantController as participant',
+                            controller: 'ParticipantController as ctrl',
                             templateUrl: '/partials/project/participants/participant/participant.html'
                         }
                     }
@@ -4326,7 +4331,7 @@ var egrid;
                         }
                     }
                 }).state('projects.get.participants.get.grid', {
-                    url: '/grid',
+                    url: '/grid?disableCompletion',
                     views: {
                         '@': {
                             controller: 'ParticipantGridEditController as participantGrid',

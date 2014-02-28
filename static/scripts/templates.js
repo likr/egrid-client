@@ -522,18 +522,18 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('/partials/project/participants/participant/detail.html',
-    "<form class=\"form-horizontal\" ng-submit=\"participant.update()\">\n" +
+    "<form class=\"form-horizontal\" ng-submit=\"ctrl.update()\">\n" +
     "  <div class=\"form-group\">\n" +
     "    <label class=\"control-label col-sm-2\" for=\"name\">{{ 'PARTICIPANT.ATTRIBUTES.NAME' | translate }}</label>\n" +
     "    <div class=\"col-sm-10\">\n" +
-    "      <input class=\"form-control\" type=\"text\" name=\"name\" placeholder=\"{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NAME' | translate }}\" ng-model=\"participant.name\"/>\n" +
+    "      <input class=\"form-control\" type=\"text\" name=\"name\" placeholder=\"{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NAME' | translate }}\" ng-model=\"ctrl.participant.name\"/>\n" +
     "    </div>\n" +
     "  </div>\n" +
     "\n" +
     "  <div class=\"form-group\">\n" +
     "    <label class=\"control-label col-sm-2\" for=\"note\">{{ 'PARTICIPANT.ATTRIBUTES.NOTE' | translate }}</label>\n" +
     "    <div class=\"col-sm-10\">\n" +
-    "      <textarea class=\"form-control\" name=\"note\" rows=\"3\" placeholder=\"{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate }}\" ng-model=\"participant.note\"></textarea>\n" +
+    "      <textarea class=\"form-control\" name=\"note\" rows=\"3\" placeholder=\"{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate }}\" ng-model=\"ctrl.participant.note\"></textarea>\n" +
     "    </div>\n" +
     "  </div>\n" +
     "\n" +
@@ -543,7 +543,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "    </div>\n" +
     "  </div>\n" +
     "</form>\n" +
-    "<form class=\"form-horizontal\" ng-submit=\"participant.confirm()\">\n" +
+    "<form class=\"form-horizontal\" ng-submit=\"ctrl.confirm()\">\n" +
     "  <div class=\"form-group\">\n" +
     "    <div class=\"col-sm-offset-11 col-sm-1\">\n" +
     "      <input type=\"submit\" class=\"btn btn-danger\" value=\"{{'ACTION.REMOVE' | translate}}\"/>\n" +
@@ -559,8 +559,8 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "  <div class=\"navbar navbar-default\">\n" +
     "    <div class=\"navbar-collapse\">\n" +
     "      <form class=\"navbar-form\">\n" +
-    "        <a href=\"/#{{Url.participantGridUrl(participant.projectKey, participant.participantKey)}}\" class=\"btn btn-primary\">{{'ACTION.EDIT' | translate}}</a>\n" +
-    "        <a href=\"/#{{Url.participantGridUrl(participant.projectKey, participant.participantKey)}}?disableCompletion=1\" class=\"btn btn-default\">{{'ACTION.EDIT' | translate}}(テキスト補完なし)</a>\n" +
+    "        <a ui-sref=\"projects.get.participants.get.grid\" class=\"btn btn-primary\">{{'ACTION.EDIT' | translate}}</a>\n" +
+    "        <a ui-sref=\"projects.get.participants.get.grid({ disableCompletion: 1 })\" class=\"btn btn-default\">{{'ACTION.EDIT' | translate}}(テキスト補完なし)</a>\n" +
     "      </form>\n" +
     "    </div>\n" +
     "  </div>\n" +
@@ -584,17 +584,17 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('/partials/project/participants/participant/participant.html',
     "<div class=\"tab-pane active\">\n" +
-    "  <h2>{{participant.name}}</h2>\n" +
+    "  <h2>{{ctrl.participant.name}}</h2>\n" +
     "\n" +
     "  <ol class=\"breadcrumb\">\n" +
     "    <li>\n" +
     "      <a ui-sref=\"projects.all.list\">{{'PROJECT.PROJECTS' | translate}}</a>\n" +
     "    </li>\n" +
     "    <li>\n" +
-    "      <a href=\"/#{{Url.projectUrl(participant.project.key, 'detail')}}\">{{participant.project.name}}</a>\n" +
+    "      <a ui-sref=\"projects.get.detail\">{{ctrl.participant.project.name}}</a>\n" +
     "    </li>\n" +
     "    <li class=\"active\">\n" +
-    "      {{participant.name}}\n" +
+    "      {{ctrl.participant.name}}\n" +
     "    </li>\n" +
     "  </ol>\n" +
     "\n" +

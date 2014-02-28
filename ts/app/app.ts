@@ -229,7 +229,7 @@ module egrid.app {
           url: '/:participantId',
           views: {
             '@': {
-              controller: 'ParticipantController as participant',
+              controller: 'ParticipantController as ctrl',
               templateUrl: '/partials/project/participants/participant/participant.html',
             },
           },
@@ -251,7 +251,7 @@ module egrid.app {
           },
         })
         .state('projects.get.participants.get.grid', {
-          url: '/grid',
+          url: '/grid?disableCompletion',
           views: {
             '@': {
               controller: 'ParticipantGridEditController as participantGrid',

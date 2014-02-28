@@ -75,6 +75,11 @@ module egrid.model {
     public load(o: any): Participant {
       this.key = o.key;
 
+      this.name = o.name;
+      this.note = o.note;
+
+      this.project = o.project;
+
       this.setCreatedAt(o.createdAt);
       this.setUpdatedAt(o.updatedAt);
 
@@ -88,7 +93,7 @@ module egrid.model {
       var $deferred = $.Deferred();
 
       $.ajax({
-          url: this.url(this.projectKey),
+          url: this.url(key),
           type: 'GET',
           dataFilter: data => {
             var obj = JSON.parse(data);

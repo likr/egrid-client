@@ -1,15 +1,15 @@
 <div class="tab-pane active">
-  <h2>{{participant.name}}</h2>
+  <h2>{{ctrl.participant.name}}</h2>
 
   <ol class="breadcrumb">
     <li>
       <a ui-sref="projects.all.list">{{'PROJECT.PROJECTS' | translate}}</a>
     </li>
     <li>
-      <a href="/#{{Url.projectUrl(participant.project.key, 'detail')}}">{{participant.project.name}}</a>
+      <a ui-sref="projects.get.detail">{{ctrl.participant.project.name}}</a>
     </li>
     <li class="active">
-      {{participant.name}}
+      {{ctrl.participant.name}}
     </li>
   </ol>
 
