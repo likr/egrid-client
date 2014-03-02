@@ -53,7 +53,7 @@ module egrid.app {
         ;
 
       $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){
-        if (!d3.select("#undoButton").classed("disabled")) {
+        if (!d3.select("#undoButton").classed("disabled") && toState.url != '/detail') {
           if (!confirm('保存せずにページを移動しようとしています')) {
             event.preventDefault();
           }
