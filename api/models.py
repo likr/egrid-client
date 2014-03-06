@@ -27,6 +27,13 @@ class User(EgridModel):
             'federated_provider': self.user.federated_provider(),
         }
 
+    def is_collaborator_on(self, project):
+        if project:
+            collaborators = Collaborator.all().filter('project =', project)
+            for collaborator in collaborators:
+                if collaborator.user.key() == self.key():
+                    return True
+
     @staticmethod
     def current_user():
         current_user = users.get_current_user()

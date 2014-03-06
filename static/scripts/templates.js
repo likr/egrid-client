@@ -303,7 +303,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('/partials/project/analyses/analysis/analyses.html',
-    "<div tab heading=\"{{'SEM.ANALYSIS' | translate}}\" select=\"drawSemAnalysis()\">\n" +
+    "<div class=\"tab-pane active\" select=\"drawSemAnalysis()\">\n" +
     "  <div id=\"sem-analysis-display\">\n" +
     "    <div class=\"row\">\n" +
     "      <div class=\"span10\">\n" +
@@ -316,6 +316,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "              <label class=\"checkbox\">\n" +
     "                <input type=\"checkbox\" ng-model=\"item.active\" ng-change=\"removeNode()\"/>{{ item.text }}\n" +
     "              </label>\n" +
+    "            </td>\n" +
     "          </tr>\n" +
     "        </table>\n" +
     "      </div>\n" +
@@ -532,7 +533,8 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "      <tr ng-repeat=\"collaborator in collaborators.collaborators.toArray()\">\n" +
     "        <td>{{ $index + 1 }}</td>\n" +
     "        <td>{{collaborator.user.nickname}}</td>\n" +
-    "        <td>{{collaborator.isManager}}</td>\n" +
+    "        <td ng-if=\"collaborator.isManager\">{{'COLLABORATOR.ROLE.MANAGER' | translate}}</td>\n" +
+    "        <td ng-if=\"!collaborator.isManager\">{{'COLLABORATOR.ROLE.USER' | translate}}</td>\n" +
     "        <td><a href ng-click=\"collaborators.confirm(collaborator.key)\">{{'ACTION.REMOVE' | translate}}</td>\n" +
     "      </tr>\n" +
     "    </tbody>\n" +

@@ -1,4 +1,4 @@
-<div tab heading="{{'SEM.ANALYSIS' | translate}}" select="drawSemAnalysis()">
+<div class="tab-pane active" select="drawSemAnalysis()">
   <div id="sem-analysis-display">
     <div class="row">
       <div class="span10">
@@ -11,6 +11,7 @@
               <label class="checkbox">
                 <input type="checkbox" ng-model="item.active" ng-change="removeNode()"/>{{ item.text }}
               </label>
+            </td>
           </tr>
         </table>
       </div>
