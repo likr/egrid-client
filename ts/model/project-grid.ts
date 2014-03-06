@@ -28,6 +28,7 @@ module egrid.model {
     projectKey : string;
     nodes : ProjectGridNodeData[];
     links : ProjectGridLinkData[];
+    public static type : string = 'ProjectGrid';
 
     constructor(obj : ProjectGridData) {
       this.projectKey = obj.projectKey;
@@ -103,9 +104,13 @@ module egrid.model {
       return this;
     }
 
-    static get(projectKey : string, projectGridKey? : string) : JQueryXHR {
+    static get(projectKey : string, projectGridKey? : string) : JQueryPromise<ProjectGrid> {
+      var $deferred = $.Deferred();
+      var promise;
+      var storageKey = CollectionBase.pluralize(ProjectGrid.type);
+
       if (projectGridKey === undefined) {
-        return $.ajax({
+        promise = $.ajax({
           url: ProjectGrid.url(projectKey) + '/current',
           type: 'GET',
           dataFilter: data => {
@@ -114,7 +119,7 @@ module egrid.model {
           },
         });
       } else {
-        return $.ajax({
+        promise = $.ajax({
           url: ProjectGrid.url(projectKey, projectGridKey),
           type: 'GET',
           dataFilter: data => {
@@ -123,6 +128,26 @@ module egrid.model {
           },
         });
       }
+
+      promise
+        .then((grid : ProjectGrid) => {
+            // 保存する
+            var o = {};
+            var b = {};
+
+            o[projectKey] = grid;
+
+            window.localStorage.setItem(storageKey, JSON.stringify(o));
+
+            return $deferred.resolve(grid);
+          }, (...reasons) => {
+            // 取得して返す
+            var o = JSON.parse(window.localStorage.getItem(storageKey)) || {};
+
+            return $deferred.resolve(new ProjectGrid(o[projectKey]));
+          });
+
+      return $deferred.promise();
     }
 
     static query(projectKey : string) : JQueryXHR {
