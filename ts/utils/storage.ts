@@ -145,23 +145,23 @@ module egrid.utils {
     /**
      * @throws Error Out of memory
      */
-    public add<T extends egrid.model.interfaces.IEntity>(value: T, name: string, projectId?: string, participantId?: string): JQueryPromise<boolean> {
+    public add<T extends egrid.model.interfaces.IEntity>(value: T, name: string, projectId?: string, participantId?: string): JQueryPromise<T> {
       var $promise;
       var alreadyStored = !!value.key;
 
       if (alreadyStored) {
-        $promise = Api.put(value, name, projectId, participantId);
+        $promise = Api.put<T>(value, name, projectId, participantId);
       } else {
         if (projectId) {
-          $promise = Api.post(value, name, projectId);
+          $promise = Api.post<T>(value, name, projectId);
         } else {
-          $promise = Api.post(value, name);
+          $promise = Api.post<T>(value, name);
         }
       }
 
       return $promise
         .then((v: T) => {
-            if (!alreadyStored) {
+            if (!this.store[name]) {
               this.store[name] = {};
             }
 
@@ -179,6 +179,10 @@ module egrid.utils {
             v[Storage.outOfService][name].push(value);
 
             localStorage.setItem(Storage.key, JSON.stringify(Miscellaneousness.merge(o, v)));
+
+            this.store[name][this.store[name].length] = v;
+
+            return v;
           });
     }
 
@@ -233,7 +237,7 @@ module egrid.utils {
      * @param o any
      * @param b any
      */
-    public static merge(o: any, b: any = {}): any {
+    public static merge(o: any = {}, b: any = {}): any {
       var j: any = o;
 
       for (var i = 0, t = Object.keys(b), l = t.length; i < l; i++) {
