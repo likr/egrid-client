@@ -13,6 +13,12 @@ module egrid.utils {
         .replace(':participantId', participantId);
     }
 
+    public static participantGrid(projectId: string, participantId: string): string {
+      return '/api/projects/:projectId/grid/:participantId'
+        .replace(':projectId', projectId)
+        .replace(':participantId', participantId);
+    }
+
     public static projects(): string {
       return '/api/projects';
     }
@@ -20,13 +26,23 @@ module egrid.utils {
     public static project(projectId: string): string {
       return '/api/projects/:projectId'.replace(':projectId', projectId);
     }
+
+    public static projectGrids(projectId: string): string {
+      return '/api/projects/:projectId/grid'.replace(':projectId', projectId);
+    }
+
+    public static projectGrid(projectId: string, projectGridId: string): string {
+      return '/api/projects/:projectId/grid/:projectGridId'
+        .replace(':projectId', projectId)
+        .replace(':projectGridId', projectGridId);
+    }
   }
 
   // API 通信をなんとかしてくれるはず
   export class Api {
     public static get<T>(name: string, projectId: string): JQueryPromise<T>;
     public static get<T>(name: string, projectId: string, participantId?: string): JQueryPromise<T> {
-      var n = name.toLowerCase();
+      var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); });
 
       return $.ajax({
           url: participantId ? Uri[n](projectId, participantId) : Uri[n](projectId),
@@ -36,7 +52,7 @@ module egrid.utils {
     }
 
     public static post<T>(data: T, name: string, projectId?: string): JQueryPromise<T> {
-      var n = name.toLowerCase() + 's';
+      var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); }) + 's';
 
       return $.ajax({
           url: projectId ? Uri[n](projectId) : Uri[n](),
@@ -51,7 +67,7 @@ module egrid.utils {
 
     public static put<T>(data: T, name: string, projectId: string): JQueryPromise<T>;
     public static put<T>(data: T, name: string, projectId: string, participantId?: string): JQueryPromise<T> {
-      var n = name.toLowerCase();
+      var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); });
 
       return $.ajax({
           url: participantId ? Uri[n](projectId, participantId) : Uri[n](projectId),
@@ -65,8 +81,10 @@ module egrid.utils {
     }
 
     public static retrieve<T extends egrid.model.interfaces.IEntity>(name: string, projectId?: string): JQueryPromise<T[]> {
+      var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); }) + 's';
+
       return $.ajax({
-          url: projectId ? Uri[name.toLowerCase() + 's'](projectId) : Uri[name.toLowerCase() + 's'](),
+          url: projectId ? Uri[n](projectId) : Uri[n](),
           type: 'GET',
           contentType: 'application/json',
         })
