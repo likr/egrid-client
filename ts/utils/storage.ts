@@ -67,9 +67,9 @@ module egrid.utils {
           });
     }
 
-    public static retrieve<T extends egrid.model.interfaces.IEntity>(name: string): JQueryPromise<T[]> {
+    public static retrieve<T extends egrid.model.interfaces.IEntity>(name: string, projectId?: string): JQueryPromise<T[]> {
       return $.ajax({
-          url: Uri[name.toLowerCase() + 's'](),
+          url: projectId ? Uri[name.toLowerCase() + 's'](projectId) : Uri[name.toLowerCase() + 's'](),
           type: 'GET',
           contentType: 'application/json',
         })
@@ -178,9 +178,9 @@ module egrid.utils {
       return $deferred.promise();
     }
 
-    public retrieve<T extends egrid.model.interfaces.IEntity>(name: string): JQueryPromise<any> {
+    public retrieve<T extends egrid.model.interfaces.IEntity>(name: string, projectId?: string): JQueryPromise<any> {
       var $deferred = $.Deferred();
-      var $promise = Api.retrieve<T>(name);
+      var $promise = Api.retrieve<T>(name, projectId);
 
       $promise
         .then((values: T[]) => {
