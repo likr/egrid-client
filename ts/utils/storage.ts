@@ -24,17 +24,22 @@ module egrid.utils {
 
   // API 通信をなんとかしてくれるはず
   export class Api {
-    public static get<T>(name: string, key: string): JQueryPromise<T> {
+    public static get<T>(name: string, projectId: string): JQueryPromise<T>;
+    public static get<T>(name: string, projectId: string, participantId?: string): JQueryPromise<T> {
+      var n = name.toLowerCase();
+
       return $.ajax({
-          url: '/api/' + name.toLowerCase() + 's/' + key,
+          url: participantId ? Uri[n](projectId, participantId) : Uri[n](projectId),
           type: 'GET',
           contentType: 'application/json',
         });
     }
 
-    public static post<T>(data: T, name: string): JQueryPromise<T> {
+    public static post<T>(data: T, name: string, projectId?: string): JQueryPromise<T> {
+      var n = name.toLowerCase() + 's';
+
       return $.ajax({
-          url: Uri[name.toLowerCase() + 's'](),
+          url: projectId ? Uri[n](projectId) : Uri[n](),
           type: 'POST',
           contentType: 'application/json',
           data: JSON.stringify(data),
@@ -44,20 +49,12 @@ module egrid.utils {
           });
     }
 
-    public static put<T>(data: T, name: string, key: string): JQueryPromise<T>;
-    public static put<T>(data: T, name: string, key: any): JQueryPromise<T> {
-      var k: string;
-      var e: string;
-
-      if (key && typeof key === 'string') {
-        k = key;
-      } else if (key) {
-        k = key.projectId;
-        e = key.participantId;
-      }
+    public static put<T>(data: T, name: string, projectId: string): JQueryPromise<T>;
+    public static put<T>(data: T, name: string, projectId: string, participantId?: string): JQueryPromise<T> {
+      var n = name.toLowerCase();
 
       return $.ajax({
-          url: e ? Uri[name.toLowerCase()](k, e) : Uri[name.toLowerCase()](k),
+          url: participantId ? Uri[n](projectId, participantId) : Uri[n](projectId),
           type: 'PUT',
           contentType: 'application/json',
           data: JSON.stringify(data),
@@ -129,14 +126,20 @@ module egrid.utils {
     /**
      * @throws Error Out of memory
      */
-    public add<T extends egrid.model.interfaces.IEntity>(value: T, name: string): JQueryPromise<boolean>;
-    public add<T extends egrid.model.interfaces.IEntity>(value: T, name: string, key?: string): JQueryPromise<boolean> {
+    public add<T extends egrid.model.interfaces.IEntity>(value: T, name: string): JQueryPromise<boolean>;                                               // POST /projects/all
+    public add<T extends egrid.model.interfaces.IEntity>(value: T, name: string, projectId?: string, participantId?: string): JQueryPromise<boolean> {  // PUT  /projects/:projectId/participants/:participantsId
       var $promise;
-      var alreadyStored = (key && typeof key === 'string');
+      var alreadyStored = !!value.key;
 
-      $promise = alreadyStored
-        ? Api.put(value, name, key)
-        : Api.post(value, name);
+      if (alreadyStored) {
+        $promise = Api.put(value, name, projectId, participantId);
+      } else {
+        if (projectId) {
+          $promise = Api.post(value, name, projectId);
+        } else {
+          $promise = Api.post(value, name);
+        }
+      }
 
       return $promise
         .then((v: T) => {
@@ -161,16 +164,20 @@ module egrid.utils {
           });
     }
 
-    public get<T extends egrid.model.interfaces.IEntity>(name: string, key: string): JQueryPromise<T> {
+    public get<T extends egrid.model.interfaces.IEntity>(name: string, projectId: string, participantId?: string): JQueryPromise<T> { // GET /projects/:projectId/participants/:participantId
       var $deferred = $.Deferred();
-      var $promise = this.retrieve<T>(name); // 本当は一覧を取る必要はないが、今はこうしておこう
+      var $promise = this.retrieve<T>(name, projectId); // 本当は一覧を取る必要はないが、今はこうしておこう
 
       $promise
         .then((values: T) => {
-            $deferred.resolve(values[key]);
+            var resolved = participantId
+              ? values[participantId]
+              : values[projectId];
+
+            $deferred.resolve(resolved);
           }, (...reasons) => {
-            if (this.store[name].hasOwnProperty(key))
-              $deferred.resolve(this.store[name][key]);
+            if (this.store[name].hasOwnProperty(projectId))
+              $deferred.resolve(this.store[name][projectId]);
             else
               $deferred.reject();
           });
