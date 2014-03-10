@@ -83,17 +83,6 @@ module egrid.model {
       throw new Error('NotImplementedException');
     }
 
-    /**
-     * this.collection に対し Entity.save() を呼び出します。
-     *
-     * @abstract
-     * @access    protected
-     * @note      protected にできない
-     */
-    public flush(): JQueryPromise<T[]> {
-      throw new Error('NotImplementedException');
-    }
-
     public toArray(): T[] {
       return this.pairs.value.toArray();
     }

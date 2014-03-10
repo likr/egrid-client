@@ -1,4 +1,5 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/angularjs/angular.d.ts"/>
+/// <reference path="../utils/storage.ts"/>
 /// <reference path="modules/app.ts"/>
 /// <reference path="collaborator-create.ts"/>
 /// <reference path="collaborator-list.ts"/>
@@ -19,6 +20,10 @@
 /// <reference path="sem-project-questionnaire-edit.ts"/>
 /// <reference path="sem-project-list.ts"/>
 /// <reference path="url.ts"/>
+
+module egrid {
+  export var storage = new egrid.utils.Storage();
+}
 
 module egrid.app {
   angular.module('collaboegm', ['paginator', 'ui.router', "ui.bootstrap", "pascalprecht.translate"])
@@ -189,7 +194,7 @@ module egrid.app {
         })
         .state('projects.get.grids', {
           abstract: true,
-          url: '/grid',
+          url: '/grids',
         })
         .state('projects.get.grids.all', {
           abstract: true,
@@ -202,7 +207,7 @@ module egrid.app {
         })
         .state('projects.get.grids.all.list', {
           abstract: true,
-          url: '/all',
+          url: '/list',
           views: {
             'content@projects.get.grid.all': {
               controller: 'ProjectGridEditController as projectGrid',

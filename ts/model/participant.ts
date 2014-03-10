@@ -84,30 +84,9 @@ module egrid.model {
      * @override
      */
     public get(key: string): JQueryPromise<Participant> {
-      var $deferred = $.Deferred();
-
-      $.ajax({
-          url: this.url(key),
-          type: 'GET',
-          dataFilter: data => {
-            var obj = JSON.parse(data);
-
-            return this.load(obj);
-          },
-        })
-        .then((participant : Participant) => {
-          return $deferred.resolve(participant);
-        }, () => {
-          var k = CollectionBase.pluralize(Participant.type);
-          var objects = JSON.parse(window.localStorage.getItem(k)) || '';
-          var unsaved = JSON.parse(window.localStorage.getItem('unsavedItems.' + k)) || '';
-
-          var target = $.extend(objects, unsaved);
-
-          return target[key] ? $deferred.resolve(this.load(target[key])) : $deferred.reject();
+      return egrid.storage.get<Participant>(Participant.type, this.projectKey, key).then((participant: Participant) => {
+          this.load(participant);
         });
-
-      return $deferred.promise();
     }
 
     /**
@@ -117,46 +96,7 @@ module egrid.model {
      * @throws  Error
      */
     public save(): JQueryPromise<Participant> {
-      var $deferred = $.Deferred();
-      var key = this.key;
-
-      return $.ajax({
-          url: key ? this.url(key) : Participant.listUrl(this.projectKey),
-          type: key ? 'PUT' : 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({
-            key: key,
-            name: this.name,
-            note: this.note,
-          }),
-          dataFilter: data => {
-            var obj : ApiParticipantData = JSON.parse(data);
-
-            return this.load(obj);
-          },
-        })
-        .then((p: Participant) => {
-            return $deferred.resolve(p);
-          }, (...reasons) => {
-            var o = {};
-            var storageKey = 'unsavedItems.' + CollectionBase.pluralize(Participant.type);
-            var unsavedItems = JSON.parse(window.localStorage.getItem(storageKey)) || {};
-            var irregulars: any;
-
-            if (this.key) {
-              o[this.key] = this;
-            } else {
-              o[Object.keys(unsavedItems).length] = this; // FIXME
-            }
-
-            irregulars = $.extend({}, unsavedItems, o);
-
-            window.localStorage.setItem(storageKey, JSON.stringify(irregulars));
-
-            return $deferred.reject();
-          });
-
-      return $deferred.promise();
+      return egrid.storage.add(this, Participant.type, this.projectKey, this.key);
     }
 
     /**
