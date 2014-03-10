@@ -14,7 +14,7 @@ module egrid.utils {
     }
 
     public static participantGrid(projectId: string, participantId: string): string {
-      return '/api/projects/:projectId/grid/:participantId'
+      return '/api/projects/:projectId/participants/:participantId/grid'
         .replace(':projectId', projectId)
         .replace(':participantId', participantId);
     }
@@ -40,7 +40,6 @@ module egrid.utils {
 
   // API 通信をなんとかしてくれるはず
   export class Api {
-    public static get<T>(name: string, projectId: string): JQueryPromise<T>;
     public static get<T>(name: string, projectId: string, participantId?: string): JQueryPromise<T> {
       var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); });
 
@@ -48,7 +47,10 @@ module egrid.utils {
           url: participantId ? Uri[n](projectId, participantId) : Uri[n](projectId),
           type: 'GET',
           contentType: 'application/json',
-        });
+        })
+        .then((r: string) => {
+            return JSON.parse(r);
+          });
     }
 
     public static post<T>(data: T, name: string, projectId?: string): JQueryPromise<T> {
@@ -65,7 +67,6 @@ module egrid.utils {
           });
     }
 
-    public static put<T>(data: T, name: string, projectId: string): JQueryPromise<T>;
     public static put<T>(data: T, name: string, projectId: string, participantId?: string): JQueryPromise<T> {
       var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); });
 
@@ -144,8 +145,7 @@ module egrid.utils {
     /**
      * @throws Error Out of memory
      */
-    public add<T extends egrid.model.interfaces.IEntity>(value: T, name: string): JQueryPromise<boolean>;                                               // POST /projects/all
-    public add<T extends egrid.model.interfaces.IEntity>(value: T, name: string, projectId?: string, participantId?: string): JQueryPromise<boolean> {  // PUT  /projects/:projectId/participants/:participantsId
+    public add<T extends egrid.model.interfaces.IEntity>(value: T, name: string, projectId?: string, participantId?: string): JQueryPromise<boolean> {
       var $promise;
       var alreadyStored = !!value.key;
 
@@ -182,17 +182,13 @@ module egrid.utils {
           });
     }
 
-    public get<T extends egrid.model.interfaces.IEntity>(name: string, projectId: string, participantId?: string): JQueryPromise<T> { // GET /projects/:projectId/participants/:participantId
+    public get<T extends egrid.model.interfaces.IEntity>(name: string, projectId: string, participantId?: string): JQueryPromise<T> {
       var $deferred = $.Deferred();
-      var $promise = this.retrieve<T>(name, projectId); // 本当は一覧を取る必要はないが、今はこうしておこう
+      var $promise = Api.get<T>(name, projectId, participantId);
 
       $promise
-        .then((values: T) => {
-            var resolved = participantId
-              ? values[participantId]
-              : values[projectId];
-
-            $deferred.resolve(resolved);
+        .then((value: T) => {
+            $deferred.resolve(value);
           }, (...reasons) => {
             if (this.store[name].hasOwnProperty(projectId))
               $deferred.resolve(this.store[name][projectId]);
