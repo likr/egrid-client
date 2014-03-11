@@ -116,7 +116,7 @@ module egrid.utils {
     private store: any = {};
 
     public constructor() {
-      this.store = JSON.parse(localStorage.getItem(Storage.key));
+      this.store = JSON.parse(localStorage.getItem(Storage.key)) || {};
 
       this.flush<any>();
     }
@@ -124,7 +124,7 @@ module egrid.utils {
     private flush<T extends egrid.model.interfaces.IEntity>(): JQueryPromise<boolean> {
       var $deferred = $.Deferred();
 
-      for (var type in this.store[Storage.outOfService]) {
+      if (this.store) for (var type in this.store[Storage.outOfService]) {
         $.when(this.store[Storage.outOfService][type].map((v, i, ar) => {
             return v.key
               ? Api.put<T>(v, type, v.key)
