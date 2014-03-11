@@ -1,4 +1,5 @@
-/// <reference path="../ts-definitions/Definitelytyped/jquery/jquery.d.ts"/>
+/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="interfaces/ientity.ts"/>
 /// <reference path="participant-grid-node.ts"/>
 /// <reference path="participant-grid-link.ts"/>
 
@@ -11,16 +12,17 @@ module egrid.model {
   }
 
 
-  export class ParticipantGrid implements ParticipantGridData {
-    projectKey : string;
+  export class ParticipantGrid implements ParticipantGridData, interfaces.IEntity {
+    key : string;
     participantKey : string;
+    projectKey : string;
     nodes : ParticipantGridNodeData[];
     links : ParticipantGridLinkData[];
     static type : string = 'ParticipantGrid';
 
     constructor(obj : ParticipantGridData) {
       this.projectKey = obj.projectKey;
-      this.participantKey = obj.participantKey;
+      this.participantKey = this.key = obj.participantKey;
       this.nodes = obj.nodes;
       this.links = obj.links;
     }
@@ -38,43 +40,35 @@ module egrid.model {
             links: this.links,
           }),
           dataFilter: data => {
-            window.localStorage.removeItem('unsavedItems.' + storageKey);
-
             return this;
           },
         })
         .then((p: ParticipantGrid) => {
+            window.localStorage.removeItem('unsavedItems.' + storageKey);
+
             return $deferred.resolve(p);
           }, (...reasons) => {
             // ストレージにぶち込む
             var o = {};
             var b = {};
 
-            b[this.participantKey] = this;
+            b[this.key] = this;
             o[this.projectKey] = b;
 
             window.localStorage.setItem('unsavedItems.' + storageKey, JSON.stringify(o));
 
-            return $deferred.resolve(new ParticipantGrid(o[this.projectKey][this.participantKey]));
+            return $deferred.resolve(new ParticipantGrid(o[this.projectKey][this.key]));
           });
 
       return $deferred.promise();
     }
 
     private url() : string {
-      return ParticipantGrid.url(this.projectKey, this.participantKey);
+      return ParticipantGrid.url(this.projectKey, this.key);
     }
 
     static get(projectKey : string, participantKey : string) : JQueryPromise<ParticipantGrid> {
-      var storageKey = CollectionBase.pluralize(ParticipantGrid.type);
-      var stored = JSON.parse(window.localStorage.getItem('unsavedItems.' + storageKey));
-
-      // save 呼ぶかい？
-      if (stored) {
-        new ParticipantGrid(stored[projectKey][participantKey]).update().then(() => { return ParticipantGrid.__get(projectKey, participantKey); });
-      }
-
-      return ParticipantGrid.__get(projectKey, participantKey);
+      return egrid.storage.get<ParticipantGrid>(ParticipantGrid.type, projectKey, participantKey);
     }
 
     private static __get(projectKey : string, participantKey : string) : JQueryPromise<ParticipantGrid> {

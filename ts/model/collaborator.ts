@@ -59,30 +59,7 @@ module egrid.model {
      * @override
      */
     public get(key: string): JQueryPromise<Collaborator> {
-      var $deferred = $.Deferred();
-
-      $.ajax({
-          url: this.url(key),
-          type: 'GET',
-          dataFilter: data => {
-            var obj = JSON.parse(data);
-
-            return this.load(obj);
-          },
-        })
-        .then((collaborator : Collaborator) => {
-          return $deferred.resolve(collaborator);
-        }, () => {
-          var k = CollectionBase.pluralize(Collaborator.type);
-          var objects = JSON.parse(window.localStorage.getItem(k)) || '';
-          var unsaved = JSON.parse(window.localStorage.getItem('unsavedItems.' + k)) || '';
-
-          var target = $.extend(objects, unsaved);
-
-          return target[key] ? $deferred.resolve(this.load(target[key])) : $deferred.reject();
-        });
-
-      return $deferred.promise();
+      throw new Error('NotSupportedException');
     }
 
     /**
@@ -92,47 +69,7 @@ module egrid.model {
      * @throws  Error
      */
     public save(): JQueryPromise<Collaborator> {
-      var $deferred = $.Deferred();
-      var key = this.key;
-
-      return $.ajax({
-          url: key ? this.url(key) : Collaborator.listUrl(this.projectKey),
-          type: key ? 'PUT' : 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({
-            key: key,
-            isManager: this.isManager,
-            projectKey: this.projectKey,
-            userEmail: this.userEmail,
-          }),
-          dataFilter: data => {
-            var obj : ApiCollaboratorData = JSON.parse(data);
-
-            return this.load(obj);
-          },
-        })
-        .then((c: Collaborator) => {
-            return $deferred.resolve(c);
-          }, (...reasons) => {
-            var o = {};
-            var storageKey = 'unsavedItems.' + CollectionBase.pluralize(Collaborator.type);
-            var unsavedItems = JSON.parse(window.localStorage.getItem(storageKey)) || {};
-            var irregulars: any;
-
-            if (this.key) {
-              o[this.key] = this;
-            } else {
-              o[Object.keys(unsavedItems).length] = this; // FIXME
-            }
-
-            irregulars = $.extend(true, {}, unsavedItems, o);
-
-            window.localStorage.setItem(storageKey, JSON.stringify(irregulars));
-
-            return $deferred.reject();
-          });
-
-      return $deferred.promise();
+      return egrid.storage.add<Collaborator>(this, Collaborator.type, this.projectKey, this.key);
     }
 
     /**
@@ -151,11 +88,8 @@ module egrid.model {
       return Collaborator.listUrl(this.projectKey) + '/' + key;
     }
 
-    public remove() : JQueryXHR {
-      return $.ajax({
-        url: this.url(this.key),
-        type: 'DELETE',
-      });
+    public remove() : JQueryPromise<boolean> {
+      return egrid.storage.remove<Collaborator>(Collaborator.type, this.projectKey, this.key);
     }
   }
 }

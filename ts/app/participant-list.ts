@@ -18,8 +18,8 @@ module egrid.app {
       $q
         .when(this.participants.query(this.projectId))
         .then((participants: model.Participant[]) => {
-          participants.forEach((v) => {
-              this.participants.addItem(v);
+          Object.keys(participants).forEach((v, i, ar) => {
+              this.participants.addItem(participants[v]);
             });
         });
     }

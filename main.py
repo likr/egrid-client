@@ -17,6 +17,7 @@ app = webapp2.WSGIApplication([
     Route('/api/projects', ProjectHandler),
     Route('/api/projects/<project_id:[\w\-]+>', ProjectHandler),
     Route('/api/projects/<project_id:[\w\-]+>/collaborators', CollaboratorHandler),
+    Route('/api/projects/<project_id:[\w\-]+>/collaborators/<collaborator_id:[\w\-]+>', CollaboratorHandler),
     Route('/api/projects/<project_id:[\w\-]+>/grid', ProjectGridHandler),
     Route('/api/projects/<project_id:[\w\-]+>/grid/current', ProjectGridCurrentHandler),
     Route('/api/projects/<project_id:[\w\-]+>/grid/<project_grid_id:[\w\-]+>', ProjectGridHandler),

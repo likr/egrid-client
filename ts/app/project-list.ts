@@ -16,8 +16,8 @@ module egrid.app {
       $q
         .when(this.projects.query())
         .then((projects: model.Project[]) => {
-          projects.forEach((v) => {
-              this.projects.addItem(v);
+          Object.keys(projects).forEach((v, i, ar) => {
+              this.projects.addItem(projects[v]);
             });
         });
     }
