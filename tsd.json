@@ -1,0 +1,6 @@
+{
+  "version": "v4",
+  "path": "ts/ts-definitions/DefinitelyTyped",
+  "repo": "borisyankov/DefinitelyTyped",
+  "ref": "master"
+}
