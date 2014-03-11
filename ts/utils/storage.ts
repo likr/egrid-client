@@ -100,7 +100,18 @@ module egrid.utils {
           });
     }
 
-    public static retrieve<T extends egrid.model.interfaces.IEntity>(name: string, projectId?: string): JQueryPromise<T[]> {
+    // HTTP メソッド名にあわせたいが、delete は予約されていた
+    public static remove(name: string, projectId: string, participantId?: string): JQueryPromise<boolean> {
+      var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); });
+
+      return $.ajax({
+          url: participantId ? Uri[n](projectId, participantId) : Uri[n](projectId),
+          type: 'DELETE',
+        })
+          .then(() => true, () => false);
+    }
+
+    public static retrieve<T extends model.interfaces.IEntity>(name: string, projectId?: string): JQueryPromise<T[]> {
       var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); }) + 's';
 
       return $.ajax({
@@ -220,6 +231,11 @@ module egrid.utils {
           });
 
       return $deferred.promise();
+    }
+
+    public remove<T extends model.interfaces.IEntity>(name: string, projectId: string, participantId?: string): JQueryPromise<boolean> {
+      // TODO: localStorage から削除する
+      return Api.remove(name, projectId, participantId);
     }
 
     public retrieve<T extends model.interfaces.IEntity>(name: string, projectId?: string): JQueryPromise<any> {
