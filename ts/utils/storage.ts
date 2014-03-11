@@ -156,9 +156,15 @@ module egrid.utils {
 
       if (this.store) for (var type in this.store[Storage.outOfService]) {
         $.when(this.store[Storage.outOfService][type].map((v, i, ar) => {
-            return v.key
-              ? Api.put<T>(v, type, v.key)
-              : Api.post<T>(v, type);
+            if (v.key) {
+              return Api.put<T>(v, type, v.key);
+            } else {
+              if (v.projectKey) {
+                return Api.post<T>(v, type, v.projectKey);
+              } else {
+                return Api.post<T>(v, type);
+              }
+            }
           }))
             .then(() => {
                 delete this.store[Storage.outOfService];
@@ -191,11 +197,19 @@ module egrid.utils {
 
       return $promise
         .then((v: T) => {
+            var r: any;
+
             if (!this.store[name]) {
               this.store[name] = {};
             }
 
-            this.store[name][v.key] = Miscellaneousness.merge(this.store[name][v.key], v);
+            r = Miscellaneousness.merge(this.store[name][v.key], v);
+
+            if (participantId) {
+              this.store[name][projectId][v.key] = r;
+            } else {
+              this.store[name][v.key] = r;
+            }
 
             localStorage.setItem(Storage.key, JSON.stringify(this.store));
 
@@ -224,10 +238,15 @@ module egrid.utils {
         .then((value: T) => {
             $deferred.resolve(value);
           }, (...reasons) => {
-            if (this.store[name].hasOwnProperty(projectId))
-              $deferred.resolve(this.store[name][projectId]);
-            else
+            if (this.store[name]) {
+              if (participantId) {
+                $deferred.resolve(this.store[name][projectId][participantId]);
+              } else {
+                $deferred.resolve(this.store[name][projectId]);
+              }
+            } else {
               $deferred.reject();
+            }
           });
 
       return $deferred.promise();
@@ -244,18 +263,31 @@ module egrid.utils {
 
       $promise
         .then((values: T[]) => {
-            this.store[name] = values;
+            if (!this.store[name]) {
+              this.store[name] = {};
+            }
+
+            if (projectId) {
+              this.store[name][projectId] = values;
+            } else {
+              this.store[name] = values;
+            }
 
             localStorage.setItem(Storage.key, JSON.stringify(this.store));
 
-            $deferred.resolve(this.store[name]);
+            $deferred.resolve(projectId ? this.store[name][projectId] : this.store[name]);
           }, (...reasons) => {
             this.store = JSON.parse(localStorage.getItem(Storage.key));
 
-            if (this.store[name])
-              $deferred.resolve(this.store[name]);
-            else
+            if (this.store[name]) {
+              if (projectId) {
+                $deferred.resolve(this.store[name][projectId] || {});
+              } else {
+                $deferred.resolve(this.store[name]);
+              }
+            } else {
               $deferred.reject();
+            }
           });
 
       return $deferred.promise();
