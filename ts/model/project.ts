@@ -79,30 +79,9 @@ module egrid.model {
      * @override
      */
     public get(key: string): JQueryPromise<Project> {
-      var $deferred = $.Deferred();
-
-      $.ajax({
-          url: this.url(key),
-          type: 'GET',
-          dataFilter: data => {
-            var obj : ApiProjectData = JSON.parse(data);
-
-            return this.load(obj);
-          },
-        })
-        .then((project : Project) => {
-          return $deferred.resolve(project);
-        }, () => {
-          var k = CollectionBase.pluralize(Project.type);
-          var objects = JSON.parse(window.localStorage.getItem(k)) || '';
-          var unsaved = JSON.parse(window.localStorage.getItem('unsavedItems.' + k)) || '';
-
-          var target = $.extend(objects, unsaved);
-
-          return target[key] ? $deferred.resolve(this.load(target[key])) : $deferred.reject();
+      return egrid.storage.get<Project>(Project.type, key).then((project: Project) => {
+          this.load(project);
         });
-
-      return $deferred.promise();
     }
 
     /**
@@ -112,47 +91,10 @@ module egrid.model {
      * @throws  Error
      */
     public save(): JQueryPromise<Project> {
-      var $deferred = $.Deferred();
-      var key = this.key;
-
-      // url と dataFiletr をデリゲートとか
-      return $.ajax({
-          url: key ? this.url(key) : Project.listUrl(),
-          type: key ? 'PUT' : 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({
-            key: key,
-            name: this.name,
-            note: this.note,
-          }),
-          dataFilter: data => {
-            var obj : ApiProjectData = JSON.parse(data);
-
-            return this.load(obj);
-          },
-        })
-        .then((p: Project) => {
-            return $deferred.resolve(p);
-          }, (...reasons) => {
-            var o = {};
-            var storageKey = 'unsavedItems.' + CollectionBase.pluralize(Project.type);
-            var unsavedItems = JSON.parse(window.localStorage.getItem(storageKey)) || {};
-            var irregulars: any;
-
-            if (this.key) {
-              o[this.key] = this;
-            } else {
-              o[Object.keys(unsavedItems).length] = this; // FIXME
-            }
-
-            irregulars = $.extend({}, unsavedItems, o);
-
-            window.localStorage.setItem(storageKey, JSON.stringify(irregulars));
-
-            return $deferred.reject();
+      return egrid.storage.add<Project>(this, Project.type, this.key)
+        .done((v: Project) => {
+            this.load(v);
           });
-
-      return $deferred.promise();
     }
 
     /**
@@ -169,11 +111,8 @@ module egrid.model {
       return Project.listUrl() + '/' + key;
     }
 
-    public remove() : JQueryXHR {
-      return $.ajax({
-        url: this.url(this.key),
-        type: 'DELETE',
-      });
+    public remove() : JQueryPromise<boolean> {
+      return egrid.storage.remove<Project>(Project.type, this.key);
     }
   }
 }

@@ -167,8 +167,9 @@ module egrid.app {
 
       $q.when(this.participants.query(this.projectKey))
         .then((participants : model.Participant[]) => {
-          participants.forEach((v) => {
-              this.participants.addItem(v);
+              Object.keys(participants).forEach((v, i, ar) => {
+                  this.participants.addItem(participants[v]);
+                });
 
               this.participantState[v.key] = false;
               this.filter[v.key] = true;

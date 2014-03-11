@@ -1,4 +1,5 @@
 /// <reference path="../ts-definitions/Definitelytyped/jquery/jquery.d.ts"/>
+/// <reference path="interfaces/ientity.ts"/>
 /// <reference path="project-grid-node.ts"/>
 /// <reference path="project-grid-link.ts"/>
 
@@ -19,7 +20,7 @@ module egrid.model {
   }
 
 
-  export class ProjectGrid implements ProjectGridData {
+  export class ProjectGrid implements ProjectGridData, interfaces.IEntity {
     private key_ : string;
     private createdAt_ : Date;
     private updatedAt_ : Date;
@@ -28,6 +29,7 @@ module egrid.model {
     projectKey : string;
     nodes : ProjectGridNodeData[];
     links : ProjectGridLinkData[];
+    public static type : string = 'ProjectGrid';
 
     constructor(obj : ProjectGridData) {
       this.projectKey = obj.projectKey;
@@ -103,39 +105,18 @@ module egrid.model {
       return this;
     }
 
-    static get(projectKey : string, projectGridKey? : string) : JQueryXHR {
-      if (projectGridKey === undefined) {
-        return $.ajax({
-          url: ProjectGrid.url(projectKey) + '/current',
-          type: 'GET',
-          dataFilter: data => {
-            var obj : ProjectGridData = JSON.parse(data);
-            return new ProjectGrid(obj);
-          },
+    static get(projectKey : string, projectGridId? : string) : JQueryPromise<ProjectGrid> {
+      var key = projectGridId
+        ? projectGridId
+        : 'current';
+
+      return egrid.storage.get<ProjectGrid>(ProjectGrid.type, projectKey, key).then((projectGrid: ProjectGrid) => {
+          return new ProjectGrid(projectGrid);
         });
-      } else {
-        return $.ajax({
-          url: ProjectGrid.url(projectKey, projectGridKey),
-          type: 'GET',
-          dataFilter: data => {
-            var obj : ApiProjectGridData = JSON.parse(data);
-            return ProjectGrid.load(obj);
-          },
-        });
-      }
     }
 
-    static query(projectKey : string) : JQueryXHR {
-      return $.ajax({
-        url: ProjectGrid.url(projectKey),
-        type: 'GET',
-        dataFilter: data => {
-          var objs = JSON.parse(data);
-          return objs.map((obj : ApiProjectGridData) => {
-            return ProjectGrid.load(obj);
-          });
-        },
-      });
+    static query(projectKey : string) : JQueryPromise<ProjectGrid> {
+      return egrid.storage.retrieve<ProjectGrid>(ProjectGrid.type, projectKey);
     }
 
     private static load(obj : ApiProjectGridData) : ProjectGrid {

@@ -12,7 +12,6 @@ module egrid.app {
     }
 
     submit() {
-
       this.$q.when(this.data.save())
         .then(
             (() => {

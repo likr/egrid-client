@@ -11,8 +11,8 @@ module egrid.app {
 
       this.$q.when(this.semProjects.query(this.projectId))
         .then((semProjects : model.SemProject[]) => {
-          semProjects.forEach((v) => {
-              this.semProjects.addItem(v);
+          Object.keys(semProjects).forEach((v, i, ar) => {
+              this.semProjects.addItem(semProjects[v]);
             });
         });
     }

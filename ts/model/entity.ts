@@ -1,11 +1,12 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="interfaces/ientity.ts"/>
 /// <reference path="value-object.ts"/>
 
 module egrid.model {
   /**
   * @abstract Entity
   */
-  export class Entity {
+  export class Entity implements interfaces.IEntity {
     private key_: ValueObject<string>;
 
     public static type: string;

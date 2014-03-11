@@ -12,8 +12,8 @@ module egrid.app {
       $q
         .when(this.collaborators.query(this.projectId))
         .then((collaborators: model.Collaborator[]) => {
-          collaborators.forEach((v) => {
-              this.collaborators.addItem(v);
+          Object.keys(collaborators).forEach((v, i, ar) => {
+              this.collaborators.addItem(collaborators[v]);
             });
         });
     }

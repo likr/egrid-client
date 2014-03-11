@@ -78,30 +78,9 @@ module egrid.model {
      * @override
      */
     public get(key: string): JQueryPromise<SemProject> {
-      var $deferred = $.Deferred();
-
-      $.ajax({
-          url: this.url(key),
-          type: 'GET',
-          dataFilter: data => {
-            var obj = JSON.parse(data);
-
-            return this.load(obj);
-          },
-        })
-        .then((semProject : SemProject) => {
-          return $deferred.resolve(semProject);
-        }, () => {
-          var k = CollectionBase.pluralize(SemProject.type);
-          var objects = JSON.parse(window.localStorage.getItem(k)) || '';
-          var unsaved = JSON.parse(window.localStorage.getItem('unsavedItems.' + k)) || '';
-
-          var target = $.extend(objects, unsaved);
-
-          return target[key] ? $deferred.resolve(this.load(target[key])) : $deferred.reject();
+      return egrid.storage.get<SemProject>(SemProject.type, this.projectKey, key).then((semProject: SemProject) => {
+          this.load(semProject);
         });
-
-      return $deferred.promise();
     }
 
     /**
