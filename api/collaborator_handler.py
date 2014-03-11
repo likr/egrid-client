@@ -38,4 +38,8 @@ class CollaboratorHandler(webapp2.RequestHandler):
 
     def delete(self, project_id, collaborator_id):
         collaborator = Collaborator.get(collaborator_id)
-        collaborator.remove()
+        current_user = User.current_user()
+        if current_user.key() != collaborator.user.key():
+            collaborator.remove()
+        else:
+            self.error(404)
