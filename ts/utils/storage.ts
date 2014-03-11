@@ -2,6 +2,16 @@
 
 module egrid.utils {
   class Uri {
+    public static collaborators(projectId: string): string {
+      return '/api/projects/:projectId/collaborators'.replace(':projectId', projectId);
+    }
+
+    public static collaborator(projectId: string, participantId: string): string {
+      return '/api/projects/:projectId/collaborators/:collaboratorId'
+        .replace(':projectId', projectId)
+        .replace(':collaboratorId', participantId);
+    }
+
     public static participants(projectId: string): string {
       return '/api/projects/:projectId/participants'.replace(':projectId', projectId);
     }
@@ -34,6 +44,16 @@ module egrid.utils {
       return '/api/projects/:projectId/grid/:projectGridId'
         .replace(':projectId', projectId)
         .replace(':projectGridId', projectGridId);
+    }
+
+    public static semProjects(projectId: string): string {
+      return '/api/projects/:projectId/sem-projects'.replace(':projectId', projectId);
+    }
+
+    public static semProject(projectId: string, participantId: string): string {
+      return '/api/projects/:projectId/sem-projects/:semProjectId'
+        .replace(':projectId', projectId)
+        .replace(':semProjectId', participantId);
     }
   }
 
