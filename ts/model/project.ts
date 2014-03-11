@@ -91,7 +91,7 @@ module egrid.model {
      * @throws  Error
      */
     public save(): JQueryPromise<Project> {
-      return egrid.storage.add(this, Project.type, this.key);
+      return egrid.storage.add<Project>(this, Project.type, this.key);
     }
 
     /**

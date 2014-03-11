@@ -6,7 +6,7 @@ module egrid.model {
   /**
   * @abstract Entity
   */
-  export class Entity implements egrid.model.interfaces.IEntity {
+  export class Entity implements interfaces.IEntity {
     private key_: ValueObject<string>;
 
     public static type: string;

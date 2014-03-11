@@ -6,18 +6,18 @@
 module egrid.model {
   export interface ParticipantGridData {
     projectKey : string;
-    participantKey: string;
+    participantKey : string;
     nodes : ParticipantGridNodeData[];
     links : ParticipantGridLinkData[];
   }
 
 
   export class ParticipantGrid implements ParticipantGridData, interfaces.IEntity {
+    key : string;
+    participantKey : string;
     projectKey : string;
     nodes : ParticipantGridNodeData[];
     links : ParticipantGridLinkData[];
-    participantKey : string;
-    key : string;
     static type : string = 'ParticipantGrid';
 
     constructor(obj : ParticipantGridData) {

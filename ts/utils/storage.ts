@@ -1,4 +1,3 @@
-/// <reference path="../ts-definitions/DefinitelyTyped/q/Q.d.ts"/>
 /// <reference path="../model/interfaces/ientity.ts"/>
 
 module egrid.utils {
@@ -121,7 +120,7 @@ module egrid.utils {
       this.flush<any>();
     }
 
-    private flush<T extends egrid.model.interfaces.IEntity>(): JQueryPromise<boolean> {
+    private flush<T extends model.interfaces.IEntity>(): JQueryPromise<boolean> {
       var $deferred = $.Deferred();
 
       if (this.store) for (var type in this.store[Storage.outOfService]) {
@@ -145,7 +144,7 @@ module egrid.utils {
     /**
      * @throws Error Out of memory
      */
-    public add<T extends egrid.model.interfaces.IEntity>(value: T, name: string, projectId?: string, participantId?: string): JQueryPromise<T> {
+    public add<T extends model.interfaces.IEntity>(value: T, name: string, projectId?: string, participantId?: string): JQueryPromise<T> {
       var $promise;
       var alreadyStored = !!value.key;
 
@@ -186,7 +185,7 @@ module egrid.utils {
           });
     }
 
-    public get<T extends egrid.model.interfaces.IEntity>(name: string, projectId: string, participantId?: string): JQueryPromise<T> {
+    public get<T extends model.interfaces.IEntity>(name: string, projectId: string, participantId?: string): JQueryPromise<T> {
       var $deferred = $.Deferred();
       var $promise = Api.get<T>(name, projectId, participantId);
 
@@ -203,7 +202,7 @@ module egrid.utils {
       return $deferred.promise();
     }
 
-    public retrieve<T extends egrid.model.interfaces.IEntity>(name: string, projectId?: string): JQueryPromise<any> {
+    public retrieve<T extends model.interfaces.IEntity>(name: string, projectId?: string): JQueryPromise<any> {
       var $deferred = $.Deferred();
       var $promise = Api.retrieve<T>(name, projectId);
 
@@ -245,6 +244,16 @@ module egrid.utils {
       }
 
       return j;
+    }
+
+    public static construct(...properties: string[]): any {
+      return properties.reduceRight((p: any, c: string) => {
+          var o: any = {};
+
+          o[c] = p;
+
+          return o;
+        });
     }
   }
 }
