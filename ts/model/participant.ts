@@ -115,11 +115,8 @@ module egrid.model {
       return Participant.listUrl(this.projectKey) + '/' + key;
     }
 
-    public remove() : JQueryXHR {
-      return $.ajax({
-        url: this.url(this.key),
-        type: 'DELETE',
-      });
+    public remove() : JQueryPromise<boolean> {
+      return egrid.storage.remove<Participant>(Participant.type, this.projectKey, this.key);
     }
   }
 }

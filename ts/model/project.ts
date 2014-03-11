@@ -91,7 +91,10 @@ module egrid.model {
      * @throws  Error
      */
     public save(): JQueryPromise<Project> {
-      return egrid.storage.add<Project>(this, Project.type, this.key);
+      return egrid.storage.add<Project>(this, Project.type, this.key)
+        .done((v: Project) => {
+            this.load(v);
+          });
     }
 
     /**
@@ -108,11 +111,8 @@ module egrid.model {
       return Project.listUrl() + '/' + key;
     }
 
-    public remove() : JQueryXHR {
-      return $.ajax({
-        url: this.url(this.key),
-        type: 'DELETE',
-      });
+    public remove() : JQueryPromise<boolean> {
+      return egrid.storage.remove<Project>(Project.type, this.key);
     }
   }
 }

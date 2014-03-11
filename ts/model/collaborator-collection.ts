@@ -13,80 +13,12 @@ module egrid.model {
      * @param   type  new() => T  モデルのコンストラクタ (TypeScript の制限より)
      */
     public query(projectKey?: string): JQueryPromise<Collaborator[]> {
-      var $deferred = $.Deferred();
-      var k = CollectionBase.pluralize(Collaborator.type);
-      var mapper = (o: any) => {
-          var item = new Collaborator(o).load(o);
-
-          this.pairs.value.setItem(item.key, item);
-
-          return item;
-        };
-
-      $.ajax({
-          url: Collaborator.listUrl(projectKey),
-          type: 'GET',
-        })
-        .then((result: string) => {
-          var objects = JSON.parse(result) || [];
-
-          objects
-            .map(mapper);
-
-          window.localStorage.setItem(k, JSON.stringify(this.pairs.value));
-
-          this
-            .flush()
-            .then((ps) => {
-                ps.forEach((p) => {
-                    this.addItem(p);
-                  });
-              });
-
-          return $deferred
-            .resolve(this.pairs.value.toArray());
-        }, (...reasons: any[]) => {
-          var objects = window.localStorage.getItem(k);
-          var unsaved = window.localStorage.getItem('unsavedItems.' + k);
-          var serials = $.merge(NotationDeserializer.load(objects), NotationDeserializer.load(unsaved));
-
-          for (var i = 0, j = Object.keys(serials), l = j.length; i < l; i++) {
-            mapper(serials[j[i]]);
-          }
-
-          return $deferred
-            .resolve(this.pairs.value.toArray());
-        });
-
-      return $deferred.promise();
+      return egrid.storage.retrieve<Collaborator>(Collaborator.type, projectKey);
     }
 
-    /**
-     * this.collection に対し Entity.save() を呼び出します。
-     *
-     * @override
-     */
-    public flush(): JQueryPromise<Collaborator[]> {
-      var $deferred = $.Deferred();
-      var k = 'unsavedItems.' + CollectionBase.pluralize(Collaborator.type);
-      var unsavedItems: any = JSON.parse(window.localStorage.getItem(k)) || {};
-
-      $.when(Object
-        .keys(unsavedItems)
-        .map((value: any, index: number, ar: any[]) => {
-            var item = new Collaborator(unsavedItems[value]);
-
-            return item.load(unsavedItems[value]).save();
-          }))
-        .then((...items: Collaborator[]) => {
-            window.localStorage.removeItem(k);
-
-            return $deferred.resolve(this.pairs.value.toArray());
-          }, () => {
-            return $deferred.reject();
-          });
-
-      return $deferred.promise();
+    public getItem(k: string): Collaborator {
+      var o = super.getItem(k);
+      return new Collaborator(o).load(o);
     }
   }
 }
