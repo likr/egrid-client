@@ -153,27 +153,40 @@ module egrid.utils {
 
     private flush<T extends model.interfaces.IEntity>(): JQueryPromise<boolean> {
       var $deferred = $.Deferred();
+      var $promises = [];
+      var n = Storage.outOfService;
 
-      if (this.store) for (var type in this.store[Storage.outOfService]) {
-        $.when(this.store[Storage.outOfService][type].map((v, i, ar) => {
-            if (v.key) {
-              return Api.put<T>(v, type, v.key);
+      if (this.store[n]) for (var type in this.store[n]) if (this.store[n].hasOwnProperty(type)) {
+        var v = this.store[n][type];
+        var w;
+
+        for (var unsaved in v) if (v.hasOwnProperty(unsaved)) {
+          w = v[unsaved];
+
+          if (w.key && w.createdAt) {
+            $promises.push(Api.put<T>(w, type, w.key));
+          } else {
+            if (w.projectKey) {
+              $promises.push(Api.post<T>(w, type, w.projectKey));
             } else {
-              if (v.projectKey) {
-                return Api.post<T>(v, type, v.projectKey);
-              } else {
-                return Api.post<T>(v, type);
-              }
+              $promises.push(Api.post<T>(w, type));
             }
-          }))
-            .then(() => {
-                delete this.store[Storage.outOfService];
-
-                return $deferred.resolve(true);
-              }, () => {
-                return $deferred.reject(false);
-              });
+          }
+        }
       }
+
+      $.when.apply($, $promises)
+        .then((v) => {
+            if (Array.isArray(v) && !v.length) {
+              $deferred.reject(false);
+            } else {
+              delete this.store[Storage.outOfService];
+
+              $deferred.resolve(true);
+            }
+          }, () => {
+            $deferred.reject(false);
+          });
 
       return $deferred.promise();
     }
@@ -215,18 +228,32 @@ module egrid.utils {
 
             return v;
           }, () => {
-            var v = {};
-            var o = JSON.parse(localStorage.getItem(Storage.key));
+            this.store = JSON.parse(localStorage.getItem(Storage.key)) || {}; // FIXME
 
-            v[Storage.outOfService] = {};
-            v[Storage.outOfService][name] = [];
-            v[Storage.outOfService][name].push(value);
+            var k = (value.key) ? value.key : Storage.outOfService + Object.keys(this.store[name]).length.valueOf();
 
-            localStorage.setItem(Storage.key, JSON.stringify(Miscellaneousness.merge(o, v)));
+            if (!this.store[Storage.outOfService]) {
+              this.store[Storage.outOfService] = Miscellaneousness.construct(name);
+            }
 
-            this.store[name][this.store[name].length] = v;
+            if (!value.key) {
+              value.key = k;
+            }
 
-            return v;
+            this.store[Storage.outOfService][name][k] = value;
+
+            localStorage.setItem(Storage.key, JSON.stringify(this.store));
+
+            // PUT, POST を分けたいがうまく動作していない
+            // オフライン POST 時は participantId など存在しないのだ
+            // しかし直後に retrieve するので今のところ問題は起きない
+            if (participantId) {
+              this.store[name][projectId][k] = value;
+            } else {
+              this.store[name][k] = value;
+            }
+
+            return value;
           });
     }
 
@@ -277,17 +304,25 @@ module egrid.utils {
 
             $deferred.resolve(projectId ? this.store[name][projectId] : this.store[name]);
           }, (...reasons) => {
-            this.store = JSON.parse(localStorage.getItem(Storage.key));
+            var r = {};
+
+            if (!this.store[name]) {
+              $deferred.reject();
+            }
+
+            if (this.store[Storage.outOfService]) {
+              r = this.store[Storage.outOfService][name];
+            }
 
             if (this.store[name]) {
               if (projectId) {
-                $deferred.resolve(this.store[name][projectId] || {});
+                r = Miscellaneousness.merge(this.store[name][projectId], r);
               } else {
-                $deferred.resolve(this.store[name]);
+                r = Miscellaneousness.merge(this.store[name], r);
               }
-            } else {
-              $deferred.reject();
             }
+
+            $deferred.resolve(r);
           });
 
       return $deferred.promise();
@@ -296,10 +331,10 @@ module egrid.utils {
 
   export class Miscellaneousness {
     /**
-     * 新しいオブジェクトを作成し、o がもつプロパティを代入します。
-     * その後 b がもつプロパティで上書きします。
+     * オブジェクトの第一層をコピーしかえします。
+     * o と b が同じプロパティを持っている場合、b を優先します。
      *
-     * 非破壊的操作。
+     * 非破壊的操作
      *
      * @param o any
      * @param b any
@@ -321,7 +356,7 @@ module egrid.utils {
           o[c] = p;
 
           return o;
-        });
+        }, {});
     }
   }
 }
