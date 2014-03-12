@@ -15,7 +15,7 @@ module egrid.app {
     participants = new model.ParticipantCollection();
     participantState : {} = {};
 
-    constructor(private $q, $stateParams, private $modal, private $scope, private $state) {
+    constructor($window, private $q, $stateParams, private $modal, private $scope, private $state) {
       this.projectKey = $stateParams.projectId;
       this.projectGridKey = $stateParams.projectGridKey;
 

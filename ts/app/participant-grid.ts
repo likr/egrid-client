@@ -9,7 +9,7 @@ module egrid.app {
     participantKey : string;
     egm : EGM;
 
-    constructor($q, $stateParams, $scope) {
+    constructor($window, $q, $stateParams, $scope) {
       this.projectKey = $stateParams.projectId;
       this.participantKey = $stateParams.participantId;
       this.egm = new EGM;

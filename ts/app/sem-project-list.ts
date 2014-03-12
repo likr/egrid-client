@@ -6,7 +6,7 @@ module egrid.app {
     public projectId : string;
     public semProjects = new model.SemProjectCollection();
 
-    constructor(private $q, $stateParams, private $state, private $log) {
+    constructor($window, private $q, $stateParams, private $state) {
       this.projectId = $stateParams.projectId;
 
       this.$q.when(this.semProjects.query(this.projectId))

@@ -4,7 +4,7 @@ module egrid.app {
   export class ProjectController {
     public project: model.Project = new model.Project();
 
-    constructor(private $q, $stateParams, private $state, private $modal, $scope) {
+    constructor($window, private $q, $stateParams, private $state, $scope, private $modal) {
       var key = $stateParams.projectId;
 
       this.$q.when(this.project.get(key))

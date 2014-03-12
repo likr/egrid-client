@@ -15,7 +15,7 @@ module egrid.app {
     overallNodes : model.ProjectGridNodeData[];
     disableCompletion : boolean = false;
 
-    constructor($q, $stateParams, $state, private $modal, private $scope) {
+    constructor($window, $q, $stateParams, $state, private $scope, private $modal) {
       var __this = this;
       this.projectKey = $stateParams.projectId;
       this.participantKey = $stateParams.participantId;

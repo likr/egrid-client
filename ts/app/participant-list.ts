@@ -7,7 +7,7 @@ module egrid.app {
     public projectId : string;
     public participants = new model.ParticipantCollection();
 
-    constructor($q, $stateParams) {
+    constructor($window, $q, $stateParams) {
       super();
 
       this.projectId = $stateParams.projectId;

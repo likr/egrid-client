@@ -5,8 +5,8 @@ module egrid.app {
     projectKey : string;
     list: model.ProjectGrid[];
 
-    constructor($q, $routeParams) {
-      this.projectKey = $routeParams.projectId;
+    constructor($window, $q, $stateParams) {
+      this.projectKey = $stateParams.projectId;
 
       $q.when(model.ProjectGrid.query(this.projectKey))
         .then((grids : model.ProjectGrid[]) => {

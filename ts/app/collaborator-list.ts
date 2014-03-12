@@ -6,7 +6,7 @@ module egrid.app {
     public projectId : string;
     public collaborators = new model.CollaboratorCollection();
 
-    constructor(private $q, $stateParams, private $state, private $log, private $scope, private $modal) {
+    constructor($window, private $q, $stateParams, private $state, private $scope, private $modal) {
       this.projectId = $stateParams.projectId;
 
       $q

@@ -8,7 +8,7 @@ module egrid.app {
     note : string;
 
 
-    constructor(private $q, $stateParams, private $state) {
+    constructor($window, private $q, $stateParams, private $state) {
       this.projectKey = $stateParams.projectId;
     }
 
