@@ -9,7 +9,7 @@ module egrid.app {
     participantKey : string;
     egm : EGM;
 
-    constructor($window, $q, $stateParams, $scope) {
+    constructor($window, $q, $rootScope, $stateParams, $scope) {
       this.projectKey = $stateParams.projectId;
       this.participantKey = $stateParams.participantId;
       this.egm = new EGM;
@@ -23,6 +23,10 @@ module egrid.app {
             .links(links)
             ;
           this.draw();
+        }, (...reasons: any[]) => {
+          if (reasons[0]['status'] === 401) {
+            $window.location.href = $rootScope.logoutUrl;
+          }
         })
         ;
     }

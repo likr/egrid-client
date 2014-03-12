@@ -9,12 +9,15 @@ module egrid.app {
     projectKey : string;
     participant : model.Participant;
 
-    constructor($window, private $q, $stateParams, private $state, private $scope, private $modal) {
+    constructor(private $window, private $q, private $rootScope, $stateParams, private $state, private $scope, private $modal) {
       this.participant = new model.Participant({ projectKey: $stateParams.projectId });
 
       this.$q.when(this.participant.get($stateParams.participantId))
         .then((p: model.Participant) => {
-        }, (jqXHR: JQueryPromise<model.Project>, textStatus: string, errorThrown: string) => {
+        }, (reason) => {
+          if (reason.status === 401) {
+            this.$window.location.href = this.$rootScope.logoutUrl;
+          }
         });
     }
 
@@ -47,6 +50,10 @@ module egrid.app {
       this.$q.when(this.participant.remove())
         .then(() => {
           this.$state.go('projects.get.participants.all.list');
+        }, (reason) => {
+          if (reason.status === 401) {
+            this.$window.location.href = this.$rootScope.logoutUrl;
+          }
         });
     }
   }

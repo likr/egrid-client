@@ -101,14 +101,14 @@ module egrid.utils {
     }
 
     // HTTP メソッド名にあわせたいが、delete は予約されていた
-    public static remove(name: string, projectId: string, participantId?: string): JQueryPromise<boolean> {
+    public static remove(name: string, projectId: string, participantId?: string): JQueryPromise<any> {
       var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); });
 
       return $.ajax({
           url: participantId ? Uri[n](projectId, participantId) : Uri[n](projectId),
           type: 'DELETE',
         })
-          .then(() => true, () => false);
+          .then((response) => response, (...reasons) => reasons[0]);
     }
 
     public static retrieve<T extends model.interfaces.IEntity>(name: string, projectId?: string): JQueryPromise<T[]> {
@@ -195,6 +195,7 @@ module egrid.utils {
      * @throws Error Out of memory
      */
     public add<T extends model.interfaces.IEntity>(value: T, name: string, projectId?: string, participantId?: string): JQueryPromise<T> {
+      var $deferred = $.Deferred();
       var $promise;
       var alreadyStored = !!value.key;
 
@@ -208,7 +209,7 @@ module egrid.utils {
         }
       }
 
-      return $promise
+      $promise
         .then((v: T) => {
             var r: any;
 
@@ -226,11 +227,17 @@ module egrid.utils {
 
             localStorage.setItem(Storage.key, JSON.stringify(this.store));
 
-            return v;
-          }, () => {
+            $deferred.resolve(v);
+          }, (...reasons: any[]) => {
+            var k: string;
+
+            if (reasons[2] === 'Not authorized') {
+              $deferred.reject(reasons[0]);
+            }
+
             this.store = JSON.parse(localStorage.getItem(Storage.key)) || {}; // FIXME
 
-            var k = (value.key) ? value.key : Storage.outOfService + Object.keys(this.store[name]).length.valueOf();
+            k = (value.key) ? value.key : Storage.outOfService + Object.keys(this.store[name]).length.valueOf();
 
             if (!this.store[Storage.outOfService]) {
               this.store[Storage.outOfService] = Miscellaneousness.construct(name);
@@ -245,16 +252,17 @@ module egrid.utils {
             localStorage.setItem(Storage.key, JSON.stringify(this.store));
 
             // PUT, POST を分けたいがうまく動作していない
-            // オフライン POST 時は participantId など存在しないのだ
-            // しかし直後に retrieve するので今のところ問題は起きない
+            // participant をオフライン POST 時は participantId など存在しないのだ
             if (participantId) {
               this.store[name][projectId][k] = value;
             } else {
               this.store[name][k] = value;
             }
 
-            return value;
+            $deferred.resolve(value);
           });
+
+      return $deferred.promise();
     }
 
     public get<T extends model.interfaces.IEntity>(name: string, projectId: string, participantId?: string): JQueryPromise<T> {
@@ -264,7 +272,11 @@ module egrid.utils {
       $promise
         .then((value: T) => {
             $deferred.resolve(value);
-          }, (...reasons) => {
+          }, (...reasons: any[]) => {
+            if (reasons[2] === 'Not authorized') {
+              $deferred.reject(reasons[0]);
+            }
+
             if (this.store[name]) {
               if (participantId) {
                 $deferred.resolve(this.store[name][projectId][participantId]);
@@ -303,11 +315,16 @@ module egrid.utils {
             localStorage.setItem(Storage.key, JSON.stringify(this.store));
 
             $deferred.resolve(projectId ? this.store[name][projectId] : this.store[name]);
-          }, (...reasons) => {
+          }, (...reasons: any[]) => {
             var r = {};
 
+            // really suck
+            if (reasons[2] === 'Not authorized') {
+              $deferred.reject(reasons[0]);
+            }
+
             if (!this.store[name]) {
-              $deferred.reject();
+              $deferred.reject(new Error('Storeage is empty'));
             }
 
             if (this.store[Storage.outOfService]) {

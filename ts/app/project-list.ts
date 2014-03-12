@@ -19,6 +19,11 @@ module egrid.app {
           Object.keys(projects).forEach((v, i, ar) => {
               this.projects.addItem(projects[v]);
             });
+        }, (...reasons: any[]) => {
+          // 401
+          if (reasons[0]['status'] === 401) {
+            $window.location.href = $rootScope.logoutUrl;
+          }
         });
     }
   }
