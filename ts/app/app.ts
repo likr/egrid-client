@@ -319,7 +319,7 @@ module egrid.app {
         .fallbackLanguage("en")
         .preferredLanguage("ja");
     }])
-    .controller('CollaboratorCreateController',           ['$window', '$q',               '$stateParams', '$state',                     '$timeout', CollaboratorCreateController])
+    .controller('CollaboratorCreateController',           [           '$q',               '$stateParams', '$state',                     '$timeout', CollaboratorCreateController])
     .controller('CollaboratorListController',             ['$window', '$q', '$rootScope', '$stateParams', '$state', '$scope', '$modal',             CollaboratorListController])
     .controller('ParticipantController',                  ['$window', '$q', '$rootScope', '$stateParams', '$state', '$scope', '$modal',             ParticipantController])
     .controller('ParticipantCreateController',            ['$window', '$q',               '$stateParams', '$state',                                 ParticipantCreateController])
@@ -327,7 +327,7 @@ module egrid.app {
     .controller('ParticipantGridEditController',          ['$window', '$q', '$rootScope', '$stateParams', '$state', '$scope', '$modal',             ParticipantGridEditController])
     .controller('ParticipantListController',              ['$window', '$q', '$rootScope', '$stateParams',                                           ParticipantListController])
     .controller('ProjectController',                      ['$window', '$q', '$rootScope', '$stateParams', '$state', '$scope', '$modal',             ProjectController])
-    .controller('ProjectCreateController',                ['$window', '$q',                               '$state',                     '$timeout', ProjectCreateController])
+    .controller('ProjectCreateController',                [           '$q',                               '$state',                     '$timeout', ProjectCreateController])
     .controller('ProjectGridCreateController',            ['$window', '$q', '$rootScope', '$stateParams', '$state',                                 ProjectGridCreateController])
     .controller('ProjectGridEditController',              ['$window', '$q', '$rootScope', '$stateParams',           '$scope', '$modal',             ProjectGridEditController])
     .controller('ProjectGridListController',              ['$window', '$q', '$rootScope', '$stateParams',                                           ProjectGridListController])
