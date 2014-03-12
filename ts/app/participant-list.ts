@@ -7,7 +7,7 @@ module egrid.app {
     public projectId : string;
     public participants = new model.ParticipantCollection();
 
-    constructor($q, $stateParams) {
+    constructor($window, $q, $rootScope, $stateParams) {
       super();
 
       this.projectId = $stateParams.projectId;
@@ -21,6 +21,10 @@ module egrid.app {
           Object.keys(participants).forEach((v, i, ar) => {
               this.participants.addItem(participants[v]);
             });
+        }, (...reasons: any[]) => {
+          if (reasons[0]['status'] === 401) {
+            $window.location.href = $rootScope.logoutUrl;
+          }
         });
     }
   }

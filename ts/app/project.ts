@@ -4,13 +4,15 @@ module egrid.app {
   export class ProjectController {
     public project: model.Project = new model.Project();
 
-    constructor(private $q, $stateParams, private $state, private $modal, $scope) {
+    constructor(private $window, private $q, private $rootScope, $stateParams, private $state, $scope, private $modal) {
       var key = $stateParams.projectId;
 
       this.$q.when(this.project.get(key))
         .then((p: model.Project) => {
-        }, (jqXHR: JQueryPromise<model.Project>, textStatus: string, errorThrown: string) => {
-          // リダイレクト
+        }, (reason) => {
+          if (reason.status === 401) {
+            this.$window.location.href = this.$rootScope.logoutUrl;
+          }
         });
     }
 
@@ -20,6 +22,10 @@ module egrid.app {
           // バインドしてるから要らない気はする
           this.project.name = project.name;
           this.project.note = project.note;
+        }, (reason) => {
+          if (reason.status === 401) {
+            this.$window.location.href = this.$rootScope.logoutUrl;
+          }
         });
     }
 
@@ -43,6 +49,10 @@ module egrid.app {
       this.$q.when(this.project.remove())
         .then(() => {
           this.$state.go('projects.all.list');
+        }, (reason) => {
+          if (reason.status === 401) {
+            this.$window.location.href = this.$rootScope.logoutUrl;
+          }
         });
     }
   }

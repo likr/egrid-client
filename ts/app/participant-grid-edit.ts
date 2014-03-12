@@ -15,7 +15,7 @@ module egrid.app {
     overallNodes : model.ProjectGridNodeData[];
     disableCompletion : boolean = false;
 
-    constructor($q, $stateParams, $state, private $modal, private $scope) {
+    constructor($window, $q, $rootScope, $stateParams, $state, private $scope, private $modal) {
       var __this = this;
       this.projectKey = $stateParams.projectId;
       this.participantKey = $stateParams.participantId;
@@ -156,6 +156,10 @@ module egrid.app {
       $q.when(model.ProjectGrid.get(this.projectKey))
         .then((grid : model.ProjectGrid) => {
           this.overallNodes = grid.nodes;
+        }, (...reasons: any[]) => {
+          if (reasons[0]['status'] === 401) {
+            $window.location.href = $rootScope.logoutUrl;
+          }
         })
         ;
     }

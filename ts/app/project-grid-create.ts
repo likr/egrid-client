@@ -6,7 +6,7 @@ module egrid.app {
     projectKey : string;
     data : model.ProjectGrid;
 
-    constructor(private $q, $stateParams, private $state) {
+    constructor($window, private $q, $rootScope, $stateParams, private $state) {
       this.projectKey = $stateParams.projectId;
 
       this.data = new model.ProjectGrid({

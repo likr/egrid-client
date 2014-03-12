@@ -6,7 +6,7 @@ module egrid.app {
     name : string;
     note : string;
 
-    constructor(private $q, private $state) {
+    constructor($window, private $q, private $state) {
     }
 
     submit() {

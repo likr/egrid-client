@@ -15,7 +15,7 @@ module egrid.app {
     participants = new model.ParticipantCollection();
     participantState : {} = {};
 
-    constructor($q, $stateParams, $modal, private $scope) {
+    constructor($window, $q, $rootScope, $stateParams, private $scope, $modal) {
       var __this = this;
       this.projectKey = $stateParams.projectId;
       this.projectGridKey = $stateParams.projectGridKey;
@@ -162,6 +162,10 @@ module egrid.app {
             .draw()
             .focusCenter()
             ;
+        }, (...reasons: any[]) => {
+          if (reasons[0]['status'] === 401) {
+            $window.location.href = $rootScope.logoutUrl;
+          }
         })
         ;
 
@@ -174,6 +178,10 @@ module egrid.app {
               this.participantState[v.key] = false;
               this.filter[v.key] = true;
             });
+        }, (...reasons: any[]) => {
+          if (reasons[0]['status'] === 401) {
+            $window.location.href = $rootScope.logoutUrl;
+          }
         })
         ;
     }

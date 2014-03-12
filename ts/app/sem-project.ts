@@ -8,12 +8,15 @@ module egrid.app {
     projectKey : string;
     semProject : model.SemProject;
 
-    constructor($q, $stateParams, storage) {
+    constructor($window, $q, $rootScope, $stateParams) {
       this.semProject = new model.SemProject({ projectKey: $stateParams.projectId });
 
       $q.when(this.semProject.get($stateParams.semProjectId))
         .then((p: model.SemProject) => {
-        }, (jqXHR: JQueryPromise<model.Project>, textStatus: string, errorThrown: string) => {
+        }, (reason) => {
+          if (reason.status === 401) {
+            $window.location.href = $rootScope.logoutUrl;
+          }
         });
     }
   }
