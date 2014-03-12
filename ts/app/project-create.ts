@@ -6,14 +6,16 @@ module egrid.app {
     name : string;
     note : string;
 
-    constructor($window, private $q, private $state) {
+    constructor(private $q, private $state, private $timeout) {
     }
 
     submit() {
       var project = new model.Project(this);
       this.$q.when(project.save())
         .then(() => {
-          this.$state.go('projects.get.detail', { projectId: project.key });
+          this.$timeout(() => {
+            this.$state.go('projects.get.detail', { projectId: project.key }, { reload: true });
+          }, 200); // なぜか即時反映されない
         }, () => {
           this.$state.go('projects.all.list');
         })
