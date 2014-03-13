@@ -15,6 +15,7 @@
   "devDependencies": {
     "grunt": "*",
     "grunt-angular-templates": "*",
+    "grunt-cli": "*",
     "grunt-contrib-watch": "*",
     "grunt-ts": "*",
     "grunt-manifest": "^0.4.0"
