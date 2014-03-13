@@ -252,9 +252,9 @@ module egrid.utils {
 
             localStorage.setItem(Storage.key, JSON.stringify(this.store));
 
-            // PUT, POST を分けたいがうまく動作していない
-            // participant をオフライン POST 時は participantId など存在しないのだ
-            if (participantId) {
+            if (projectId && /^unsavedItems[0-9]+$/.test(projectId)) {
+              this.store[name][k] = value;
+            } else if (participantId) {
               this.store[name][projectId][k] = value;
             } else {
               this.store[name][k] = value;
@@ -270,23 +270,35 @@ module egrid.utils {
       var $deferred = $.Deferred();
       var $promise = Api.get<T>(name, projectId, participantId);
 
+      this.store = JSON.parse(localStorage.getItem(Storage.key)) || {}; // FIXME
+
       $promise
         .then((value: T) => {
             $deferred.resolve(value);
           }, (...reasons: any[]) => {
+            var r = {};
+
             if (reasons[2] === 'Not authorized') {
               $deferred.reject(reasons[0]);
             }
 
+            if (!this.store[name]) {
+              $deferred.reject(new Error('Storage is empty'));
+            }
+
+            if (this.store[Storage.outOfService]) {
+              r = this.store[Storage.outOfService][name];
+            }
+
             if (this.store[name]) {
               if (participantId) {
-                $deferred.resolve(this.store[name][projectId][participantId]);
+                r = this.store[Storage.outOfService][name][participantId];
               } else {
-                $deferred.resolve(this.store[name][projectId]);
+                r = this.store[Storage.outOfService][name][projectId];
               }
-            } else {
-              $deferred.reject();
             }
+
+            $deferred.resolve(r);
           });
 
       return $deferred.promise();
