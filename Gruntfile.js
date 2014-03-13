@@ -66,7 +66,7 @@ module.exports = function(grunt) {
         tasks: ['manifest', 'ts:dev'],
       },
       templates: {
-        files: ['static/partials/**/*.html'],
+        files: ['static/index.html', 'static/partials/**/*.html'],
         tasks: ['manifest', 'ngtemplates'],
       },
     },
