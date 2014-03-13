@@ -1,4 +1,5 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="../utils/storage.ts"/>
 /// <reference path="collection-base.ts"/>
 /// <reference path="entity.ts"/>
 /// <reference path="value-object.ts"/>

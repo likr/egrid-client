@@ -1,3 +1,4 @@
+/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
 /// <reference path="../model/interfaces/ientity.ts"/>
 
 module egrid.utils {
@@ -376,4 +377,8 @@ module egrid.utils {
         }, {});
     }
   }
+}
+
+module egrid {
+  export var storage = new egrid.utils.Storage();
 }

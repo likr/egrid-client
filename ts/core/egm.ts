@@ -92,12 +92,10 @@ module egrid {
 
 
     /**
-     * @method graphicize
+     * @method exportSVG
      * @param c Function callback
-     * @see EGM.ungraphicize
      */
-    graphicize(c : Function) : EGM {
-      var nodesSelection;
+    exportSVG(c : (svgText : string) => void) : EGM {
       var left = d3.min(this.nodes(), node => {
         return node.left().x;
       });
@@ -110,78 +108,26 @@ module egrid {
       var bottom = d3.max(this.nodes(), node => {
         return node.bottom().y;
       });
-      var margin = new Svg.Transform.Translate(EGM.rx, EGM.rx);
-      var defaults = { w: this.displayWidth, h: this.displayHeight };
+      var clonedSvg = (<any>this.rootSelection.node()).cloneNode(true);
+      var selection = d3.select(clonedSvg);
+      selection.attr({
+        id: null,
+        style: null,
+        width: null,
+        height: null,
+        viewBox: '0 0 ' + (right - left) + ' ' + (bottom - top),
+      });
+      selection.select('.contents').attr('transform', null);
+      selection.select('.measure').remove();
+      selection.select('.background').remove();
+      selection.select('.guide').remove();
+      selection.selectAll('.removeLinkButton').remove();
+      selection.selectAll('.selected').classed('selected', false);
+      selection.selectAll('.connected').classed('connected', false);
 
-      this.unselectElement();
-      this.showRemoveLinkButton(false);
-      this.contentsZoomBehavior.scale(1);
-      this.resize((right - left) + EGM.rx * 2, (bottom - top) + EGM.rx * 2);
-      this
-        .contentsSelection
-        .attr("transform", "scale(1) " + margin.toString());
-      this.rootSelection.select('.guide')
-        .style('visibility', 'hidden')
-        ;
-
-      nodesSelection = this.contentsSelection
-        .select(".nodes")
-        .selectAll(".element")
-        ;
-
-      nodesSelection.selectAll("text")
-        .style("font-size", "2em")
-        ;
-
-      nodesSelection.selectAll("rect")
-        .style("fill", "white")
-        .style("stroke", "#323a48")
-        .style("stroke-width", 5)
-        ;
-
-      this.contentsSelection
-        .select(".links")
-        .selectAll(".link")
-        .style("fill", "none")
-        .style("stroke", "#323a48")
-        ;
-
-      c();
-
-      return this.ungraphicize(defaults);
-    }
-
-    /**
-     * @method ungraphicize
-     */
-    private ungraphicize(d: any) : EGM {
-      var nodesSelection;
-
-      this.resize(d.w, d.h);
-
-      nodesSelection = this.contentsSelection
-        .select(".nodes")
-        .selectAll(".element")
-        ;
-
-      nodesSelection.selectAll("text")
-        .style("font-size", null)
-        ;
-
-      nodesSelection.selectAll("rect")
-        .style("fill", null)
-        .style("stroke", null)
-        .style("stroke-width", null)
-        ;
-
-      this.contentsSelection
-        .select(".links")
-        .selectAll(".link")
-        .style("fill", null)
-        .style("stroke", null)
-        ;
-
-      this.drawGuide();
+      var div = document.createElement('div'); // for Safari ?
+      div.appendChild(clonedSvg);
+      c(div.innerHTML);
 
       return this;
     }
@@ -510,16 +456,40 @@ module egrid {
         : (selection : D3.Selection) => void {
       return (selection) => {
         this.rootSelection = selection;
+        this.rootSelection.attr({
+          version: "1.1",
+          xmlns: "http://www.w3.org/2000/svg",
+          "xmlns:xmlns:xlink": "http://www.w3.org/1999/xlink",
+        });
 
         this.displayWidth = regionWidth || $(window).width();
         this.displayHeight = regionHeight || $(window).height();
         selection.attr("viewBox", (new Svg.ViewBox(0, 0, this.displayWidth, this.displayHeight)).toString());
+        selection.append('defs')
+          .append('style')
+          .attr('type', 'text/css')
+          .text("\
+            .element text, text.measure {\
+              font-size: 0.8cm;\
+              font-family: 'Lucida Grande', 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', Meiryo, メイリオ, sans-serif;\
+            }\
+            .element rect {\
+              fill: white;\
+              stroke: #323a48;\
+              stroke-width: 5;\
+            }\
+            .link {\
+              stroke: #323a48;\
+              fill: none;\
+            }\
+          ");
         selection.append("text")
           .classed("measure", true)
           .style("visibility", "hidden")
           ;
 
         selection.append("rect")
+          .classed('background', true)
           .attr("fill", "#fff")
           .attr("width", this.displayWidth)
           .attr("height", this.displayHeight)

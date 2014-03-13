@@ -21,10 +21,6 @@
 /// <reference path="sem-project-list.ts"/>
 /// <reference path="url.ts"/>
 
-module egrid {
-  export var storage = new egrid.utils.Storage();
-}
-
 module egrid.app {
   angular.module('collaboegm', ['paginator', 'ui.router', "ui.bootstrap", "pascalprecht.translate"])
     .directive('focusMe', ['$timeout', function($timeout) {

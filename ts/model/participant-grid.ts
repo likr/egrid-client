@@ -1,5 +1,7 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="../utils/storage.ts"/>
 /// <reference path="interfaces/ientity.ts"/>
+/// <reference path="collection-base.ts"/>
 /// <reference path="participant-grid-node.ts"/>
 /// <reference path="participant-grid-link.ts"/>
 

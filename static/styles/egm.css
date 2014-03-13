@@ -29,42 +29,6 @@ body {
 }
 
 
-circle#radderUpButton, circle#radderDownButton, circle#removeNodeButton, circle#mergeNodeButton {
-  fill: grey;
-}
-
-
-.element text, text.measure {
-  font-size: 2em;
-}
-
-
-text.measure {
-  visibility: hidden;
-}
-
-
-.element rect {
-  fill: white;
-}
-
-
-.element rect {
-  stroke: #323a48;
-  stroke-width: 5;
-}
-
-
-.link {
-  stroke: #323a48;
-}
-
-
-.link {
-  fill: none;
-}
-
-
 .dragLine {
   stroke: blue;
   stroke-width: 5;

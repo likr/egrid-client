@@ -2,7 +2,9 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/core/lib.extend.d.ts"/>
 /// <reference path="../core/egm.ts"/>
 /// <reference path="../core/egm-ui.ts"/>
+/// <reference path="../model/participant.ts"/>
 /// <reference path="../model/participant-grid.ts"/>
+/// <reference path="../model/project.ts"/>
 /// <reference path="../model/project-grid.ts"/>
 /// <reference path="url.ts"/>
 
@@ -95,15 +97,12 @@ module egrid.app {
       d3.select("#exportSVG")
         .on("click", function() {
           __this.hideNodeController();
-          __this.egm.graphicize(() => {
-            d3.select(this).attr("href", "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(
-              d3.select("#display")
-                .attr("version", "1.1")
-                .attr("xmlns", "http://www.w3.org/2000/svg")
-                .attr("xmlns:xmlns:xlink", "http://www.w3.org/1999/xlink")
-                .node()
-                .outerHTML
-                ))));
+          __this.egm.exportSVG((svgText : string) => {
+            var base64svgText = btoa(unescape(encodeURIComponent(svgText)));
+            d3.select(this).attr({
+              href: "data:image/svg+xml;charset=utf-8;base64," + base64svgText,
+              download: project.name + ' - ' + participant.name + '.svg',
+            });
             });
         });
 
@@ -138,6 +137,13 @@ module egrid.app {
             .onEnable(selection => this.showNodeController(selection))
             .onDisable(() => this.hideNodeController())
         );
+
+      var project : model.Project = new model.Project;
+      var participant : model.Participant = new model.Participant({
+        projectKey: this.projectKey,
+      });
+      $q.when(project.get(this.projectKey));
+      $q.when(participant.get(this.participantKey));
 
       $q.when(model.ParticipantGrid.get(this.projectKey, this.participantKey))
         .then((grid : model.ParticipantGrid) => {
