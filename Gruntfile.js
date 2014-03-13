@@ -78,4 +78,5 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-ts');
 
   grunt.registerTask('default', ['watch']);
+  grunt.registerTask('compile', ['ngtemplates', 'manifest', 'ts:prod']);
 };
