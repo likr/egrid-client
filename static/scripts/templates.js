@@ -641,35 +641,43 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('/partials/project/participants/list.html',
-    "<div class=\"tab-pane active\">\n" +
-    "  <table class=\"table table-bordered\">\n" +
-    "    <thead>\n" +
-    "      <tr>\n" +
-    "        <th class=\"col-sm-1\">#</th>\n" +
-    "        <th class=\"col-sm-3\">\n" +
-    "          <a href ng-click=\"ctrl.changeOrder('name')\">{{'PARTICIPANT.ATTRIBUTES.NAME' | translate}}</a>\n" +
-    "        </th>\n" +
-    "        <th class=\"col-sm-3\">\n" +
-    "          <a href ng-click=\"ctrl.changeOrder('createdAt')\">{{'PARTICIPANT.ATTRIBUTES.CREATED_AT' | translate}}</a>\n" +
-    "        </th>\n" +
-    "        <th class=\"col-sm-3\">\n" +
-    "          <a href ng-click=\"ctrl.changeOrder('updatedAt')\">{{'PARTICIPANT.ATTRIBUTES.UPDATED_AT' | translate}}</a>\n" +
-    "        </th>\n" +
-    "        <th class=\"col-sm-2\">{{'ACTION.ACTION' | translate}}</th>\n" +
-    "      </tr>\n" +
-    "    </thead>\n" +
-    "    <tbody>\n" +
-    "      <tr ng-repeat=\"participant in ctrl.participants.toArray() | filter:ctrl.query | orderBy:ctrl.predicate:ctrl.reverse | pager:ctrl.currentPage:ctrl.itemsPerPage\">\n" +
-    "        <td>{{$index + 1 + ctrl.itemsPerPage * (ctrl.currentPage - 1)}}</td>\n" +
-    "        <td>{{participant.name}}</td>\n" +
-    "        <td>{{participant.createdAt | date:'yyyy/MM/dd HH:mm'}}</td>\n" +
-    "        <td>{{participant.updatedAt | date:'yyyy/MM/dd HH:mm'}}</td>\n" +
-    "        <td><a ui-sref=\"projects.get.participants.get.detail({ participantId: participant.key })\">{{'ACTION.SHOW' | translate}}</a>\n" +
-    "      </tr>\n" +
-    "    </tbody>\n" +
-    "  </table>\n" +
-    "  <pagination total-items=\"ctrl.participants.toArray() | filter:ctrl.query | count\" page=\"ctrl.currentPage\" items-per-page=\"ctrl.itemsPerPage\"></pagination>\n" +
-    "</div>\n"
+    "<div class=\"row\">\n" +
+    "  <nav>\n" +
+    "    <form class=\"form-inline col-sm-4 col-sm-offset-8 search-control\">\n" +
+    "      <div class=\"input-group\">\n" +
+    "        <input type=\"text\" class=\"form-control\" placeholder=\"{{'ACTION.SEARCH' | translate}}\" ng-model=\"ctrl.query.name\" />\n" +
+    "        <span class=\"input-group-addon\"><span class=\"glyphicon glyphicon-search\"></span></span>\n" +
+    "      </div>\n" +
+    "    </form>\n" +
+    "  </nav>\n" +
+    "</div>\n" +
+    "<table class=\"table table-bordered\">\n" +
+    "  <thead>\n" +
+    "    <tr>\n" +
+    "      <th class=\"col-sm-1\">#</th>\n" +
+    "      <th class=\"col-sm-3\">\n" +
+    "        <a href ng-click=\"ctrl.changeOrder('name')\">{{'PARTICIPANT.ATTRIBUTES.NAME' | translate}}</a>\n" +
+    "      </th>\n" +
+    "      <th class=\"col-sm-3\">\n" +
+    "        <a href ng-click=\"ctrl.changeOrder('createdAt')\">{{'PARTICIPANT.ATTRIBUTES.CREATED_AT' | translate}}</a>\n" +
+    "      </th>\n" +
+    "      <th class=\"col-sm-3\">\n" +
+    "        <a href ng-click=\"ctrl.changeOrder('updatedAt')\">{{'PARTICIPANT.ATTRIBUTES.UPDATED_AT' | translate}}</a>\n" +
+    "      </th>\n" +
+    "      <th class=\"col-sm-2\">{{'ACTION.ACTION' | translate}}</th>\n" +
+    "    </tr>\n" +
+    "  </thead>\n" +
+    "  <tbody>\n" +
+    "    <tr ng-repeat=\"participant in ctrl.participants.toArray() | filter:ctrl.query | orderBy:ctrl.predicate:ctrl.reverse | pager:ctrl.currentPage:ctrl.itemsPerPage\">\n" +
+    "      <td>{{$index + 1 + ctrl.itemsPerPage * (ctrl.currentPage - 1)}}</td>\n" +
+    "      <td>{{participant.name}}</td>\n" +
+    "      <td>{{participant.createdAt | date:'yyyy/MM/dd HH:mm'}}</td>\n" +
+    "      <td>{{participant.updatedAt | date:'yyyy/MM/dd HH:mm'}}</td>\n" +
+    "      <td><a ui-sref=\"projects.get.participants.get.detail({ participantId: participant.key })\">{{'ACTION.SHOW' | translate}}</a>\n" +
+    "    </tr>\n" +
+    "  </tbody>\n" +
+    "</table>\n" +
+    "<pagination total-items=\"ctrl.participants.toArray() | filter:ctrl.query | count\" page=\"ctrl.currentPage\" items-per-page=\"ctrl.itemsPerPage\"></pagination>\n"
   );
 
 
