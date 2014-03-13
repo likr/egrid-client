@@ -46,8 +46,6 @@ module egrid.model {
           },
         })
         .then((p: ParticipantGrid) => {
-            window.localStorage.removeItem('unsavedItems.' + storageKey);
-
             return $deferred.resolve(p);
           }, (...reasons) => {
             // ストレージにぶち込む
@@ -70,7 +68,10 @@ module egrid.model {
     }
 
     static get(projectKey : string, participantKey : string) : JQueryPromise<ParticipantGrid> {
-      return egrid.storage.get<ParticipantGrid>(ParticipantGrid.type, projectKey, participantKey);
+      return egrid.storage.get<ParticipantGrid>(ParticipantGrid.type, projectKey, participantKey)
+        .then((pg: ParticipantGrid) => {
+            return new ParticipantGrid(pg);
+          });
     }
 
     private static __get(projectKey : string, participantKey : string) : JQueryPromise<ParticipantGrid> {

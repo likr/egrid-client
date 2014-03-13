@@ -89,7 +89,7 @@ module egrid.app {
               this.grid.links = data.links;
               $q.when(this.grid.update())
                 .then(() => {
-                  $state.go('projects.get.participants.get.detail');
+                  $state.go('projects.get.participants.get.evaluation');
                 })
                 ;
             }));
