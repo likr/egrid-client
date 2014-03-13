@@ -274,7 +274,21 @@ module egrid.utils {
 
       $promise
         .then((value: T) => {
-            $deferred.resolve(value);
+            if (!this.store[name]) {
+              this.store[name] = {};
+            }
+
+            if (participantId) {
+              this.store[name][projectId] = Miscellaneousness.construct(participantId);
+
+              this.store[name][projectId][participantId] = value;
+            } else {
+              this.store[name][projectId] = value;
+            }
+
+            localStorage.setItem(Storage.key, JSON.stringify(this.store));
+
+            $deferred.resolve(participantId ? this.store[name][projectId][participantId] : this.store[name][projectId]);
           }, (...reasons: any[]) => {
             var r = {};
 
@@ -282,6 +296,7 @@ module egrid.utils {
               $deferred.reject(reasons[0]);
             }
 
+            // 1. ストレージからデータを取り出す
             if (!this.store[name]) {
               $deferred.reject(new Error('Storage is empty'));
             }
@@ -292,9 +307,9 @@ module egrid.utils {
 
             if (this.store[name]) {
               if (participantId) {
-                r = this.store[Storage.outOfService][name][participantId];
+                r = Miscellaneousness.merge(this.store[name][projectId][participantId], r);
               } else {
-                r = this.store[Storage.outOfService][name][projectId];
+                r = Miscellaneousness.merge(this.store[name][projectId], r);
               }
             }
 
