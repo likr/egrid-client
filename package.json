@@ -16,6 +16,7 @@
     "grunt": "*",
     "grunt-angular-templates": "*",
     "grunt-contrib-watch": "*",
-    "grunt-ts": "*"
+    "grunt-ts": "*",
+    "grunt-manifest": "^0.4.0"
   }
 }
