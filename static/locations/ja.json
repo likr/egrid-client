@@ -80,6 +80,10 @@
     "OVERALL_EVALUATION_STRUCTURE": "全体評価構造",
     "UPPERMOST_EVALUATION_ITEM": "最上位評価項目"
   },
+  "MESSAGES": {
+    "NOT_AUTHENTICATED": "認証しなければ続行できません。",
+    "DESTINATION_IS_NOT_REACHABLE": "失敗しました。オンラインになったとき再度送信します。"
+  },
   "PARTICIPANT": {
     "PARTICIPANTS": "実験参加者",
     "FILTER": "実験参加者をフィルター",
@@ -107,11 +111,6 @@
       "PLACEHOLDERS": {
         "NAME": "プロジェクト名",
         "NOTE": "備考"
-      }
-    },
-    "MESSAGES": {
-      "CREATE": {
-        "FAILED": "失敗しました。オンラインになったとき再度送信します。"
       }
     }
   },

@@ -17,7 +17,11 @@ module egrid.app {
             this.$state.go('projects.get.detail', { projectId: project.key }, { reload: true });
           }, 200); // なぜか即時反映されない
         }, (...reasons: any[]) => {
-          this.$rootScope.alerts.push({ type: 'danger', msg: this.$filter('translate')('PROJECT.MESSAGES.CREATE.FAILED') });
+          var k: string = reasons[0].status === 401
+            ? 'MESSAGES.NOT_AUTHENTICATED'
+            : 'MESSAGES.DESTINATION_IS_NOT_REACHABLE';
+
+          this.$rootScope.alerts.push({ type: 'danger', msg: this.$filter('translate')(k) });
 
           this.$timeout(() => {
             this.$rootScope.alerts.pop();
