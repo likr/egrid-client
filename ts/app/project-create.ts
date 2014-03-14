@@ -6,7 +6,7 @@ module egrid.app {
     name : string;
     note : string;
 
-    constructor(private $q, private $rootScope, private $state, private $timeout, private $filter) {
+    constructor(private $q, private $rootScope, private $state, private $timeout, private $filter, private alertLifeSpan) {
     }
 
     submit() {
@@ -25,7 +25,7 @@ module egrid.app {
 
           this.$timeout(() => {
             this.$rootScope.alerts.pop();
-          }, 2500);
+          }, this.alertLifeSpan);
         })
         ;
     }

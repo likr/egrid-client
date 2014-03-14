@@ -6,7 +6,7 @@ module egrid.app {
     name : string;
     projectKey : string;
 
-    constructor(private $q, $stateParams, private $state, private $timeout) {
+    constructor(private $q, private $rootScope, $stateParams, private $state, private $timeout, private $filter, private alertLifeSpan) {
       this.projectKey = $stateParams.projectId;
     }
 
@@ -17,6 +17,16 @@ module egrid.app {
           this.$timeout(() => {
             this.$state.go('projects.get.analyses.all.list');
           }, 200);
+        }, (...reasons: any[]) => {
+          var k: string = reasons[0].status === 401
+            ? 'MESSAGES.NOT_AUTHENTICATED'
+            : 'MESSAGES.DESTINATION_IS_NOT_REACHABLE';
+
+          this.$rootScope.alerts.push({ type: 'danger', msg: this.$filter('translate')(k) });
+
+          this.$timeout(() => {
+            this.$rootScope.alerts.pop();
+          }, this.alertLifeSpan);
         })
         ;
     }

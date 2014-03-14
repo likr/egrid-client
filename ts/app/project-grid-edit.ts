@@ -15,7 +15,7 @@ module egrid.app {
     participants = new model.ParticipantCollection();
     participantState : {} = {};
 
-    constructor($window, private $q, $rootScope, $stateParams, private $state, private $scope, private $modal) {
+    constructor($window, private $q, private $rootScope, $stateParams, private $state, private $scope, private $modal, private $timeout, private $filter, private alertLifeSpan) {
       var __this = this;
       this.projectKey = $stateParams.projectId;
       this.projectGridKey = $stateParams.projectGridKey;
@@ -175,7 +175,7 @@ module egrid.app {
             ;
         }, (reason) => {
           if (reason.status === 401) {
-            $window.location.href = $rootScope.logoutUrl;
+            $window.location.href = this.$rootScope.logoutUrl;
           }
         })
         ;
@@ -192,7 +192,7 @@ module egrid.app {
             });
         }, (reason) => {
           if (reason.status === 401) {
-            $window.location.href = $rootScope.logoutUrl;
+            $window.location.href = this.$rootScope.logoutUrl;
           }
         })
         ;
@@ -210,6 +210,16 @@ module egrid.app {
       this.$q.when(this.grid.save())
         .then(grid => {
           this.$state.go('projects.get.evaluation', { projectId: grid.projectKey });
+        }, (...reasons: any[]) => {
+          var k: string = reasons[0].status === 401
+            ? 'MESSAGES.NOT_AUTHENTICATED'
+            : 'MESSAGES.DESTINATION_IS_NOT_REACHABLE';
+
+          this.$rootScope.alerts.push({ type: 'danger', msg: this.$filter('translate')(k) });
+
+          this.$timeout(() => {
+            this.$rootScope.alerts.pop();
+          }, this.alertLifeSpan);
         })
         ;
     }

@@ -17,7 +17,7 @@ module egrid.app {
     overallNodes : model.ProjectGridNodeData[];
     disableCompletion : boolean = false;
 
-    constructor($window, $q, $rootScope, $stateParams, $state, private $scope, private $modal) {
+    constructor($window, $q, $rootScope, $stateParams, $state, private $scope, private $modal, private $timeout, private $filter, private alertLifeSpan) {
       var __this = this;
       this.projectKey = $stateParams.projectId;
       this.participantKey = $stateParams.participantId;
@@ -90,6 +90,16 @@ module egrid.app {
               $q.when(this.grid.update())
                 .then(() => {
                   $state.go('projects.get.participants.get.evaluation');
+                }, (...reasons: any[]) => {
+                  var k: string = reasons[0].status === 401
+                    ? 'MESSAGES.NOT_AUTHENTICATED'
+                    : 'MESSAGES.DESTINATION_IS_NOT_REACHABLE';
+
+                  $rootScope.alerts.push({ type: 'danger', msg: $filter('translate')(k) });
+
+                  $timeout(() => {
+                    $rootScope.alerts.pop();
+                  }, alertLifeSpan)
                 })
                 ;
             }));
