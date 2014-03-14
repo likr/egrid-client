@@ -13,7 +13,7 @@ module egrid.model {
   }
 
 
-  interface ApiProjectGridData extends ProjectGridData {
+  interface ApiProjectGridData extends ProjectGridData, interfaces.IEntity {
     key : string;
     createdAt : string;
     updatedAt : string;
@@ -51,42 +51,8 @@ module egrid.model {
       return this.updatedAt_;
     }
 
-    save() : JQueryXHR {
-      if (this.key === undefined) {
-        return $.ajax({
-          url: ProjectGrid.url(this.projectKey),
-          type: 'POST',
-          currentType: 'application/json',
-          data: JSON.stringify({
-            name: this.name,
-            note: this.note,
-            projectKey: this.projectKey,
-            nodes: this.nodes,
-            links: this.links,
-          }),
-          dataFilter: data => {
-            var obj : ApiProjectGridData = JSON.parse(data);
-            return this.load(obj);
-          },
-        });
-      } else {
-        return $.ajax({
-          url: this.url(),
-          type: 'PUT',
-          currentType: 'application/json',
-          data: JSON.stringify({
-            name: this.name,
-            note: this.note,
-            projectKey: this.projectKey,
-            nodes: this.nodes,
-            links: this.links,
-          }),
-          dataFilter: data => {
-            var obj : ApiProjectGridData = JSON.parse(data);
-            return this.load(obj);
-          },
-        });
-      }
+    save() : JQueryPromise<ProjectGrid> {
+      return egrid.storage.add<ProjectGrid>(this, ProjectGrid.type, this.projectKey, this.key);
     }
 
     private url() : string {
@@ -110,8 +76,8 @@ module egrid.model {
         ? projectGridId
         : 'current';
 
-      return egrid.storage.get<ProjectGrid>(ProjectGrid.type, projectKey, key).then((projectGrid: ProjectGrid) => {
-          return new ProjectGrid(projectGrid);
+      return egrid.storage.get<ApiProjectGridData>(ProjectGrid.type, projectKey, key).then((projectGrid: ApiProjectGridData) => {
+          return ProjectGrid.load(projectGrid);
         });
     }
 
