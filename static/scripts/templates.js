@@ -348,6 +348,9 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "    <li>\n" +
     "      <a ui-sref=\"projects.get.detail\">{{semProject.semProject.project.name}}</a>\n" +
     "    </li>\n" +
+    "    <li>\n" +
+    "      <a ui-sref=\"projects.get.analyses.all.list\">{{'EGM.ANALYSIS' | translate }}</a>\n" +
+    "    </li>\n" +
     "    <li class=\"active\">\n" +
     "      {{ semProject.semProject.name }}\n" +
     "    </li>\n" +
@@ -763,6 +766,9 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "    </li>\n" +
     "    <li>\n" +
     "      <a ui-sref=\"projects.get.detail\">{{ctrl.participant.project.name}}</a>\n" +
+    "    </li>\n" +
+    "    <li>\n" +
+    "      <a ui-sref=\"projects.get.participants.all.list\">{{'PARTICIPANT.PARTICIPANTS' | translate }}</a>\n" +
     "    </li>\n" +
     "    <li class=\"active\">\n" +
     "      {{ctrl.participant.name}}\n" +
