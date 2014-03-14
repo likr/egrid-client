@@ -1,12 +1,14 @@
 /// <reference path="../model/project.ts"/>
+/// <reference path="controller-base.ts"/>
 /// <reference path="url.ts"/>
 
 module egrid.app {
-  export class ProjectCreateController implements model.ProjectData {
+  export class ProjectCreateController extends ControllerBase implements model.ProjectData {
     name : string;
     note : string;
 
-    constructor(private $q, private $rootScope, private $state, private $timeout, private $filter, private alertLifeSpan) {
+    constructor(private $q, $rootScope, private $state, $timeout, $filter, alertLifeSpan) {
+      super($rootScope, $timeout, $filter, alertLifeSpan);
     }
 
     submit() {
@@ -15,17 +17,15 @@ module egrid.app {
         .then(() => {
           this.$timeout(() => {
             this.$state.go('projects.get.detail', { projectId: project.key }, { reload: true });
+
+            this.showAlert('MESSAGES.OPERATION_SUCCESSFULLY_COMPLETED');
           }, 200); // なぜか即時反映されない
         }, (...reasons: any[]) => {
           var k: string = reasons[0].status === 401
             ? 'MESSAGES.NOT_AUTHENTICATED'
             : 'MESSAGES.DESTINATION_IS_NOT_REACHABLE';
 
-          this.$rootScope.alerts.push({ type: 'danger', msg: this.$filter('translate')(k) });
-
-          this.$timeout(() => {
-            this.$rootScope.alerts.pop();
-          }, this.alertLifeSpan);
+          this.showAlert(k, 'danger');
         })
         ;
     }

@@ -1,12 +1,15 @@
 /// <reference path="../model/collaborator.ts"/>
+/// <reference path="controller-base.ts"/>
 /// <reference path="url.ts"/>
 
 module egrid.app {
-  export class CollaboratorCreateController {
+  export class CollaboratorCreateController extends ControllerBase {
     public projectKey : string;
     public data : model.Collaborator;
 
-    constructor(private $q, private $rootScope, $stateParams, private $state, private $timeout, private $filter, private alertLifeSpan) {
+    constructor(private $q, $rootScope, $stateParams, private $state, $timeout, $filter, alertLifeSpan) {
+      super($rootScope, $timeout, $filter, alertLifeSpan);
+
       this.projectKey = $stateParams.projectId;
       this.data = new model.Collaborator({ projectKey: this.projectKey });
     }
@@ -17,6 +20,8 @@ module egrid.app {
             () => {
               this.$timeout(() => {
                 this.$state.go('projects.get.collaborators.all.list', null, { reload: true });
+
+                this.showAlert('MESSAGES.OPERATION_SUCCESSFULLY_COMPLETED');
               }, 200); // なぜか即時反映されない
             },
             (...reasons: any[]) => {
@@ -24,11 +29,7 @@ module egrid.app {
                 ? 'MESSAGES.NOT_AUTHENTICATED'
                 : 'MESSAGES.DESTINATION_IS_NOT_REACHABLE';
 
-              this.$rootScope.alerts.push({ type: 'danger', msg: this.$filter('translate')(k) });
-
-              this.$timeout(() => {
-                this.$rootScope.alerts.pop();
-              }, this.alertLifeSpan);
+              this.showAlert(k, 'danger');
             }
         )
         ;

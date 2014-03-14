@@ -3,10 +3,11 @@
 /// <reference path="../core/egm-ui.ts"/>
 /// <reference path="../model/participant.ts"/>
 /// <reference path="../model/project-grid.ts"/>
+/// <reference path="controller-base.ts"/>
 /// <reference path="url.ts"/>
 
 module egrid.app {
-  export class ProjectGridEditController {
+  export class ProjectGridEditController extends ControllerBase {
     projectKey : string;
     projectGridKey : string;
     grid : model.ProjectGrid;
@@ -15,7 +16,9 @@ module egrid.app {
     participants = new model.ParticipantCollection();
     participantState : {} = {};
 
-    constructor($window, private $q, private $rootScope, $stateParams, private $state, private $scope, private $modal, private $timeout, private $filter, private alertLifeSpan) {
+    constructor($window, private $q, $rootScope, $stateParams, private $state, private $scope, private $modal, $timeout, $filter, alertLifeSpan) {
+      super($rootScope, $timeout, $filter, alertLifeSpan);
+
       var __this = this;
       this.projectKey = $stateParams.projectId;
       this.projectGridKey = $stateParams.projectGridKey;
@@ -210,16 +213,14 @@ module egrid.app {
       this.$q.when(this.grid.save())
         .then(grid => {
           this.$state.go('projects.get.evaluation', { projectId: grid.projectKey });
+
+          this.showAlert('MESSAGES.OPERATION_SUCCESSFULLY_COMPLETED');
         }, (...reasons: any[]) => {
           var k: string = reasons[0].status === 401
             ? 'MESSAGES.NOT_AUTHENTICATED'
             : 'MESSAGES.DESTINATION_IS_NOT_REACHABLE';
 
-          this.$rootScope.alerts.push({ type: 'danger', msg: this.$filter('translate')(k) });
-
-          this.$timeout(() => {
-            this.$rootScope.alerts.pop();
-          }, this.alertLifeSpan);
+          this.showAlert(k, 'danger');
         })
         ;
     }
