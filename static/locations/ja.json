@@ -21,9 +21,9 @@
     "UNDO": "元に戻す",
     "DIALOG": {
       "REMOVE": {
+        "CANCEL": "いいえ",
         "HEADING": "削除しますか",
-        "OK": "はい",
-        "CANCEL": "いいえ"
+        "OK": "はい"
       }
     }
   },
@@ -107,6 +107,11 @@
       "PLACEHOLDERS": {
         "NAME": "プロジェクト名",
         "NOTE": "備考"
+      }
+    },
+    "MESSAGES": {
+      "CREATE": {
+        "FAILED": "失敗しました。オンラインになったとき再度送信します。"
       }
     }
   },

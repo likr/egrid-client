@@ -260,7 +260,7 @@ module egrid.utils {
               this.store[name][k] = value;
             }
 
-            $deferred.resolve(value);
+            $deferred.reject(reasons[0]);
           });
 
       return $deferred.promise();

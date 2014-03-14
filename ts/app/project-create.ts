@@ -6,7 +6,7 @@ module egrid.app {
     name : string;
     note : string;
 
-    constructor(private $q, private $state, private $timeout) {
+    constructor(private $q, private $rootScope, private $state, private $timeout, private $filter) {
     }
 
     submit() {
@@ -16,8 +16,12 @@ module egrid.app {
           this.$timeout(() => {
             this.$state.go('projects.get.detail', { projectId: project.key }, { reload: true });
           }, 200); // なぜか即時反映されない
-        }, () => {
-          this.$state.go('projects.all.list');
+        }, (...reasons: any[]) => {
+          this.$rootScope.alerts.push({ type: 'danger', msg: this.$filter('translate')('PROJECT.MESSAGES.CREATE.FAILED') });
+
+          this.$timeout(() => {
+            this.$rootScope.alerts.pop();
+          }, 2500);
         })
         ;
     }
