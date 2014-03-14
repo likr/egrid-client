@@ -264,13 +264,12 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "  <div class=\"navbar navbar-default navbar-fixed-top\" style=\"top: 50px;\">\n" +
     "    <div class=\"container\">\n" +
     "      <form class=\"navbar-form navbar-left\">\n" +
-    "        <a class=\"btn btn-default\" id=\"undoButton\"><span class=\"glyphicon glyphicon-arrow-left\"></span>{{'ACTION.UNDO' | translate}}</a>\n" +
-    "        <a class=\"btn btn-default\" id=\"redoButton\"><span class=\"glyphicon glyphicon-arrow-right\"></span>{{'ACTION.REDO' | translate}}</a>\n" +
-    "      </form>\n" +
-    "      <form class=\"navbar-form navbar-right\">\n" +
     "        <a class=\"btn btn-default\" id=\"filterButton\">{{'ACTION.FILTER' | translate}}</a>\n" +
     "        <a class=\"btn btn-default\" id=\"layoutButton\">{{'EGM.APP.LAYOUT_SETTINGS' | translate}}</a>\n" +
-    "        <button class=\"btn btn-default\" ng-click=\"projectGrid.save()\">{{'ACTION.SAVE' | translate}}</button>\n" +
+    "        <a class=\"btn btn-default\" id=\"appendNodeButton\"><i class=\"glyphicon glyphicon-pencil\"></i>{{'ACTION.APPEND' | translate}}</a>\n" +
+    "      </form>\n" +
+    "      <form class=\"navbar-form navbar-right\">\n" +
+    "        <a class=\"btn btn-default pull-right\" id=\"saveButton\" ng-click=\"projectGrid.save()\"><i class=\"glyphicon glyphicon-share\"></i>{{'ACTION.SAVE' | translate}}</a>\n" +
     "      </form>\n" +
     "    </div>\n" +
     "  </div>\n" +
@@ -280,6 +279,18 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "      <button id=\"removeNodeButton\" class=\"btn btn-default\" title=\"{{'ACTION.REMOVE' | translate}}\"><span class=\"glyphicon glyphicon-remove\"></i></button>\n" +
     "      <button id=\"mergeNodeButton\" class=\"btn btn-default\" title=\"{{'ACTION.MERGE' | translate}}\"><span class=\"glyphicon glyphicon-plus\"></i></button>\n" +
     "      <button id=\"editNodeButton\" class=\"btn btn-default\" title=\"{{'ACTION.EDIT' | translate}}\"><span class=\"glyphicon glyphicon-pencil\"></span></button>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "  <div class=\"navbar navbar-default navbar-fixed-bottom\">\n" +
+    "    <div class=\"container\">\n" +
+    "      <form class=\"navbar-form navbar-left\">\n" +
+    "        <a class=\"btn btn-default\" id=\"undoButton\"><i class=\"glyphicon glyphicon-arrow-left\"></i>{{'ACTION.UNDO' | translate}}</a>\n" +
+    "        <a class=\"btn btn-default\" id=\"redoButton\"><i class=\"glyphicon glyphicon-arrow-right\"></i>{{'ACTION.REDO' | translate}}</a>\n" +
+    "      </form>\n" +
+    "      <form class=\"navbar-form navbar-right\">\n" +
+    "        <a ng-click=\"projectGrid.exportJSON($event)\" class=\"btn btn-default\" id=\"exportJSON\" target=\"_blank\"><i class=\"glyphicon glyphicon-floppy-save\"></i>JSON {{'ACTION.EXPORT' | translate}}</a>\n" +
+    "        <a class=\"btn btn-default\" id=\"exportSVG\" target=\"_blank\"><i class=\"glyphicon glyphicon-floppy-save\"></i>SVG {{'ACTION.EXPORT' | translate}}</a>\n" +
+    "      </form>\n" +
     "    </div>\n" +
     "  </div>\n" +
     "</div>\n"

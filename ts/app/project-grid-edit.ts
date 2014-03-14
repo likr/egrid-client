@@ -16,6 +16,7 @@ module egrid.app {
     participantState : {} = {};
 
     constructor($window, private $q, $rootScope, $stateParams, private $modal, private $scope, private $state) {
+      var __this = this;
       this.projectKey = $stateParams.projectId;
       this.projectGridKey = $stateParams.projectGridKey;
 
@@ -59,6 +60,18 @@ module egrid.app {
             .onDisable(() => {
               d3.select("#redoButton").classed("disabled", true);
             }));
+
+      d3.select("#exportSVG")
+        .on("click", function() {
+          __this.hideNodeController();
+          __this.egm.exportSVG((svgText : string) => {
+            var base64svgText = btoa(unescape(encodeURIComponent(svgText)));
+            d3.select(this).attr({
+              href: "data:image/svg+xml;charset=utf-8;base64," + base64svgText,
+              download: project.name + '.svg',
+            });
+            });
+        });
 
       d3.select("#removeNodeButton")
         .call(egmui.removeNodeButton()
@@ -144,6 +157,10 @@ module egrid.app {
           $scope.$apply();
         })
         ;
+
+      var project : model.Project = new model.Project;
+
+      this.$q.when(project.get(this.projectKey));
 
       this.$q.when(model.ProjectGrid.get(this.projectKey, this.projectGridKey))
         .then((grid : model.ProjectGrid) => {
