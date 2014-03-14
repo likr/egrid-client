@@ -24,8 +24,8 @@
                 {{ user.nickname }}さん<b class="caret"></b>
               </a>
               <ul class="dropdown-menu">
-                <li><a ng-click="changeLanguage('ja')">Japanese</a></li>
-                <li><a ng-click="changeLanguage('en')">English</a></li>
+                <li><a href ng-click="changeLanguage('ja')">Japanese</a></li>
+                <li><a href ng-click="changeLanguage('en')">English</a></li>
                 <li class="divider"></li>
                 <li><a href="{{ logoutUrl }}">Logout</a></li>
               </ul>
@@ -37,9 +37,8 @@
     <div class="container" style="padding-top: 50px;">
       <div ui-view></div>
     </div>
-    <script src="/bower_components/jquery/jquery.min.js"></script>
+    <script src="/bower_components/jquery/dist/jquery.min.js"></script>
     <script src="/bower_components/angular/angular.min.js"></script>
-    <script src="/bower_components/angular-cookies/angular-cookies.min.js"></script>
     <script src="/bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
     <script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="/bower_components/angular-ui-bootstrap-bower/ui-bootstrap.min.js"></script>

@@ -337,7 +337,7 @@ module egrid.app {
       $rootScope.Url = Url;
 
       $rootScope.changeLanguage = function(langKey) {
-        $translate.uses(langKey);
+        $translate.use(langKey);
         $http({
           method: "POST",
           url: '/api/users',
@@ -349,7 +349,7 @@ module egrid.app {
 
       $http.get("/api/users").success(user => {
         $rootScope.user = user;
-        $translate.uses(user.location);
+        $translate.use(user.location);
       });
 
       var dest_url = "/";
