@@ -13,9 +13,8 @@ module.exports = function(grunt) {
         },
         src: [
           'bower_components/angular/angular.min.js',
-          'bower_components/angular-cookies/angular-cookies.min.js',
           'bower_components/angular-ui-router/release/angular-ui-router.min.js',
-          'bower_components/jquery/jquery.min.js',
+          'bower_components/jquery/dist/jquery.min.js',
           'bower_components/bootstrap/dist/css/bootstrap.min.css',
           'bower_components/bootstrap/dist/js/bootstrap.min.js',
           'bower_components/bootstrap/dist/fonts/glyphicons-halflings-regular.*',
