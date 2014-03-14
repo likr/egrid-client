@@ -330,7 +330,7 @@ module egrid.app {
     .controller('ProjectListController',                  ['$window', '$q', '$rootScope',                                                           ProjectListController])
     .controller('SemProjectController',                   ['$window', '$q', '$rootScope', '$stateParams',                                           SemProjectController])
     .controller('SemProjectAnalysisController',           ['$window', '$q', '$rootScope', '$stateParams',                                           SemProjectAnalysisController])
-    .controller('SemProjectCreateController',             ['$window', '$q', '$rootScope', '$stateParams', '$state',                     '$timeout', SemProjectCreateController])
+    .controller('SemProjectCreateController',             [           '$q',               '$stateParams', '$state',                     '$timeout', SemProjectCreateController])
     .controller('SemProjectListController',               ['$window', '$q', '$rootScope', '$stateParams', '$state',                                 SemProjectListController])
     .controller('SemProjectQuestionnaireEditController',  ['$window', '$q', '$rootScope', '$stateParams',                                           SemProjectQuestionnaireEditController])
     .run(['$rootScope', '$translate', '$http', ($rootScope, $translate, $http) => {
