@@ -315,7 +315,7 @@ module egrid.app {
         .fallbackLanguage("en")
         .preferredLanguage("ja");
     }])
-    .value('alertLifeSpan', 2500)
+    .value('alertLifeSpan', 3200)
     .controller('CollaboratorCreateController',           [           '$q', '$rootScope', '$stateParams', '$state',                     '$timeout', '$filter', 'alertLifeSpan', CollaboratorCreateController])
     .controller('CollaboratorListController',             ['$window', '$q', '$rootScope', '$stateParams', '$state', '$scope', '$modal',                                         CollaboratorListController])
     .controller('ParticipantController',                  ['$window', '$q', '$rootScope', '$stateParams', '$state', '$scope', '$modal',                                         ParticipantController])
