@@ -636,8 +636,7 @@ module egrid {
       var axisFrom = [this.displayWidth * 0.1, 35];
       var axisTo = [this.displayWidth * 0.9, 35];
       var guideSelection = this.rootSelection.select('.guide')
-        .style('transform', 'translate(0, ' + (this.displayHeight) + 'px) translate(0, -100%)')
-        .style('-webkit-transform', 'translate(0, ' + (this.displayHeight) + 'px) translate(0, -100%)')
+        .attr('transform', 'translate(0, ' + (this.displayHeight - guideHeight) + ')')
         .style('visibility', this.options_.showGuide ? 'visible' : 'hidden')
         ;
       guideSelection.select('.guide-rect')
