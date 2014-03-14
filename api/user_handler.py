@@ -24,7 +24,7 @@ class UserLogoutHandler(webapp2.RequestHandler):
     def get(self):
         dest_url = self.request.GET['dest_url']
         data = {
-            'logout_url': users.create_logout_url(dest_url)
+            'logout_url': users.create_logout_url(users.create_login_url(dest_url))
         }
         content = json.dumps(data)
         self.response.write(content)
