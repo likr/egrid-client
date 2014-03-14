@@ -63,11 +63,11 @@ module.exports = function(grunt) {
     watch: {
       scripts: {
         files: ['ts/**/*.ts'],
-        tasks: ['manifest', 'ts:dev'],
+        tasks: ['ts:dev', 'manifest'],
       },
       templates: {
         files: ['static/index.html', 'static/partials/**/*.html'],
-        tasks: ['manifest', 'ngtemplates'],
+        tasks: ['ngtemplates','manifest'],
       },
     },
   });
@@ -78,5 +78,5 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-ts');
 
   grunt.registerTask('default', ['watch']);
-  grunt.registerTask('compile', ['ngtemplates', 'manifest', 'ts:prod']);
+  grunt.registerTask('compile', ['ngtemplates', 'ts:prod', 'manifest']);
 };
