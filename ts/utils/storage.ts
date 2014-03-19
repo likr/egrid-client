@@ -292,7 +292,8 @@ module egrid.utils {
           }, (...reasons: any[]) => {
             var r = {};
 
-            if (reasons[2] === 'Not authorized') {
+            // 500 のときも
+            if (/^[4-5][0-9]{2}$/.test(reasons[0]['status'])) {
               $deferred.reject(reasons[0]);
             }
 
@@ -346,8 +347,7 @@ module egrid.utils {
           }, (...reasons: any[]) => {
             var r = {};
 
-            // really suck
-            if (reasons[2] === 'Not authorized') {
+            if (/^[4-5][0-9]{2}$/.test(reasons[0]['status'])) {
               $deferred.reject(reasons[0]);
             }
 
