@@ -12,7 +12,9 @@ class ProjectHandler(webapp2.RequestHandler):
         current_user = User.current_user()
         if project_id:
             project = Project.get(project_id)
-            if not current_user.is_collaborator_on(Project.get(project_id)):
+            if project.deleted_at is not None:
+                self.error(404)
+            if not current_user.is_collaborator_on(project):
                 self.error(403)
 
             self.response.write(json.dumps(project.to_dict()))

@@ -10,7 +10,7 @@ class CollaboratorHandler(webapp2.RequestHandler):
         project = Project.get(project_id)
         collaborators = Collaborator.all()\
             .filter('project =', project)
-        content = json.dumps([c.to_dict() for c in collaborators])
+        content = json.dumps([c.to_dict() for c in collaborators if c.project.deleted_at is None])
         self.response.write(content)
 
     def post(self, project_id):

@@ -9,6 +9,8 @@ class ParticipantHandler(webapp2.RequestHandler):
     def get(self, project_id, participant_id=None):
         if participant_id:
             participant = Participant.get(participant_id)
+            if participant.deleted_at is not None:
+                self.error(404)
             self.response.write(json.dumps(participant.to_dict()))
         else:
             project = Project.get(project_id)
