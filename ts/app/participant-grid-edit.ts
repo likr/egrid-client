@@ -173,7 +173,7 @@ module egrid.app {
           }
 
           if (reasons[0]['status'] === 404 || reasons[0]['status'] === 500) {
-            $state.go('projects.get.participants.get.grid');
+            $state.go('projects.get.participants.all.list');
 
             this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
           }

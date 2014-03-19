@@ -22,7 +22,7 @@ module egrid.app {
           }
 
           if (reason.status === 404 || reason.status === 500) {
-            $state.go('projects.get.participants.all.list');
+            $state.go('projects.get.analyses.all.list');
 
             this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
           }

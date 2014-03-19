@@ -182,7 +182,7 @@ module egrid.app {
           }
 
           if (reason.status === 404 || reason.status === 500) {
-            this.$state.go('projects.get.detail');
+            this.$state.go('projects.all.list');
 
             this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
           }

@@ -7,7 +7,7 @@ module egrid.app {
     }
 
     public showAlert(key: string, type: string = 'success') {
-      this.$rootScope.alerts.push({ type: type, msg: this.$filter('translate')(key) });
+      this.$rootScope.alerts[0] = { type: type, msg: this.$filter('translate')(key) };
 
       this.$timeout(() => {
         this.$rootScope.alerts.pop();

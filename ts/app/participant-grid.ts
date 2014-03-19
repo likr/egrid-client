@@ -33,7 +33,7 @@ module egrid.app {
 
           if (reasons[0]['status'] === 404 || reasons[0]['status'] === 500) {
             // プロジェクトが存在しない可能性もある…がそれは遷移先でやる
-            $state.go('projects.get.participants.get.detail');
+            $state.go('projects.get.participants.all.list');
 
             this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
           }

@@ -320,7 +320,7 @@ module egrid.app {
     .controller('CollaboratorListController',             ['$window', '$q', '$rootScope', '$stateParams', '$state', '$scope', '$modal',                                         CollaboratorListController])
     .controller('ParticipantController',                  ['$window', '$q', '$rootScope', '$stateParams', '$state', '$scope', '$modal', '$timeout', '$filter', 'alertLifeSpan', ParticipantController])
     .controller('ParticipantCreateController',            [           '$q', '$rootScope', '$stateParams', '$state',                     '$timeout', '$filter', 'alertLifeSpan', ParticipantCreateController])
-    .controller('ParticipantGridController',              ['$window', '$q', '$rootScope', '$stateParams',           '$scope',                                                   ParticipantGridController])
+    .controller('ParticipantGridController',              ['$window', '$q', '$rootScope', '$stateParams', '$state', '$scope',           '$timeout', '$filter', 'alertLifeSpan', ParticipantGridController])
     .controller('ParticipantGridEditController',          ['$window', '$q', '$rootScope', '$stateParams', '$state', '$scope', '$modal', '$timeout', '$filter', 'alertLifeSpan', ParticipantGridEditController])
     .controller('ParticipantListController',              ['$window', '$q', '$rootScope', '$stateParams',                                                                       ParticipantListController])
     .controller('ProjectController',                      ['$window', '$q', '$rootScope', '$stateParams', '$state', '$scope', '$modal', '$timeout', '$filter', 'alertLifeSpan', ProjectController])
