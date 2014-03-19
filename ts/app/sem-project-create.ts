@@ -1,12 +1,15 @@
 /// <reference path="../model/sem-project.ts"/>
+/// <reference path="controller-base.ts"/>
 /// <reference path="url.ts"/>
 
 module egrid.app {
-  export class SemProjectCreateController implements model.SemProjectData {
+  export class SemProjectCreateController extends ControllerBase implements model.SemProjectData {
     name : string;
     projectKey : string;
 
-    constructor(private $q, $stateParams, private $state, private $timeout) {
+    constructor(private $q, $rootScope, $stateParams, private $state, $timeout, $filter, alertLifeSpan) {
+      super($rootScope, $timeout, $filter, alertLifeSpan);
+
       this.projectKey = $stateParams.projectId;
     }
 
@@ -16,7 +19,15 @@ module egrid.app {
         .then(() => {
           this.$timeout(() => {
             this.$state.go('projects.get.analyses.all.list');
+
+            this.showAlert('MESSAGES.OPERATION_SUCCESSFULLY_COMPLETED');
           }, 200);
+        }, (...reasons: any[]) => {
+          var k: string = reasons[0].status === 401
+            ? 'MESSAGES.NOT_AUTHENTICATED'
+            : 'MESSAGES.DESTINATION_IS_NOT_REACHABLE';
+
+          this.showAlert(k, 'danger');
         })
         ;
     }

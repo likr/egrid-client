@@ -35,6 +35,10 @@
       </div>
     </header>
     <div class="container" style="padding-top: 50px;">
+      <div id="alerts">
+        <alert ng-repeat="alert in $root.alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
+      </div>
+
       <div ui-view></div>
     </div>
     <script src="/bower_components/jquery/dist/jquery.min.js"></script>

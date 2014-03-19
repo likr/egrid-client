@@ -6,10 +6,11 @@
 /// <reference path="../model/participant-grid.ts"/>
 /// <reference path="../model/project.ts"/>
 /// <reference path="../model/project-grid.ts"/>
+/// <reference path="controller-base.ts"/>
 /// <reference path="url.ts"/>
 
 module egrid.app {
-  export class ParticipantGridEditController {
+  export class ParticipantGridEditController extends ControllerBase {
     projectKey : string;
     participantKey : string;
     egm : EGM;
@@ -17,7 +18,9 @@ module egrid.app {
     overallNodes : model.ProjectGridNodeData[];
     disableCompletion : boolean = false;
 
-    constructor($window, $q, $rootScope, $stateParams, $state, private $scope, private $modal) {
+    constructor($window, $q, $rootScope, $stateParams, $state, private $scope, private $modal, $timeout, $filter, alertLifeSpan) {
+      super($rootScope, $timeout, $filter, alertLifeSpan);
+
       var __this = this;
       this.projectKey = $stateParams.projectId;
       this.participantKey = $stateParams.participantId;
@@ -90,6 +93,14 @@ module egrid.app {
               $q.when(this.grid.update())
                 .then(() => {
                   $state.go('projects.get.participants.get.evaluation');
+
+                  this.showAlert('MESSAGES.OPERATION_SUCCESSFULLY_COMPLETED');
+                }, (...reasons: any[]) => {
+                  var k: string = reasons[0].status === 401
+                    ? 'MESSAGES.NOT_AUTHENTICATED'
+                    : 'MESSAGES.DESTINATION_IS_NOT_REACHABLE';
+
+                  this.showAlert(k, 'danger');
                 })
                 ;
             }));
@@ -156,6 +167,16 @@ module egrid.app {
             .draw()
             .focusCenter()
             ;
+        }, (...reasons: any[]) => {
+          if (reasons[0]['status'] === 401) {
+            $window.location.href = $rootScope.logoutUrl;
+          }
+
+          if (reasons[0]['status'] === 404 || reasons[0]['status'] === 500) {
+            $state.go('projects.get.participants.all.list');
+
+            this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
+          }
         })
         ;
 
@@ -165,6 +186,12 @@ module egrid.app {
         }, (...reasons: any[]) => {
           if (reasons[0]['status'] === 401) {
             $window.location.href = $rootScope.logoutUrl;
+          }
+
+          if (reasons[0]['status'] === 404 || reasons[0]['status'] === 500) {
+            $state.go('projects.get.grids.get.detail');
+
+            this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
           }
         })
         ;

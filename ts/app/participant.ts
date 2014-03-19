@@ -1,15 +1,18 @@
 /// <reference path="../model/participant.ts"/>
 /// <reference path="../model/project.ts"/>
+/// <reference path="controller-base.ts"/>
 
 module egrid.app {
-  export class ParticipantController implements model.ParticipantData {
+  export class ParticipantController extends ControllerBase implements model.ParticipantData {
     name : string;
     note : string;
     project : model.ProjectData;
     projectKey : string;
     participant : model.Participant;
 
-    constructor(private $window, private $q, private $rootScope, $stateParams, private $state, private $scope, private $modal) {
+    constructor(private $window, private $q, $rootScope, $stateParams, private $state, private $scope, private $modal, $timeout, $filter, alertLifeSpan) {
+      super($rootScope, $timeout, $filter, alertLifeSpan);
+
       this.participant = new model.Participant({ projectKey: $stateParams.projectId });
 
       this.$q.when(this.participant.get($stateParams.participantId))
@@ -17,6 +20,12 @@ module egrid.app {
         }, (reason) => {
           if (reason.status === 401) {
             this.$window.location.href = this.$rootScope.logoutUrl;
+          }
+
+          if (reason.status === 404 || reason.status === 500) {
+            this.$state.go('projects.get.participants.all.list');
+
+            this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
           }
         });
     }
@@ -27,6 +36,16 @@ module egrid.app {
           // バインドしてるから要らない気はする
           this.participant.name = participant.name;
           this.participant.note = participant.note;
+        }, (reason) => {
+          if (reason.status === 401) {
+            this.$window.location.href = this.$rootScope.logoutUrl;
+          }
+
+          if (reason.status === 404 || reason.status === 500) {
+            this.$state.go('projects.get.participants.all.list');
+
+            this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
+          }
         });
     }
 
@@ -53,6 +72,12 @@ module egrid.app {
         }, (reason) => {
           if (reason.status === 401) {
             this.$window.location.href = this.$rootScope.logoutUrl;
+          }
+
+          if (reason.status === 404 || reason.status === 500) {
+            this.$state.go('projects.get.participants.all.list');
+
+            this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
           }
         });
     }

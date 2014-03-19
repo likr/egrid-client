@@ -3,10 +3,11 @@
 /// <reference path="../core/egm-ui.ts"/>
 /// <reference path="../model/participant.ts"/>
 /// <reference path="../model/project-grid.ts"/>
+/// <reference path="controller-base.ts"/>
 /// <reference path="url.ts"/>
 
 module egrid.app {
-  export class ProjectGridEditController {
+  export class ProjectGridEditController extends ControllerBase {
     projectKey : string;
     projectGridKey : string;
     grid : model.ProjectGrid;
@@ -15,7 +16,9 @@ module egrid.app {
     participants = new model.ParticipantCollection();
     participantState : {} = {};
 
-    constructor($window, private $q, $rootScope, $stateParams, private $state, private $scope, private $modal) {
+    constructor($window, private $q, $rootScope, $stateParams, private $state, private $scope, private $modal, $timeout, $filter, alertLifeSpan) {
+      super($rootScope, $timeout, $filter, alertLifeSpan);
+
       var __this = this;
       this.projectKey = $stateParams.projectId;
       this.projectGridKey = $stateParams.projectGridKey;
@@ -175,7 +178,13 @@ module egrid.app {
             ;
         }, (reason) => {
           if (reason.status === 401) {
-            $window.location.href = $rootScope.logoutUrl;
+            $window.location.href = this.$rootScope.logoutUrl;
+          }
+
+          if (reason.status === 404 || reason.status === 500) {
+            this.$state.go('projects.all.list');
+
+            this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
           }
         })
         ;
@@ -192,7 +201,13 @@ module egrid.app {
             });
         }, (reason) => {
           if (reason.status === 401) {
-            $window.location.href = $rootScope.logoutUrl;
+            $window.location.href = this.$rootScope.logoutUrl;
+          }
+
+          if (reason.status === 404 || reason.status === 500) {
+            this.$state.go('projects.all.list');
+
+            this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
           }
         })
         ;
@@ -210,6 +225,14 @@ module egrid.app {
       this.$q.when(this.grid.save())
         .then(grid => {
           this.$state.go('projects.get.evaluation', { projectId: grid.projectKey });
+
+          this.showAlert('MESSAGES.OPERATION_SUCCESSFULLY_COMPLETED');
+        }, (...reasons: any[]) => {
+          var k: string = reasons[0].status === 401
+            ? 'MESSAGES.NOT_AUTHENTICATED'
+            : 'MESSAGES.DESTINATION_IS_NOT_REACHABLE';
+
+          this.showAlert(k, 'danger');
         })
         ;
     }
