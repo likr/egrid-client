@@ -1071,7 +1071,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "\n" +
     "    <div class=\"col-sm-10\">\r" +
     "\n" +
-    "      <textarea class=\"form-control\" name=\"note\" rows=\"3\" placeholder=\"{{'PROJECT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate}}\" ng-model=\"ctrl.project.note\">dummy</textarea>\r" +
+    "      <textarea class=\"form-control\" name=\"note\" rows=\"3\" placeholder=\"{{'PROJECT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate}}\" ng-model=\"ctrl.project.note\">&nbsp;</textarea>\r" +
     "\n" +
     "    </div>\r" +
     "\n" +
@@ -1205,7 +1205,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "\n" +
     "      <div class=\"col-sm-10\">\r" +
     "\n" +
-    "        <textarea class=\"form-control\" name=\"note\" rows=\"3\" placeholder=\"{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate }}\" ng-model=\"newParticipant.note\"></textarea>\r" +
+    "        <textarea class=\"form-control\" name=\"note\" rows=\"3\" placeholder=\"{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate }}\" ng-model=\"newParticipant.note\">&nbsp;</textarea>\r" +
     "\n" +
     "      </div>\r" +
     "\n" +
@@ -1331,7 +1331,7 @@ angular.module('collaboegm').run(['$templateCache', function($templateCache) {
     "\n" +
     "    <div class=\"col-sm-10\">\r" +
     "\n" +
-    "      <textarea class=\"form-control\" name=\"note\" rows=\"3\" placeholder=\"{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate }}\" ng-model=\"ctrl.participant.note\"></textarea>\r" +
+    "      <textarea class=\"form-control\" name=\"note\" rows=\"3\" placeholder=\"{{ 'PARTICIPANT.ATTRIBUTES.PLACEHOLDERS.NOTE' | translate }}\" ng-model=\"ctrl.participant.note\">&nbsp;</textarea>\r" +
     "\n" +
     "    </div>\r" +
     "\n" +
