@@ -7,8 +7,8 @@ from api.models import SemProject
 class SemProjectHandler(webapp2.RequestHandler):
     def get(self, project_id, sem_project_id):
         sem_project = SemProject.get(sem_project_id)
-            if sem_project.deleted_at is not None:
-                self.error(404)
+        if sem_project.deleted_at is not None:
+            self.error(404)
         self.response.write(json.dumps(sem_project.to_dict()))
 
 
