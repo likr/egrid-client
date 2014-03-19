@@ -1,10 +1,13 @@
 /// <reference path="../model/project.ts"/>
+/// <reference path="controller-base.ts"/>
 
 module egrid.app {
-  export class ProjectController {
+  export class ProjectController extends ControllerBase {
     public project: model.Project = new model.Project();
 
-    constructor(private $window, private $q, private $rootScope, $stateParams, private $state, $scope, private $modal) {
+    constructor(private $window, private $q, $rootScope, $stateParams, private $state, $scope, private $modal, $timeout, $filter, alertLifeSpan) {
+      super($rootScope, $timeout, $filter, alertLifeSpan);
+
       var key = $stateParams.projectId;
 
       this.$q.when(this.project.get(key))
@@ -12,6 +15,12 @@ module egrid.app {
         }, (reason) => {
           if (reason.status === 401) {
             this.$window.location.href = this.$rootScope.logoutUrl;
+          }
+
+          if (reason.status === 404 || reason.status === 500) {
+            this.$state.go('projects.all.list');
+
+            this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
           }
         });
     }
@@ -25,6 +34,12 @@ module egrid.app {
         }, (reason) => {
           if (reason.status === 401) {
             this.$window.location.href = this.$rootScope.logoutUrl;
+          }
+
+          if (reason.status === 404 || reason.status === 500) {
+            this.$state.go('projects.all.list');
+
+            this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
           }
         });
     }
@@ -52,6 +67,12 @@ module egrid.app {
         }, (reason) => {
           if (reason.status === 401) {
             this.$window.location.href = this.$rootScope.logoutUrl;
+          }
+
+          if (reason.status === 404 || reason.status === 500) {
+            this.$state.go('projects.all.list');
+
+            this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
           }
         });
     }

@@ -167,6 +167,16 @@ module egrid.app {
             .draw()
             .focusCenter()
             ;
+        }, (...reasons: any[]) => {
+          if (reasons[0]['status'] === 401) {
+            $window.location.href = $rootScope.logoutUrl;
+          }
+
+          if (reasons[0]['status'] === 404 || reasons[0]['status'] === 500) {
+            $state.go('projects.get.participants.get.grid');
+
+            this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
+          }
         })
         ;
 
@@ -176,6 +186,12 @@ module egrid.app {
         }, (...reasons: any[]) => {
           if (reasons[0]['status'] === 401) {
             $window.location.href = $rootScope.logoutUrl;
+          }
+
+          if (reasons[0]['status'] === 404 || reasons[0]['status'] === 500) {
+            $state.go('projects.get.grids.get.detail');
+
+            this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
           }
         })
         ;

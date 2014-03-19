@@ -2,14 +2,17 @@
 /// <reference path="../ts-definitions/DefinitelyTyped/d3/d3.d.ts"/>
 /// <reference path="../model/participant-grid.ts"/>
 /// <reference path="../core/egm.ts"/>
+/// <reference path="controller-base.ts"/>
 
 module egrid.app {
-  export class ParticipantGridController {
+  export class ParticipantGridController extends ControllerBase {
     projectKey : string;
     participantKey : string;
     egm : EGM;
 
-    constructor($window, $q, $rootScope, $stateParams, $scope) {
+    constructor($window, $q, $rootScope, $stateParams, $state, $scope, $timeout, $filter, alertLifeSpan) {
+      super($rootScope, $timeout, $filter, alertLifeSpan);
+
       this.projectKey = $stateParams.projectId;
       this.participantKey = $stateParams.participantId;
       this.egm = new EGM;
@@ -26,6 +29,13 @@ module egrid.app {
         }, (...reasons: any[]) => {
           if (reasons[0]['status'] === 401) {
             $window.location.href = $rootScope.logoutUrl;
+          }
+
+          if (reasons[0]['status'] === 404 || reasons[0]['status'] === 500) {
+            // プロジェクトが存在しない可能性もある…がそれは遷移先でやる
+            $state.go('projects.get.participants.get.detail');
+
+            this.showAlert('MESSAGES.ITEM_NOT_FOUND', 'warning');
           }
         })
         ;
