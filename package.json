@@ -1,23 +1,22 @@
 {
-  "name": "egrid",
-  "description": "Support system for evaluation grid method.",
+  "name": "egrid-client",
   "version": "0.0.0",
-  "homepage": "http://collaboegm.appspot.com/",
-  "author": {
-    "name": "Yosuke ONOUE",
-    "email": "onoue@likr-lab.com"
+  "description": "",
+  "main": "egrid-client.js",
+  "directories": {
+    "test": "test"
   },
-  "dependencies": {
-    "typescript": "0.9.5",
-    "tsd": "0.3.1",
-    "bower": "1.2.8"
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "author": "",
+  "license": "BSD-2-Clause",
   "devDependencies": {
-    "grunt": "*",
-    "grunt-angular-templates": "*",
-    "grunt-cli": "*",
-    "grunt-contrib-watch": "*",
-    "grunt-ts": "*",
-    "grunt-manifest": "^0.4.0"
+    "grunt": "~0.4.4",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-ts": "~1.10.0",
+    "grunt-typescript": "~0.3.0",
+    "node-localstorage": "~0.3.4",
+    "jquery": "~2.1.0"
   }
 }
