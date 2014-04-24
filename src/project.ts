@@ -81,7 +81,7 @@ module egrid.model {
      */
     public get(key: string): JQueryPromise<Project> {
       return egrid.storage.get<Project>(Project.type, key).then((project: Project) => {
-          this.load(project);
+          return this.load(project);
         });
     }
 
