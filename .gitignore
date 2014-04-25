@@ -1,4 +1,5 @@
 .tscache
+egrid-client.d.ts
 egrid-client.js
 egrid-client.min.js
 node_modules

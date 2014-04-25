@@ -6,8 +6,9 @@ module.exports = function(grunt) {
         src: ['src/egrid-client.ts'],
         dest: 'egrid-client.js',
         options: {
-         module: 'commonjs',
-         target: 'es5'
+          module: 'commonjs',
+          declaration: true,
+          target: 'es5'
         }
       }
     },
