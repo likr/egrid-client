@@ -1,5 +1,4 @@
 /// <reference path="typings/jquery/jquery.d.ts"/>
-/// <reference path="value-object.ts"/>
 /// <reference path="project.ts"/>
 /// <reference path="user.ts"/>
 
@@ -43,7 +42,6 @@ module egrid.model {
     /**
      * Object から Participant に変換します。
      *
-     * @override
      * @param   object
      */
     public load(o: any): Collaborator {
@@ -55,24 +53,26 @@ module egrid.model {
     }
 
     /**
-     * @override
      */
     public get(key: string): JQueryPromise<Collaborator> {
       throw new Error('NotSupportedException');
     }
 
+    public static query(projectKey : string) : JQueryPromise<Collaborator[]> {
+      return storage.retrieve<Collaborator>(Collaborator.type, projectKey);
+    }
+
     /**
      * POST/PUT リクエストを発行します。
      *
-     * @override
      * @throws  Error
      */
     public save(): JQueryPromise<Collaborator> {
-      return egrid.storage.add<Collaborator>(this, Collaborator.type, this.projectKey, this.key);
+      return storage.add<Collaborator>(this, Collaborator.type, this.projectKey, this.key);
     }
 
     public remove() : JQueryPromise<boolean> {
-      return egrid.storage.remove<Collaborator>(Collaborator.type, this.projectKey, this.key);
+      return storage.remove<Collaborator>(Collaborator.type, this.projectKey, this.key);
     }
   }
 }

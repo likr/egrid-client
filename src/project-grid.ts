@@ -1,5 +1,4 @@
 /// <reference path="typings/jquery/jquery.d.ts"/>
-/// <reference path="interfaces/ientity.ts"/>
 /// <reference path="project-grid-node.ts"/>
 /// <reference path="project-grid-link.ts"/>
 /// <reference path="storage.ts"/>
@@ -14,17 +13,14 @@ module egrid.model {
   }
 
 
-  interface ApiProjectGridData extends ProjectGridData, interfaces.IEntity {
+  interface ApiProjectGridData extends ProjectGridData, SerializedData {
     key : string;
     createdAt : string;
     updatedAt : string;
   }
 
 
-  export class ProjectGrid implements ProjectGridData, interfaces.IEntity {
-    private key_ : string;
-    private createdAt_ : Date;
-    private updatedAt_ : Date;
+  export class ProjectGrid extends Entity implements ProjectGridData {
     name : string;
     note : string;
     projectKey : string;
@@ -33,6 +29,8 @@ module egrid.model {
     public static type : string = 'ProjectGrid';
 
     constructor(obj : ProjectGridData) {
+      super();
+
       this.projectKey = obj.projectKey;
       this.nodes = obj.nodes;
       this.links = obj.links;
@@ -40,20 +38,8 @@ module egrid.model {
       this.note = obj.note;
     }
 
-    get key() : string {
-      return this.key_;
-    }
-
-    get createdAt() : Date {
-      return this.createdAt_;
-    }
-
-    get updatedAt() : Date {
-      return this.updatedAt_;
-    }
-
     save() : JQueryPromise<ProjectGrid> {
-      return egrid.storage.add<ProjectGrid>(this, ProjectGrid.type, this.projectKey, this.key);
+      return storage.add<ProjectGrid>(this, ProjectGrid.type, this.projectKey, this.key);
     }
 
     private url() : string {
@@ -66,9 +52,9 @@ module egrid.model {
       this.projectKey = obj.projectKey;
       this.nodes = obj.nodes;
       this.links = obj.links;
-      this.key_ = obj.key;
-      this.createdAt_ = new Date(obj.createdAt);
-      this.updatedAt_ = new Date(obj.updatedAt);
+      (<any>this).key_ = obj.key;
+      (<any>this).createdAt_ = new Date(obj.createdAt);
+      (<any>this).updatedAt_ = new Date(obj.updatedAt);
       return this;
     }
 
@@ -77,13 +63,13 @@ module egrid.model {
         ? projectGridId
         : 'current';
 
-      return egrid.storage.get<ApiProjectGridData>(ProjectGrid.type, projectKey, key).then((projectGrid: ApiProjectGridData) => {
+      return storage.get<ProjectGrid>(ProjectGrid.type, projectKey, key).then((projectGrid: ApiProjectGridData) => {
           return ProjectGrid.load(projectGrid);
         });
     }
 
     static query(projectKey : string) : JQueryPromise<ProjectGrid> {
-      return egrid.storage.retrieve<ProjectGrid>(ProjectGrid.type, projectKey);
+      return storage.retrieve<ProjectGrid>(ProjectGrid.type, projectKey);
     }
 
     private static load(obj : ApiProjectGridData) : ProjectGrid {

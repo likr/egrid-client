@@ -1,33 +1,35 @@
 /// <reference path="typings/jquery/jquery.d.ts"/>
-/// <reference path="interfaces/ientity.ts"/>
-/// <reference path="value-object.ts"/>
 
 module egrid.model {
-  /**
-  * @abstract Entity
-  */
-  export class Entity implements interfaces.IEntity {
-    private key_: ValueObject<string>;
+  export interface StorableData {
+    key : string;
+    createdAt : Date;
+    updatedAt : Date;
+  }
 
-    public static type: string;
 
-    public set key(key: string) {
-      if (!this.key_)
-        this.key_ = new ValueObject<string>(key);
+  export interface SerializedData {
+    key : string;
+    createdAt : string;
+    updatedAt : string;
+  }
+
+
+  export class Entity implements StorableData {
+    private key_ : string;
+    private createdAt_ : Date;
+    private updatedAt_ : Date;
+
+    public get key() : string {
+      return this.key_;
     }
 
-    public get key(): string {
-      return (this.key_)
-        ? this.key_.value
-        : '';
+    public get createdAt() : Date {
+      return this.createdAt_;
     }
 
-    /**
-     * @abstract
-     * @param key string プライマリ キー
-     */
-    public get(key: string): JQueryPromise<Entity> {
-      throw new Error('NotImplementedException');
+    public get updatedAt() : Date {
+      return this.updatedAt_;
     }
   }
 }

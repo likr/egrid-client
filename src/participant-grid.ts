@@ -1,6 +1,4 @@
 /// <reference path="typings/jquery/jquery.d.ts"/>
-/// <reference path="interfaces/ientity.ts"/>
-/// <reference path="collection-base.ts"/>
 /// <reference path="participant-grid-node.ts"/>
 /// <reference path="participant-grid-link.ts"/>
 /// <reference path="storage.ts"/>
@@ -14,8 +12,7 @@ module egrid.model {
   }
 
 
-  export class ParticipantGrid implements ParticipantGridData, interfaces.IEntity {
-    key : string;
+  export class ParticipantGrid extends Entity implements ParticipantGridData {
     participantKey : string;
     projectKey : string;
     nodes : ParticipantGridNodeData[];
@@ -23,6 +20,7 @@ module egrid.model {
     static type : string = 'ParticipantGrid';
 
     constructor(obj : ParticipantGridData) {
+      super();
       this.projectKey = obj.projectKey;
       this.participantKey = this.key = obj.participantKey;
       this.nodes = obj.nodes;
@@ -30,7 +28,7 @@ module egrid.model {
     }
 
     update() : JQueryPromise<ParticipantGrid> {
-      return egrid.storage.add<ParticipantGrid>(this, ParticipantGrid.type, this.projectKey, this.key);
+      return storage.add<ParticipantGrid>(this, ParticipantGrid.type, this.projectKey, this.key);
     }
 
     private url() : string {
@@ -38,7 +36,7 @@ module egrid.model {
     }
 
     static get(projectKey : string, participantKey : string) : JQueryPromise<ParticipantGrid> {
-      return egrid.storage.get<ParticipantGrid>(ParticipantGrid.type, projectKey, participantKey)
+      return storage.get<ParticipantGrid>(ParticipantGrid.type, projectKey, participantKey)
         .then((pg: ParticipantGrid) => {
             return new ParticipantGrid(pg);
           });

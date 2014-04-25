@@ -1,8 +1,19 @@
 /// <reference path="typings/jquery/jquery.d.ts"/>
-/// <reference path="value-object.ts"/>
 /// <reference path="project.ts"/>
 
 module egrid.model {
+  var TYPE = 'Participant';
+
+
+  function load(obj : SerializedParticipantData) : Participant {
+    var participant : any = new Participant(obj);
+    participant.key_ = obj.key;
+    participant.createdAt_ = new Date(obj.createdAt);
+    participant.updatedAt_ = new Date(obj.updatedAt);
+    return participant;
+  }
+
+
   export interface ParticipantData {
     name? : string;
     note? : string;
@@ -11,7 +22,7 @@ module egrid.model {
   }
 
 
-  interface ApiParticipantData extends ParticipantData {
+  interface SerializedParticipantData extends ParticipantData {
     key : string;
     createdAt: string;
     updatedAt: string;
@@ -19,16 +30,10 @@ module egrid.model {
 
 
   export class Participant extends Entity {
-    private createdAt_: ValueObject<Date>;
-    private updatedAt_: ValueObject<Date>;
-
     public name : string;
     public note : string;
     public project : ProjectData;
     public projectKey : string;
-
-    public static type: string = 'Participant';
-    public static url: string = '/api/projects/:projectId/participants/:participantId';
 
     constructor(obj? : ParticipantData) {
       super();
@@ -41,66 +46,23 @@ module egrid.model {
       }
     }
 
-    public get createdAt() : Date {
-      return this.createdAt_ ? this.createdAt_.value : null;
-    }
-
-    public get updatedAt() : Date {
-      return this.updatedAt_ ? this.updatedAt_.value : null;
-    }
-
-    private setCreatedAt(date: Date) : void {
-      if (!this.createdAt_)
-        this.createdAt_ = new ValueObject<Date>(date);
-    }
-
-    private setUpdatedAt(date: Date) : void {
-      if (!this.updatedAt_)
-        this.updatedAt_ = new ValueObject<Date>(date);
-    }
-
-    /**
-     * Object から Participant に変換します。
-     *
-     * @override
-     * @param   object
-     */
-    public load(o: any): Participant {
-      this.key = o.key;
-
-      this.name = o.name;
-      this.note = o.note;
-
-      this.project = o.project;
-
-      this.setCreatedAt(o.createdAt);
-      this.setUpdatedAt(o.updatedAt);
-
-      return this;
-    }
-
-    /**
-     * @override
-     */
-    public get(key: string): JQueryPromise<Participant> {
-      return egrid.storage.get<Participant>(Participant.type, this.projectKey, key)
-        .then((participant: Participant) => {
-          return this.load(participant);
+    public get(key : string) : JQueryPromise<Participant> {
+      return storage.get<Participant>(TYPE, this.projectKey, key)
+        .then((data : SerializedParticipantData) => {
+          return load(data);
         });
     }
 
-    /**
-     * POST/PUT リクエストを発行します。
-     *
-     * @override
-     * @throws  Error
-     */
+    public static query(projectKey : string) : JQueryPromise<Participant[]> {
+      return storage.retrieve<Participant>(TYPE, projectKey);
+    }
+
     public save(): JQueryPromise<Participant> {
-      return egrid.storage.add<Participant>(this, Participant.type, this.projectKey, this.key);
+      return storage.add<Participant>(this, TYPE, this.projectKey, this.key);
     }
 
     public remove() : JQueryPromise<boolean> {
-      return egrid.storage.remove<Participant>(Participant.type, this.projectKey, this.key);
+      return storage.remove<Participant>(TYPE, this.projectKey, this.key);
     }
   }
 }

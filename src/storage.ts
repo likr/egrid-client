@@ -1,7 +1,7 @@
 /// <reference path="typings/jquery/jquery.d.ts"/>
-/// <reference path="interfaces/ientity.ts"/>
+/// <reference path="entity.ts"/>
 
-module egrid.utils {
+module egrid.model {
   export var API_URL_BASE = '';
 
   class Uri {
@@ -114,7 +114,7 @@ module egrid.utils {
           .then((response) => response, (...reasons) => reasons[0]);
     }
 
-    public static retrieve<T extends model.interfaces.IEntity>(name: string, projectId?: string): JQueryPromise<T[]> {
+    public static retrieve<T extends StorableData>(name: string, projectId?: string): JQueryPromise<T[]> {
       var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); }) + 's';
 
       return $.ajax({
@@ -154,7 +154,7 @@ module egrid.utils {
       this.flush<any>();
     }
 
-    private flush<T extends model.interfaces.IEntity>(): JQueryPromise<boolean> {
+    private flush<T extends StorableData>(): JQueryPromise<boolean> {
       var $deferred = $.Deferred();
       var $promises = [];
       var n = Storage.outOfService;
@@ -197,7 +197,7 @@ module egrid.utils {
     /**
      * @throws Error Out of memory
      */
-    public add<T extends model.interfaces.IEntity>(value: T, name: string, projectId?: string, participantId?: string): JQueryPromise<T> {
+    public add<T extends StorableData>(value: T, name: string, projectId?: string, participantId?: string): JQueryPromise<T> {
       var $deferred = $.Deferred();
       var $promise;
       var alreadyStored = !!value.key;
@@ -268,7 +268,7 @@ module egrid.utils {
       return $deferred.promise();
     }
 
-    public get<T extends model.interfaces.IEntity>(name: string, projectId: string, participantId?: string): JQueryPromise<T> {
+    public get<T extends StorableData>(name: string, projectId: string, participantId?: string): JQueryPromise<T> {
       var $deferred = $.Deferred();
       var $promise = Api.get<T>(name, projectId, participantId);
 
@@ -322,12 +322,12 @@ module egrid.utils {
       return $deferred.promise();
     }
 
-    public remove<T extends model.interfaces.IEntity>(name: string, projectId: string, participantId?: string): JQueryPromise<boolean> {
+    public remove<T extends StorableData>(name: string, projectId: string, participantId?: string): JQueryPromise<boolean> {
       // TODO: localStorage から削除する
       return Api.remove(name, projectId, participantId);
     }
 
-    public retrieve<T extends model.interfaces.IEntity>(name: string, projectId?: string): JQueryPromise<any> {
+    public retrieve<T extends StorableData>(name: string, projectId?: string): JQueryPromise<any> {
       var $deferred = $.Deferred();
       var $promise = Api.retrieve<T>(name, projectId);
 
@@ -406,8 +406,6 @@ module egrid.utils {
         }, {});
     }
   }
-}
 
-module egrid {
-  export var storage = new egrid.utils.Storage();
+  export var storage = new Storage();
 }
