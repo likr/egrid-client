@@ -1,5 +1,4 @@
-/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
-/// <reference path="collection-base.ts"/>
+/// <reference path="typings/jquery/jquery.d.ts"/>
 /// <reference path="value-object.ts"/>
 /// <reference path="project.ts"/>
 
@@ -84,8 +83,9 @@ module egrid.model {
      * @override
      */
     public get(key: string): JQueryPromise<Participant> {
-      return egrid.storage.get<Participant>(Participant.type, this.projectKey, key).then((participant: Participant) => {
-          this.load(participant);
+      return egrid.storage.get<Participant>(Participant.type, this.projectKey, key)
+        .then((participant: Participant) => {
+          return this.load(participant);
         });
     }
 

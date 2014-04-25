@@ -1,7 +1,7 @@
-/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
-/// <reference path="collection-base.ts"/>
+/// <reference path="typings/jquery/jquery.d.ts"/>
 /// <reference path="value-object.ts"/>
 /// <reference path="project.ts"/>
+
 
 module egrid.model {
   export interface SemProjectData {
@@ -79,7 +79,7 @@ module egrid.model {
      */
     public get(key: string): JQueryPromise<SemProject> {
       return egrid.storage.get<SemProject>(SemProject.type, this.projectKey, key).then((semProject: SemProject) => {
-          this.load(semProject);
+          return this.load(semProject);
         });
     }
 
@@ -93,7 +93,7 @@ module egrid.model {
       var $deferred = $.Deferred();
       var key = this.key;
 
-      return $.ajax({
+      $.ajax({
           url: key ? this.url(key) : SemProject.listUrl(this.projectKey),
           type: key ? 'PUT' : 'POST',
           contentType: 'application/json',

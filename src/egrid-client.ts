@@ -1,2 +1,11 @@
+/// <reference path="collaborator.ts"/>
+/// <reference path="collaborator-collection.ts"/>
+/// <reference path="participant.ts"/>
+/// <reference path="participant-collection.ts"/>
+/// <reference path="participant-grid.ts"/>
 /// <reference path="project.ts"/>
 /// <reference path="project-collection.ts"/>
+/// <reference path="project-grid.ts"/>
+/// <reference path="sem-project.ts"/>
+/// <reference path="sem-project-collection.ts"/>
+/// <reference path="sem-project-questionnaire.ts"/>

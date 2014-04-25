@@ -1,5 +1,7 @@
-/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="typings/jquery/jquery.d.ts"/>
+/// <reference path="collection-base.ts"/>
 /// <reference path="entity.ts"/>
+/// <reference path="sem-project.ts"/>
 
 module egrid.model {
   export class SemProjectCollection extends CollectionBase<SemProject> {

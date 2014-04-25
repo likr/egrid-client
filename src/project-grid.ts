@@ -1,7 +1,8 @@
-/// <reference path="../ts-definitions/Definitelytyped/jquery/jquery.d.ts"/>
+/// <reference path="typings/jquery/jquery.d.ts"/>
 /// <reference path="interfaces/ientity.ts"/>
 /// <reference path="project-grid-node.ts"/>
 /// <reference path="project-grid-link.ts"/>
+/// <reference path="storage.ts"/>
 
 module egrid.model {
   export interface ProjectGridData {

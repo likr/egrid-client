@@ -1,4 +1,4 @@
-/// <reference path="../ts-definitions/Definitelytyped/jquery/jquery.d.ts"/>
+/// <reference path="typings/jquery/jquery.d.ts"/>
 
 module egrid.model {
   export interface QuestionnaireItem {

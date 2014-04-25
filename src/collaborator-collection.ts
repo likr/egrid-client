@@ -1,4 +1,6 @@
-/// <reference path="../ts-definitions/DefinitelyTyped/jquery/jquery.d.ts"/>
+/// <reference path="typings/jquery/jquery.d.ts"/>
+/// <reference path="collaborator.ts"/>
+/// <reference path="collection-base.ts"/>
 /// <reference path="entity.ts"/>
 
 module egrid.model {
