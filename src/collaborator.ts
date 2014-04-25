@@ -71,7 +71,7 @@ module egrid.model {
       return storage.add<Collaborator>(this, Collaborator.type, this.projectKey, this.key);
     }
 
-    public remove() : JQueryPromise<boolean> {
+    public remove() : JQueryPromise<void> {
       return storage.remove<Collaborator>(Collaborator.type, this.projectKey, this.key);
     }
   }

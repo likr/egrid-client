@@ -61,7 +61,7 @@ module egrid.model {
       return storage.add<Participant>(this, TYPE, this.projectKey, this.key);
     }
 
-    public remove() : JQueryPromise<boolean> {
+    public remove() : JQueryPromise<void> {
       return storage.remove<Participant>(TYPE, this.projectKey, this.key);
     }
   }

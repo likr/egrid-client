@@ -72,8 +72,13 @@ module egrid.model {
         });
     }
 
-    public remove() : JQueryPromise<boolean> {
-      return storage.remove<Project>(TYPE, this.key);
+    public remove() : JQueryPromise<void> {
+      return storage.remove<Project>(TYPE, this.key)
+        .then(() => {
+          (<any>this).key_ = undefined;
+          (<any>this).createdAt_ = undefined;
+          (<any>this).updatedAt_ = undefined;
+        });
     }
   }
 }

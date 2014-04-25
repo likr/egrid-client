@@ -31,5 +31,9 @@ module egrid.model {
     public get updatedAt() : Date {
       return this.updatedAt_;
     }
+
+    public persisted() : boolean {
+      return !!this.key;
+    }
   }
 }

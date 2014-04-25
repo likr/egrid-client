@@ -33,6 +33,7 @@ describe('test Project', function() {
     expect(project.updatedAt).to.be(undefined);
     expect(project.name).to.be('Test Project');
     expect(project.note).to.be('This is a memo');
+    expect(project.persisted()).to.be(false);
   });
 
   it('test writing properties of Project', function() {
@@ -238,6 +239,8 @@ describe('test Project', function() {
       note: 'This is a test'
     });
 
+    expect(project.persisted()).to.be(false);
+
     project.save()
       .then(function() {
         expect(project.key).to.be('newProject');
@@ -245,6 +248,7 @@ describe('test Project', function() {
         expect(project.note).to.be('This is a test');
         expect(project.createdAt.getTime()).to.be(new Date(2014, 1, 19).getTime());
         expect(project.updatedAt.getTime()).to.be(new Date(2014, 2, 19).getTime());
+        expect(project.persisted()).to.be(true);
 
         done();
       });
@@ -263,6 +267,34 @@ describe('test Project', function() {
       key: 'newProject',
       name: 'New Project',
       note: 'This is a test',
+      createdAt: new Date(2014, 1, 19),
+      updatedAt: new Date(2014, 2, 19)
+    }));
+  });
+
+  it('test remove Project', function(done) {
+    egrid.model.Project.get('1')
+      .then(function (project) {
+        expect(project.persisted()).to.be(true);
+
+        project.remove()
+          .then(function() {
+            expect(project.persisted()).to.be(false);
+
+            done();
+          });
+
+        var request = requests[1];
+        expect(request.method).to.be('DELETE');
+        expect(request.url).to.be('/api/projects/1');
+        request.respond(200, {}, 'ok');
+      });
+
+    var request = requests[0];
+    request.respond(200, {}, JSON.stringify({
+      key: '1',
+      name: 'Test Project',
+      note: 'Project for test',
       createdAt: new Date(2014, 1, 19),
       updatedAt: new Date(2014, 2, 19)
     }));

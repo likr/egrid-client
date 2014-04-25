@@ -104,7 +104,7 @@ module egrid.model {
     }
 
     // HTTP メソッド名にあわせたいが、delete は予約されていた
-    public static remove(name: string, projectId: string, participantId?: string): JQueryPromise<any> {
+    public static remove(name: string, projectId: string, participantId?: string): JQueryPromise<void> {
       var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); });
 
       return $.ajax({
@@ -322,7 +322,7 @@ module egrid.model {
       return $deferred.promise();
     }
 
-    public remove<T extends StorableData>(name: string, projectId: string, participantId?: string): JQueryPromise<boolean> {
+    public remove<T extends StorableData>(name: string, projectId: string, participantId?: string): JQueryPromise<void> {
       // TODO: localStorage から削除する
       return Api.remove(name, projectId, participantId);
     }
