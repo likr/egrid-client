@@ -6,12 +6,12 @@ module egrid.model {
   var TYPE = 'Project';
 
 
-  function load(obj : SerializedProjectData) : Project {
-    var project : any = new Project(obj);
-    project.key_ = obj.key;
-    project.createdAt_ = new Date(obj.createdAt);
-    project.updatedAt_ = new Date(obj.updatedAt);
-    return project;
+  function load(obj : SerializedProjectData, project? : Project) : Project {
+    var loaded : any = project === undefined ? new Project(obj) : project;
+    loaded.key_ = obj.key;
+    loaded.createdAt_ = new Date(obj.createdAt);
+    loaded.updatedAt_ = new Date(obj.updatedAt);
+    return loaded;
   }
 
 
@@ -65,10 +65,10 @@ module egrid.model {
      *
      * @throws  Error
      */
-    public save(): JQueryPromise<Project> {
+    public save(): JQueryPromise<void> {
       return storage.add<Project>(this, TYPE, this.key)
         .done((v : SerializedProjectData) => {
-          load(v);
+          load(v, this);
         });
     }
 

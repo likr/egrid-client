@@ -57,7 +57,7 @@ module egrid.model {
       return storage.retrieve<Participant>(TYPE, projectKey);
     }
 
-    public save(): JQueryPromise<Participant> {
+    public save(): JQueryPromise<void> {
       return storage.add<Participant>(this, TYPE, this.projectKey, this.key);
     }
 

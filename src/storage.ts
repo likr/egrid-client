@@ -197,7 +197,7 @@ module egrid.model {
     /**
      * @throws Error Out of memory
      */
-    public add<T extends StorableData>(value: T, name: string, projectId?: string, participantId?: string): JQueryPromise<T> {
+    public add<T extends StorableData>(value: T, name: string, projectId?: string, participantId?: string): JQueryPromise<void> {
       var $deferred = $.Deferred();
       var $promise;
       var alreadyStored = !!value.key;
@@ -265,7 +265,7 @@ module egrid.model {
             $deferred.reject(reasons[0]);
           });
 
-      return $deferred.promise();
+      return <any>$deferred.promise();
     }
 
     public get<T extends StorableData>(name: string, projectId: string, participantId?: string): JQueryPromise<T> {

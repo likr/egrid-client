@@ -38,7 +38,7 @@ module egrid.model {
       this.note = obj.note;
     }
 
-    save() : JQueryPromise<ProjectGrid> {
+    save() : JQueryPromise<void> {
       return storage.add<ProjectGrid>(this, ProjectGrid.type, this.projectKey, this.key);
     }
 

@@ -27,7 +27,7 @@ module egrid.model {
       this.links = obj.links;
     }
 
-    update() : JQueryPromise<ParticipantGrid> {
+    update() : JQueryPromise<void> {
       return storage.add<ParticipantGrid>(this, ParticipantGrid.type, this.projectKey, this.key);
     }
 

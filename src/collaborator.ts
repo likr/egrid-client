@@ -67,7 +67,7 @@ module egrid.model {
      *
      * @throws  Error
      */
-    public save(): JQueryPromise<Collaborator> {
+    public save(): JQueryPromise<void> {
       return storage.add<Collaborator>(this, Collaborator.type, this.projectKey, this.key);
     }
 

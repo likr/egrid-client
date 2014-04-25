@@ -230,6 +230,41 @@ describe('test Project', function() {
     expect(request.requestHeaders['Content-Type']).to.be('application/json');
 
     clock.tick(10000);
+  });
 
+  it('test save Project', function(done) {
+    var project = new egrid.model.Project({
+      name: 'New Project',
+      note: 'This is a test'
+    });
+
+    project.save()
+      .then(function() {
+        expect(project.key).to.be('newProject');
+        expect(project.name).to.be('New Project');
+        expect(project.note).to.be('This is a test');
+        expect(project.createdAt.getTime()).to.be(new Date(2014, 1, 19).getTime());
+        expect(project.updatedAt.getTime()).to.be(new Date(2014, 2, 19).getTime());
+
+        done();
+      });
+
+    expect(requests).to.have.length(1);
+    var request = requests[0];
+    expect(request.method).to.be('POST');
+    expect(request.url).to.be('/api/projects');
+
+    expect(JSON.parse(request.requestBody)).to.be.eql({
+      name: 'New Project',
+      note: 'This is a test'
+    });
+
+    request.respond(200, {}, JSON.stringify({
+      key: 'newProject',
+      name: 'New Project',
+      note: 'This is a test',
+      createdAt: new Date(2014, 1, 19),
+      updatedAt: new Date(2014, 2, 19)
+    }));
   });
 });
