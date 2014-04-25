@@ -22,6 +22,38 @@ describe('test Project', function() {
     clock.restore();
   });
 
+  it('test new Project', function() {
+    var project = new egrid.model.Project({
+      name: 'Test Project',
+      note: 'This is a memo'
+    });
+
+    expect(project.key).to.be(undefined);
+    expect(project.createdAt).to.be(undefined);
+    expect(project.updatedAt).to.be(undefined);
+    expect(project.name).to.be('Test Project');
+    expect(project.note).to.be('This is a memo');
+  });
+
+  it('test writing properties of Project', function() {
+    var project = new egrid.model.Project();
+
+    project.name = 'Test Project';
+    project.note = 'This is a memo';
+
+    expect(project.name).to.be('Test Project');
+    expect(project.note).to.be('This is a memo');
+    expect(function() {
+      project.key = 'key';
+    }).to.throwError();
+    expect(function() {
+      project.createdAt = new Date();
+    }).to.throwError();
+    expect(function() {
+      project.updatedAt = new Date();
+    }).to.throwError();
+  });
+
   it('test get Project', function(done) {
     var projectData = {
       key: '1',
