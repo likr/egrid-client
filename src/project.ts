@@ -5,14 +5,15 @@
 /// <reference path="value-object.ts"/>
 
 module egrid.model {
+  var TYPE = 'Project';
+
   export interface ProjectData {
     name: string;
     note: string;
   }
 
 
-  interface ApiProjectData extends ProjectData {
-    key: string;
+  interface SerializedProjectData extends ProjectData, interfaces.IEntity {
     createdAt: string;
     updatedAt: string;
   }
@@ -21,74 +22,56 @@ module egrid.model {
   /**
   * @class Project
   */
-  export class Project extends Entity {
-    private createdAt_: ValueObject<Date>;
-    private updatedAt_: ValueObject<Date>;
+  export class Project implements ProjectData, interfaces.IEntity {
+    private key_ : string;
+    private createdAt_ : Date;
+    private updatedAt_ : Date;
 
     public name: string;
     public note: string;
 
-    public static type: string = 'Project';
-
     constructor(obj? : ProjectData) {
-      super();
-
       if (obj) {
         this.name = obj.name;
         this.note = obj.note;
       }
     }
 
+    public get key() : string {
+      return this.key_;
+    }
+
     public get createdAt() : Date {
-      return this.createdAt_ ? this.createdAt_.value : null;
+      return this.createdAt_;
     }
 
     public get updatedAt() : Date {
-      return this.updatedAt_ ? this.updatedAt_.value : null;
+      return this.updatedAt_;
     }
 
-    // Accessors は同じ Accessibility を持っていなければいけないのでメソッドを用意する
-    private setCreatedAt(date: Date) : void {
-      if (!this.createdAt_)
-        this.createdAt_ = new ValueObject<Date>(date);
-    }
-
-    private setUpdatedAt(date: Date) : void {
-      if (!this.updatedAt_)
-        this.updatedAt_ = new ValueObject<Date>(date);
-    }
-
-    /**
-     * Object から Project に変換します。
-     *
-     * @override
-     * @param   object
-     */
-    public load(o: any): Project {
-      this.key = o.key;
-
+    private load(o : SerializedProjectData) : Project {
+      this.key_ = o.key;
       this.name = o.name;
       this.note = o.note;
-
-      this.setCreatedAt(new Date(o.createdAt));
-      this.setUpdatedAt(new Date(o.updatedAt));
+      this.createdAt_ = new Date(o.createdAt);
+      this.updatedAt_ = new Date(o.updatedAt);
 
       return this;
     }
 
-    public static load(o : any) : Project {
+    private static load(o : any) : Project {
       return new Project().load(o);
     }
 
     public static get(key : string) : JQueryPromise<Project> {
-      return egrid.storage.get<Project>(Project.type, key)
+      return egrid.storage.get<Project>(TYPE, key)
         .then((data : any) => {
           return Project.load(data);
         });
     }
 
     public static query() : JQueryPromise<Project[]> {
-      return egrid.storage.retrieve<Project>(Project.type)
+      return egrid.storage.retrieve<Project>(TYPE)
         .then(data => {
           var result = {};
           var key
@@ -106,28 +89,14 @@ module egrid.model {
      * @throws  Error
      */
     public save(): JQueryPromise<Project> {
-      return egrid.storage.add<Project>(this, Project.type, this.key)
-        .done((v: Project) => {
-            this.load(v);
-          });
-    }
-
-    /**
-     * @override
-     */
-    public static listUrl() : string {
-      return '/api/projects';
-    }
-
-    /**
-     * @override
-     */
-    public url(key? : string) : string {
-      return Project.listUrl() + '/' + key;
+      return egrid.storage.add<Project>(this, TYPE, this.key)
+        .done((v : SerializedProjectData) => {
+          this.load(v);
+        });
     }
 
     public remove() : JQueryPromise<boolean> {
-      return egrid.storage.remove<Project>(Project.type, this.key);
+      return egrid.storage.remove<Project>(TYPE, this.key);
     }
   }
 }

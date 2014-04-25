@@ -136,7 +136,7 @@ module egrid.model {
      * @param   key   string  Project Key
      */
     public static listUrl(key? : string) : string {
-      return Project.listUrl() + '/' + key + '/sem-projects';
+      return '/api/projects/' + key + '/sem-projects';
     }
 
     /**

@@ -71,22 +71,6 @@ module egrid.model {
       return egrid.storage.add<Collaborator>(this, Collaborator.type, this.projectKey, this.key);
     }
 
-    /**
-     * @override
-     * @param   key   string  Project Key
-     */
-    public static listUrl(key? : string) : string {
-      return Project.listUrl() + '/' + key + '/collaborators';
-    }
-
-    /**
-     * @override
-     * @param   key   string  Collaborator Key
-     */
-    public url(key? : string) : string {
-      return Collaborator.listUrl(this.projectKey) + '/' + key;
-    }
-
     public remove() : JQueryPromise<boolean> {
       return egrid.storage.remove<Collaborator>(Collaborator.type, this.projectKey, this.key);
     }

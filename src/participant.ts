@@ -99,22 +99,6 @@ module egrid.model {
       return egrid.storage.add<Participant>(this, Participant.type, this.projectKey, this.key);
     }
 
-    /**
-     * @override
-     * @param   key   string  Project Key
-     */
-    public static listUrl(key? : string) : string {
-      return Project.listUrl() + '/' + key + '/participants';
-    }
-
-    /**
-     * @override
-     * @param   key   string  Participant Key
-     */
-    public url(key? : string) : string {
-      return Participant.listUrl(this.projectKey) + '/' + key;
-    }
-
     public remove() : JQueryPromise<boolean> {
       return egrid.storage.remove<Participant>(Participant.type, this.projectKey, this.key);
     }
