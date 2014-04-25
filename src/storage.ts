@@ -2,6 +2,8 @@
 /// <reference path="interfaces/ientity.ts"/>
 
 module egrid.utils {
+  export var API_URL_BASE = '';
+
   class Uri {
     public static collaborators(projectId: string): string {
       return '/api/projects/:projectId/collaborators'.replace(':projectId', projectId);
@@ -30,11 +32,11 @@ module egrid.utils {
     }
 
     public static projects(): string {
-      return '/api/projects';
+      return API_URL_BASE + '/api/projects';
     }
 
     public static project(projectId: string): string {
-      return '/api/projects/:projectId'.replace(':projectId', projectId);
+      return API_URL_BASE + '/api/projects/:projectId'.replace(':projectId', projectId);
     }
 
     public static projectGrids(projectId: string): string {

@@ -1,36 +1,35 @@
 module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-    ts: {
-      dev: {
-        out: 'egrid-client.js',
+    typescript: {
+      base: {
         src: ['src/egrid-client.ts'],
+        dest: 'egrid-client.js',
         options: {
-          sourceMap: false,
-          target: 'es5',
-        },
-      },
-      prod: {
-        out: 'egrid-client.min.js',
-        src: ['src/egrid-client.ts'],
-        options: {
-          removeComments: true,
-          sourceMap: false,
-          target: 'es5',
-        },
+         module: 'commonjs',
+         target: 'es5'
+        }
       }
+    },
+    mocha_phantomjs: {
+      options: {
+        'reporter': 'dot'
+      },
+      all: ['test/**/*.html']
     },
     watch: {
       scripts: {
         files: ['src/**/*.ts'],
-        tasks: ['ts:dev'],
+        tasks: ['typescript'],
       }
     },
   });
 
   grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-ts');
+  grunt.loadNpmTasks('grunt-typescript');
+  grunt.loadNpmTasks('grunt-mocha-phantomjs');
 
   grunt.registerTask('default', ['watch']);
-  grunt.registerTask('compile', ['ts:prod']);
+  grunt.registerTask('compile', ['typescript']);
+  grunt.registerTask('test', ['mocha_phantomjs']);
 };

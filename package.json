@@ -14,9 +14,12 @@
   "devDependencies": {
     "grunt": "~0.4.4",
     "grunt-contrib-watch": "~0.6.1",
-    "grunt-ts": "~1.10.0",
     "grunt-typescript": "~0.3.0",
-    "node-localstorage": "~0.3.4",
-    "jquery": "~2.1.0"
+    "jquery": "~2.1.0",
+    "mocha": "~1.18.2",
+    "sinon": "~1.9.1",
+    "mocha-phantomjs": "~3.3.2",
+    "grunt-mocha-phantomjs": "~0.4.3",
+    "expect.js": "~0.3.1"
   }
 }
