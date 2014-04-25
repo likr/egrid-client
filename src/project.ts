@@ -80,19 +80,23 @@ module egrid.model {
       return new Project().load(o);
     }
 
-    /**
-     * @override
-     */
-    public get(key: string): JQueryPromise<Project> {
+    public static get(key : string) : JQueryPromise<Project> {
       return egrid.storage.get<Project>(Project.type, key)
         .then((data : any) => {
-          return this.load(data);
+          return Project.load(data);
         });
     }
 
-    public static get(key : string) : JQueryPromise<Project> {
-      var project = new Project();
-      return project.get(key);
+    public static query() : JQueryPromise<Project[]> {
+      return egrid.storage.retrieve<Project>(Project.type)
+        .then(data => {
+          var result = {};
+          var key
+          for (key in data) {
+            result[key] = Project.load(data[key]);
+          }
+          return result;
+        });
     }
 
     /**

@@ -72,7 +72,7 @@ describe('test Project', function() {
 
     expect(localStorage['lindo_de_remedio']).to.be(undefined);
 
-    egrid.model.ProjectCollection.query()
+    egrid.model.Project.query()
       .then(function(projects) {
         expect(projects[1].key).to.be('1');
         expect(projects[1].name).to.be('Test Project 1');
