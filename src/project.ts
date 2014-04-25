@@ -70,19 +70,29 @@ module egrid.model {
       this.name = o.name;
       this.note = o.note;
 
-      this.setCreatedAt(o.createdAt);
-      this.setUpdatedAt(o.updatedAt);
+      this.setCreatedAt(new Date(o.createdAt));
+      this.setUpdatedAt(new Date(o.updatedAt));
 
       return this;
+    }
+
+    public static load(o : any) : Project {
+      return new Project().load(o);
     }
 
     /**
      * @override
      */
     public get(key: string): JQueryPromise<Project> {
-      return egrid.storage.get<Project>(Project.type, key).then((project: Project) => {
-          return this.load(project);
+      return egrid.storage.get<Project>(Project.type, key)
+        .then((data : any) => {
+          return this.load(data);
         });
+    }
+
+    public static get(key : string) : JQueryPromise<Project> {
+      var project = new Project();
+      return project.get(key);
     }
 
     /**
