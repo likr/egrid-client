@@ -1,5 +1,3 @@
-/// <reference path="typings/jquery/jquery.d.ts"/>
-
 module egrid.model {
   export interface StorableData {
     key : string;

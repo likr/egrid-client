@@ -1,6 +1,5 @@
 /// <reference path="typings/jquery/jquery.d.ts"/>
-/// <reference path="storage.ts"/>
-/// <reference path="entity.ts"/>
+/// <reference path="./storage/storage.ts"/>
 
 module egrid.model {
   var TYPE = 'Project';
