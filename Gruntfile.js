@@ -8,7 +8,8 @@ module.exports = function(grunt) {
         options: {
           module: 'commonjs',
           declaration: true,
-          target: 'es5'
+          target: 'es5',
+          noImplicitAny: true
         }
       }
     },

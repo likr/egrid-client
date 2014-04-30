@@ -77,7 +77,7 @@ export function get<T>(name: string, projectId: string, participantId?: string):
   var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); });
 
   return $.ajax({
-      url: participantId ? Uri[n](projectId, participantId) : Uri[n](projectId),
+      url: participantId ? (<any>Uri)[n](projectId, participantId) : (<any>Uri)[n](projectId),
       type: 'GET',
       contentType: 'application/json',
     })
@@ -91,7 +91,7 @@ export function post<T>(data: T, name: string, projectId?: string): JQueryPromis
   var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); }) + 's';
 
   return $.ajax({
-      url: projectId ? Uri[n](projectId) : Uri[n](),
+      url: projectId ? (<any>Uri)[n](projectId) : (<any>Uri)[n](),
       type: 'POST',
       contentType: 'application/json',
       data: JSON.stringify(data),
@@ -106,7 +106,7 @@ export function put<T>(data: T, name: string, projectId: string, participantId?:
   var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); });
 
   return $.ajax({
-      url: participantId ? Uri[n](projectId, participantId) : Uri[n](projectId),
+      url: participantId ? (<any>Uri)[n](projectId, participantId) : (<any>Uri)[n](projectId),
       type: 'PUT',
       contentType: 'application/json',
       data: JSON.stringify(data),
@@ -121,7 +121,7 @@ export function remove(name: string, projectId: string, participantId?: string):
   var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); });
 
   return $.ajax({
-      url: participantId ? Uri[n](projectId, participantId) : Uri[n](projectId),
+      url: participantId ? (<any>Uri)[n](projectId, participantId) : (<any>Uri)[n](projectId),
       type: 'DELETE',
     })
       .then((response) => response, (...reasons) => reasons[0]);
@@ -132,7 +132,7 @@ export function retrieve<T extends StorableData>(name: string, projectId?: strin
   var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); }) + 's';
 
   return $.ajax({
-      url: projectId ? Uri[n](projectId) : Uri[n](),
+      url: projectId ? (<any>Uri)[n](projectId) : (<any>Uri)[n](),
       type: 'GET',
       contentType: 'application/json',
     })
@@ -140,7 +140,7 @@ export function retrieve<T extends StorableData>(name: string, projectId?: strin
         return JSON.parse(r);
       })
     .then((values: T[]) => {
-        var o = {};
+        var o: any = {};
 
         for (var i = 0, l = values.length; i < l; i++) {
           o[values[i].key] = values[i];

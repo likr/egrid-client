@@ -11,14 +11,14 @@ flush();
 
 function flush<T extends StorableData>(): JQueryPromise<void> {
   var $deferred = $.Deferred();
-  var $promises = [];
+  var $promises: any = [];
   var n = OUT_OF_SERVICE;
 
   if (STORE[n]) {
     for (var type in STORE[n]) {
       if (STORE[n].hasOwnProperty(type)) {
         var v = STORE[n][type];
-        var w;
+        var w: any;
 
         for (var unsaved in v) {
           if (v.hasOwnProperty(unsaved)) {
@@ -40,7 +40,7 @@ function flush<T extends StorableData>(): JQueryPromise<void> {
   }
 
   $.when.apply($, $promises)
-    .then((v) => {
+    .then((v: any) => {
         if (Array.isArray(v) && !v.length) {
           $deferred.reject(false);
         } else {
@@ -58,7 +58,7 @@ function flush<T extends StorableData>(): JQueryPromise<void> {
 
 export function add<T extends StorableData>(value: T, name: string, projectId?: string, participantId?: string): JQueryPromise<void> {
   var $deferred = $.Deferred();
-  var $promise;
+  var $promise: any;
   var alreadyStored = !!value.key;
 
   if (alreadyStored) {
