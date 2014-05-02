@@ -22,17 +22,13 @@ module egrid.model {
     constructor(obj : ParticipantGridData) {
       super();
       this.projectKey = obj.projectKey;
-      this.participantKey = this.key = obj.participantKey;
+      this.participantKey = (<any>this).key_ = obj.participantKey;
       this.nodes = obj.nodes;
       this.links = obj.links;
     }
 
     update() : JQueryPromise<void> {
-      return storage.add<ParticipantGrid>(this, ParticipantGrid.type, this.projectKey, this.key);
-    }
-
-    private url() : string {
-      return ParticipantGrid.url(this.projectKey, this.key);
+      return storage.add<ParticipantGrid>(this, ParticipantGrid.type, this.projectKey, this.participantKey);
     }
 
     static get(projectKey : string, participantKey : string) : JQueryPromise<ParticipantGrid> {
@@ -40,10 +36,6 @@ module egrid.model {
         .then((pg: ParticipantGrid) => {
             return new ParticipantGrid(pg);
           });
-    }
-
-    private static url(projectKey : string, participantKey : string) : string {
-      return '/api/projects/' + projectKey + '/participants/' + participantKey + '/grid';
     }
   }
 }

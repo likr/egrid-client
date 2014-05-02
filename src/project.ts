@@ -50,10 +50,10 @@ module egrid.model {
     public static query() : JQueryPromise<Project[]> {
       return storage.retrieve<Project>(TYPE)
         .then(data => {
-          var result :any = {};
+          var result: Project[] = [];
           var key: string;
           for (key in data) {
-            result[key] = load(data[key]);
+            result.push(load(data[key]));
           }
           return result;
         });

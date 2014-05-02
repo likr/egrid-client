@@ -46,15 +46,23 @@ module egrid.model {
       }
     }
 
-    public get(key : string) : JQueryPromise<Participant> {
-      return storage.get<Participant>(TYPE, this.projectKey, key)
+    public static get(projectKey: string, key: string) : JQueryPromise<Participant> {
+      return storage.get<Participant>(TYPE, projectKey, key)
         .then((data : SerializedParticipantData) => {
           return load(data);
         });
     }
 
     public static query(projectKey : string) : JQueryPromise<Participant[]> {
-      return storage.retrieve<Participant>(TYPE, projectKey);
+      return storage.retrieve<Participant>(TYPE, projectKey)
+        .then(data => {
+          var result: Participant[] = [];
+          var key: string;
+          for (key in data) {
+            result.push(load(data[key]));
+          }
+          return result;
+        });
     }
 
     public save(): JQueryPromise<void> {

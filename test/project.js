@@ -150,21 +150,21 @@ describe('test Project', function() {
 
     egrid.model.Project.query()
       .then(function(projects) {
-        expect(projects[1].key).to.be('1');
-        expect(projects[1].name).to.be('Test Project 1');
+        expect(projects[0].key).to.be('1');
+        expect(projects[0].name).to.be('Test Project 1');
+        expect(projects[0].note).to.be('Project for test');
+        expect(projects[0].createdAt.getTime()).to.be(new Date('2014-03-26T08:10:13Z').getTime());
+        expect(projects[0].updatedAt.getTime()).to.be(new Date('2014-03-26T08:10:13Z').getTime());
+
+        expect(projects[1].key).to.be('2');
+        expect(projects[1].name).to.be('Test Project 2');
         expect(projects[1].note).to.be('Project for test');
         expect(projects[1].createdAt.getTime()).to.be(new Date('2014-03-26T08:10:13Z').getTime());
         expect(projects[1].updatedAt.getTime()).to.be(new Date('2014-03-26T08:10:13Z').getTime());
 
-        expect(projects[2].key).to.be('2');
-        expect(projects[2].name).to.be('Test Project 2');
-        expect(projects[2].note).to.be('Project for test');
-        expect(projects[2].createdAt.getTime()).to.be(new Date('2014-03-26T08:10:13Z').getTime());
-        expect(projects[2].updatedAt.getTime()).to.be(new Date('2014-03-26T08:10:13Z').getTime());
-
         var storage = JSON.parse(localStorage.lindo_de_remedio);
-        expect(storage.Project[1]).to.be.eql(projectsData[0]);
-        expect(storage.Project[2]).to.be.eql(projectsData[1]);
+        expect(storage.Project['1']).to.be.eql(projectsData[0]);
+        expect(storage.Project['2']).to.be.eql(projectsData[1]);
 
         done();
       });
@@ -209,17 +209,17 @@ describe('test Project', function() {
 
     egrid.model.Project.query()
       .then(function(projects) {
-        expect(projects[1].key).to.be('1');
-        expect(projects[1].name).to.be('Test Project 1');
+        expect(projects[0].key).to.be('1');
+        expect(projects[0].name).to.be('Test Project 1');
+        expect(projects[0].note).to.be('Project for test');
+        expect(projects[0].createdAt.getTime()).to.be(new Date('2014-03-26T08:10:13Z').getTime());
+        expect(projects[0].updatedAt.getTime()).to.be(new Date('2014-03-26T08:10:13Z').getTime());
+
+        expect(projects[1].key).to.be('2');
+        expect(projects[1].name).to.be('Test Project 2');
         expect(projects[1].note).to.be('Project for test');
         expect(projects[1].createdAt.getTime()).to.be(new Date('2014-03-26T08:10:13Z').getTime());
         expect(projects[1].updatedAt.getTime()).to.be(new Date('2014-03-26T08:10:13Z').getTime());
-
-        expect(projects[2].key).to.be('2');
-        expect(projects[2].name).to.be('Test Project 2');
-        expect(projects[2].note).to.be('Project for test');
-        expect(projects[2].createdAt.getTime()).to.be(new Date('2014-03-26T08:10:13Z').getTime());
-        expect(projects[2].updatedAt.getTime()).to.be(new Date('2014-03-26T08:10:13Z').getTime());
 
         done();
       });

@@ -30,6 +30,11 @@ export function participant(projectId: string, participantId: string): string {
 }
 
 
+export function participantGrids(projectKey: string, participantKey: string): string {
+  return participantGrid(projectKey, participantKey);
+}
+
+
 export function participantGrid(projectId: string, participantId: string): string {
   return '/api/projects/:projectId/participants/:participantId/grid'
     .replace(':projectId', projectId)
