@@ -6,97 +6,69 @@ export var API_URL_BASE = '';
 
 
 module Uri {
-export function collaborators(projectId: string): string {
-  return '/api/projects/:projectId/collaborators'.replace(':projectId', projectId);
+export function Analysis(projectKey: string, analysisKey?: string): string {
+  var url = API_URL_BASE + '/api/projects/' + projectKey + '/analyses';
+  if (analysisKey !== undefined) {
+    url += '/' + analysisKey;
+  }
+  return url;
 }
 
 
-export function collaborator(projectId: string, participantId: string): string {
-  return '/api/projects/:projectId/collaborators/:collaboratorId'
-    .replace(':projectId', projectId)
-    .replace(':collaboratorId', participantId);
+export function Collaborator(projectKey: string, collaboratorKey?: string): string {
+  var url = API_URL_BASE + '/api/projects/' + projectKey + '/collaborators';
+  if (collaboratorKey !== undefined) {
+    url += '/' + collaboratorKey;
+  }
+  return url;
 }
 
 
-export function participants(projectId: string): string {
-  return '/api/projects/:projectId/participants'.replace(':projectId', projectId);
+export function Participant(projectKey: string, participantKey?: string): string {
+  var url = API_URL_BASE + '/api/projects/' + projectKey + '/participants';
+  if (participantKey !== undefined) {
+    url += '/' + participantKey;
+  }
+  return url;
 }
 
 
-export function participant(projectId: string, participantId: string): string {
-  return '/api/projects/:projectId/participants/:participantId'
-    .replace(':projectId', projectId)
-    .replace(':participantId', participantId);
+export function ParticipantGrid(projectKey: string, participantKey: string): string {
+  return API_URL_BASE + '/api/projects/' + projectKey + '/participants/' + participantKey + '/grid';
 }
 
 
-export function participantGrids(projectKey: string, participantKey: string): string {
-  return participantGrid(projectKey, participantKey);
+export function Project(projectKey?: string): string {
+  var url = API_URL_BASE + '/api/projects';
+  if (projectKey !== undefined) {
+    url += '/' + projectKey;
+  }
+  return url;
 }
 
 
-export function participantGrid(projectId: string, participantId: string): string {
-  return '/api/projects/:projectId/participants/:participantId/grid'
-    .replace(':projectId', projectId)
-    .replace(':participantId', participantId);
-}
-
-
-export function projects(): string {
-  return API_URL_BASE + '/api/projects';
-}
-
-
-export function project(projectId: string): string {
-  return API_URL_BASE + '/api/projects/:projectId'.replace(':projectId', projectId);
-}
-
-
-export function projectGrids(projectId: string): string {
-  return '/api/projects/:projectId/grid'.replace(':projectId', projectId);
-}
-
-
-export function projectGrid(projectId: string, projectGridId: string): string {
-  return '/api/projects/:projectId/grid/:projectGridId'
-    .replace(':projectId', projectId)
-    .replace(':projectGridId', projectGridId);
-}
-
-
-export function semProjects(projectId: string): string {
-  return '/api/projects/:projectId/sem-projects'.replace(':projectId', projectId);
-}
-
-
-export function semProject(projectId: string, participantId: string): string {
-  return '/api/projects/:projectId/sem-projects/:semProjectId'
-    .replace(':projectId', projectId)
-    .replace(':semProjectId', participantId);
+export function projectGrid(projectKey: string, analysisKey: string): string {
+  return '/api/projects/' + projectKey + '/analyses/' + analysisKey + '/grid';
 }
 }
 
 // API 通信をなんとかしてくれるはず
 export module Api {
-export function get<T>(name: string, projectId: string, participantId?: string): JQueryPromise<T> {
-  var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); });
-
+export function get<T>(name: string, projectKey: string, key?: string): JQueryPromise<T> {
   return $.ajax({
-      url: participantId ? (<any>Uri)[n](projectId, participantId) : (<any>Uri)[n](projectId),
-      type: 'GET',
-      contentType: 'application/json',
-    })
-    .then((r: string) => {
-        return JSON.parse(r);
-      });
+    url: (<any>Uri)[name](projectKey, key),
+    type: 'GET',
+    contentType: 'application/json',
+  })
+  .then((r: string) => {
+    return JSON.parse(r);
+  });
 }
 
 
-export function post<T>(data: T, name: string, projectId?: string): JQueryPromise<T> {
-  var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); }) + 's';
-
+export function post<T>(data: T, name: string, projectKey?: string): JQueryPromise<T> {
   return $.ajax({
-      url: projectId ? (<any>Uri)[n](projectId) : (<any>Uri)[n](),
+      url: (<any>Uri)[name](projectKey),
       type: 'POST',
       contentType: 'application/json',
       data: JSON.stringify(data),
@@ -107,52 +79,46 @@ export function post<T>(data: T, name: string, projectId?: string): JQueryPromis
 }
 
 
-export function put<T>(data: T, name: string, projectId: string, participantId?: string): JQueryPromise<T> {
-  var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); });
-
+export function put<T>(data: T, name: string, projectKey: string, key?: string): JQueryPromise<T> {
   return $.ajax({
-      url: participantId ? (<any>Uri)[n](projectId, participantId) : (<any>Uri)[n](projectId),
-      type: 'PUT',
-      contentType: 'application/json',
-      data: JSON.stringify(data),
-    })
-    .then((r: string) => {
-        return JSON.parse(r);
-      });
+    url: (<any>Uri)[name](projectKey, key),
+    type: 'PUT',
+    contentType: 'application/json',
+    data: JSON.stringify(data),
+  })
+  .then((r: string) => {
+    return JSON.parse(r);
+  });
 }
 
 
-export function remove(name: string, projectId: string, participantId?: string): JQueryPromise<void> {
-  var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); });
-
+export function remove(name: string, projectKey: string, key?: string): JQueryPromise<void> {
   return $.ajax({
-      url: participantId ? (<any>Uri)[n](projectId, participantId) : (<any>Uri)[n](projectId),
-      type: 'DELETE',
-    })
-      .then((response) => response, (...reasons) => reasons[0]);
+    url: (<any>Uri)[name](projectKey, key),
+    type: 'DELETE',
+  })
+  .then((response) => response, (...reasons) => reasons[0]);
 }
 
 
-export function retrieve<T extends StorableData>(name: string, projectId?: string): JQueryPromise<T[]> {
-  var n = name.replace(/^[A-Z]/, function(m) { return m.toLowerCase(); }) + 's';
-
+export function retrieve<T extends StorableData>(name: string, projectKey?: string): JQueryPromise<T[]> {
   return $.ajax({
-      url: projectId ? (<any>Uri)[n](projectId) : (<any>Uri)[n](),
-      type: 'GET',
-      contentType: 'application/json',
-    })
-    .then((r: string) => {
-        return JSON.parse(r);
-      })
-    .then((values: T[]) => {
-        var o: any = {};
+    url: (<any>Uri)[name](projectKey),
+    type: 'GET',
+    contentType: 'application/json',
+  })
+  .then((r: string) => {
+    return JSON.parse(r);
+  })
+  .then((values: T[]) => {
+    var o: any = {};
 
-        for (var i = 0, l = values.length; i < l; i++) {
-          o[values[i].key] = values[i];
-        }
+    for (var i = 0, l = values.length; i < l; i++) {
+      o[values[i].key] = values[i];
+    }
 
-        return o;
-      });
+    return o;
+  });
 }
 }
 }
