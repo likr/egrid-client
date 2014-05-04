@@ -47,8 +47,18 @@ export function Project(projectKey?: string): string {
 }
 
 
-export function projectGrid(projectKey: string, analysisKey: string): string {
+export function ProjectGrid(projectKey: string, analysisKey: string): string {
   return '/api/projects/' + projectKey + '/analyses/' + analysisKey + '/grid';
+}
+
+
+export function Questionnaire(projectKey: string, analysisKey: string): string {
+  return '/api/projects/' + projectKey + '/analyses/' + analysisKey + '/questionnaire';
+}
+
+
+export function Sem(projectKey: string, analysisKey: string): string {
+  return '/api/projects/' + projectKey + '/analyses/' + analysisKey + '/sem';
 }
 }
 

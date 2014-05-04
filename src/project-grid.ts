@@ -42,10 +42,6 @@ module egrid.model {
       return storage.add<ProjectGrid>(this, ProjectGrid.type, this.projectKey, this.key);
     }
 
-    private url() : string {
-      return ProjectGrid.url(this.projectKey, this.key);
-    }
-
     private load(obj : ApiProjectGridData) : ProjectGrid {
       this.name = obj.name;
       this.note = obj.note;
@@ -58,14 +54,10 @@ module egrid.model {
       return this;
     }
 
-    static get(projectKey : string, projectGridId? : string) : JQueryPromise<ProjectGrid> {
-      var key = projectGridId
-        ? projectGridId
-        : 'current';
-
+    static get(projectKey : string, key? : string) : JQueryPromise<ProjectGrid> {
       return storage.get<ProjectGrid>(ProjectGrid.type, projectKey, key).then((projectGrid: ApiProjectGridData) => {
-          return ProjectGrid.load(projectGrid);
-        });
+        return ProjectGrid.load(projectGrid);
+      });
     }
 
     static query(projectKey : string) : JQueryPromise<ProjectGrid> {
@@ -77,14 +69,6 @@ module egrid.model {
         projectKey: obj.projectKey,
       });
       return projectGrid.load(obj);
-    }
-
-    private static url(projectKey : string, projectGridKey? : string) : string {
-      if (projectGridKey) {
-        return '/api/projects/' + projectKey + '/grid/' + projectGridKey;
-      } else {
-        return '/api/projects/' + projectKey + '/grid';
-      }
     }
   }
 }
