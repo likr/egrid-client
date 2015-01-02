@@ -4,7 +4,7 @@
 module egrid.model {
 export class Questionnaire extends Entity {
   projectKey: string;
-  items: string[]
+  formUrl: string;
 
   save(): JQueryPromise<void> {
     return storage.add<Questionnaire>(this, 'Questionnaire', this.projectKey, this.key);
