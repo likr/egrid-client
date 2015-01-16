@@ -5,6 +5,7 @@ module egrid.model {
 export class Questionnaire extends Entity {
   projectKey: string;
   formUrl: string;
+  sheetUrl: string;
 
   save(): JQueryPromise<void> {
     return storage.add<Questionnaire>(this, 'Questionnaire', this.projectKey, this.key);
@@ -17,6 +18,7 @@ export class Questionnaire extends Entity {
         questionnaire.key_ = data.key;
         questionnaire.projectKey = data.projectKey;
         questionnaire.formUrl = data.formUrl;
+        questionnaire.sheetUrl = data.sheetUrl;
         return questionnaire;
       });
   }

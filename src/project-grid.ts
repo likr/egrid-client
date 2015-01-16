@@ -1,6 +1,7 @@
 /// <reference path="typings/jquery/jquery.d.ts"/>
 /// <reference path="project-grid-node.ts"/>
 /// <reference path="project-grid-link.ts"/>
+/// <reference path="project-grid-group.ts"/>
 /// <reference path="storage/storage.ts"/>
 
 module egrid.model {
@@ -8,6 +9,7 @@ module egrid.model {
     projectKey : string;
     nodes? : ProjectGridNodeData[];
     links? : ProjectGridLinkData[];
+    groups? : ProjectGridGroupData[];
     name? : string;
     note? : string;
   }
@@ -26,6 +28,7 @@ module egrid.model {
     projectKey : string;
     nodes : ProjectGridNodeData[];
     links : ProjectGridLinkData[];
+    groups : ProjectGridGroupData[];
     public static type : string = 'ProjectGrid';
 
     constructor(obj : ProjectGridData) {
@@ -34,6 +37,7 @@ module egrid.model {
       this.projectKey = obj.projectKey;
       this.nodes = obj.nodes;
       this.links = obj.links;
+      this.groups = obj.groups;
       this.name = obj.name;
       this.note = obj.note;
     }
@@ -48,6 +52,7 @@ module egrid.model {
       this.projectKey = obj.projectKey;
       this.nodes = obj.nodes;
       this.links = obj.links;
+      this.groups = obj.groups;
       (<any>this).key_ = obj.key;
       (<any>this).createdAt_ = new Date(obj.createdAt);
       (<any>this).updatedAt_ = new Date(obj.updatedAt);
