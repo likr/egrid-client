@@ -12,7 +12,7 @@
     "**/.*",
     "Gruntfile.js",
     "bower_components",
-    "egrid-client-d.ts",
+    "egrid-client.d.ts",
     "node_modules",
     "package.json",
     "src",
