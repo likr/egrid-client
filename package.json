@@ -1,7 +1,7 @@
 {
   "name": "egrid-client",
-  "version": "0.0.0",
-  "description": "",
+  "version": "0.0.1",
+  "description": "JavaScript client for E-Grid API",
   "main": "egrid-client.js",
   "directories": {
     "test": "test"
@@ -9,17 +9,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "BSD-2-Clause",
+  "author": "Yosuke ONOUE <onoue@likr-lab.com>",
+  "license": "MIT",
   "devDependencies": {
-    "grunt": "~0.4.4",
-    "grunt-contrib-watch": "~0.6.1",
-    "grunt-typescript": "~0.3.0",
-    "jquery": "~2.1.0",
-    "mocha": "~1.18.2",
-    "sinon": "~1.9.1",
-    "mocha-phantomjs": "~3.3.2",
-    "grunt-mocha-phantomjs": "~0.4.3",
-    "expect.js": "~0.3.1"
-  }
+    "grunt": "*",
+    "grunt-contrib-watch": "*",
+    "grunt-mocha-phantomjs": "*",
+    "grunt-typescript": "*"
+  },
+  "repository": "https://github.com/likr/egrid-client.git"
 }

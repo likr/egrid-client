@@ -31,7 +31,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-typescript');
   grunt.loadNpmTasks('grunt-mocha-phantomjs');
 
-  grunt.registerTask('default', ['watch']);
-  grunt.registerTask('compile', ['typescript']);
+  grunt.registerTask('default', ['build']);
+  grunt.registerTask('build', ['typescript']);
   grunt.registerTask('test', ['mocha_phantomjs']);
 };
