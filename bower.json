@@ -1,0 +1,25 @@
+{
+  "name": "egrid-client",
+  "main": "egrid-client.js",
+  "version": "0.0.1",
+  "homepage": "https://github.com/likr/egrid-client",
+  "authors": [
+    "Yosuke ONOUE <onoue@likr-lab.com>"
+  ],
+  "description": "JavaScript client for E-Grid API",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "Gruntfile.js",
+    "bower_components",
+    "egrid-client-d.ts",
+    "node_modules",
+    "package.json",
+    "src",
+    "test",
+    "tsd.json"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.3"
+  }
+}

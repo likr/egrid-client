@@ -1,6 +1,4 @@
 .tscache
-egrid-client.d.ts
-egrid-client.js
-egrid-client.min.js
+bower_components
 node_modules
 src/typings
