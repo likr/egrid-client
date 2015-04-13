@@ -1,4 +1,4 @@
-/// <reference path="typings/jquery/jquery.d.ts"/>
+/// <reference path="../typings/jquery/jquery.d.ts"/>
 /// <reference path="participant-grid-node.ts"/>
 /// <reference path="participant-grid-link.ts"/>
 /// <reference path="storage/storage.ts"/>

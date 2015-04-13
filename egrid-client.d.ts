@@ -1,4 +1,4 @@
-/// <reference path="src/typings/jquery/jquery.d.ts" />
+/// <reference path="typings/jquery/jquery.d.ts" />
 declare module egrid.model {
     interface StorableData {
         key: string;

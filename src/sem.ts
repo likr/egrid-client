@@ -1,4 +1,4 @@
-/// <reference path="typings/jquery/jquery.d.ts"/>
+/// <reference path="../typings/jquery/jquery.d.ts"/>
 /// <reference path="project.ts"/>
 
 
@@ -45,7 +45,7 @@ module egrid.model {
      */
     public get(key: string): JQueryPromise<SemProject> {
       return storage.get<SemProject>(SemProject.type, this.projectKey, key)
-        .then((data : SerializedSemProjectData) => {
+        .then((data : any) => {
           return load(data);
         });
     }

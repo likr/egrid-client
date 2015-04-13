@@ -34,7 +34,7 @@ var egrid;
         model.Entity = Entity;
     })(model = egrid.model || (egrid.model = {}));
 })(egrid || (egrid = {}));
-/// <reference path="../typings/jquery/jquery.d.ts"/>
+/// <reference path="../../typings/jquery/jquery.d.ts"/>
 /// <reference path="entity.ts"/>
 var egrid;
 (function (egrid) {
@@ -162,7 +162,7 @@ var egrid;
         })(storage = model.storage || (model.storage = {}));
     })(model = egrid.model || (egrid.model = {}));
 })(egrid || (egrid = {}));
-/// <reference path="../typings/jquery/jquery.d.ts"/>
+/// <reference path="../../typings/jquery/jquery.d.ts"/>
 /// <reference path="entity.ts"/>
 /// <reference path="remote.ts"/>
 var egrid;
@@ -410,7 +410,7 @@ var egrid;
         })(storage = model.storage || (model.storage = {}));
     })(model = egrid.model || (egrid.model = {}));
 })(egrid || (egrid = {}));
-/// <reference path="typings/jquery/jquery.d.ts"/>
+/// <reference path="../typings/jquery/jquery.d.ts"/>
 /// <reference path="./storage/storage.ts"/>
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -481,7 +481,7 @@ var egrid;
         model.Project = Project;
     })(model = egrid.model || (egrid.model = {}));
 })(egrid || (egrid = {}));
-/// <reference path="typings/jquery/jquery.d.ts"/>
+/// <reference path="../typings/jquery/jquery.d.ts"/>
 /// <reference path="project.ts"/>
 var egrid;
 (function (egrid) {
@@ -541,7 +541,7 @@ var egrid;
         model.User = User;
     })(model = egrid.model || (egrid.model = {}));
 })(egrid || (egrid = {}));
-/// <reference path="typings/jquery/jquery.d.ts"/>
+/// <reference path="../typings/jquery/jquery.d.ts"/>
 /// <reference path="project.ts"/>
 /// <reference path="user.ts"/>
 var egrid;
@@ -596,7 +596,7 @@ var egrid;
         model.Collaborator = Collaborator;
     })(model = egrid.model || (egrid.model = {}));
 })(egrid || (egrid = {}));
-/// <reference path="typings/jquery/jquery.d.ts"/>
+/// <reference path="../typings/jquery/jquery.d.ts"/>
 /// <reference path="project.ts"/>
 var egrid;
 (function (egrid) {
@@ -647,7 +647,7 @@ var egrid;
         model.Participant = Participant;
     })(model = egrid.model || (egrid.model = {}));
 })(egrid || (egrid = {}));
-/// <reference path="typings/jquery/jquery.d.ts"/>
+/// <reference path="../typings/jquery/jquery.d.ts"/>
 /// <reference path="participant-grid-node.ts"/>
 /// <reference path="participant-grid-link.ts"/>
 /// <reference path="storage/storage.ts"/>
@@ -680,7 +680,7 @@ var egrid;
 })(egrid || (egrid = {}));
 /// <reference path="participant-grid-node.ts"/>
 /// <reference path="participant-grid-link.ts"/>
-/// <reference path="typings/jquery/jquery.d.ts"/>
+/// <reference path="../typings/jquery/jquery.d.ts"/>
 /// <reference path="project-grid-node.ts"/>
 /// <reference path="project-grid-link.ts"/>
 /// <reference path="project-grid-group.ts"/>
@@ -735,7 +735,7 @@ var egrid;
         model.ProjectGrid = ProjectGrid;
     })(model = egrid.model || (egrid.model = {}));
 })(egrid || (egrid = {}));
-/// <reference path="typings/jquery/jquery.d.ts"/>
+/// <reference path="../typings/jquery/jquery.d.ts"/>
 /// <reference path="storage/storage.ts"/>
 var egrid;
 (function (egrid) {
@@ -764,7 +764,7 @@ var egrid;
         model.Questionnaire = Questionnaire;
     })(model = egrid.model || (egrid.model = {}));
 })(egrid || (egrid = {}));
-/// <reference path="typings/jquery/jquery.d.ts"/>
+/// <reference path="../typings/jquery/jquery.d.ts"/>
 /// <reference path="project.ts"/>
 var egrid;
 (function (egrid) {

@@ -1,4 +1,4 @@
-/// <reference path="../typings/jquery/jquery.d.ts"/>
+/// <reference path="../../typings/jquery/jquery.d.ts"/>
 /// <reference path="entity.ts"/>
 
 module egrid.model.storage {
@@ -107,7 +107,7 @@ export function remove(name: string, projectKey: string, key?: string): JQueryPr
     url: (<any>Uri)[name](projectKey, key),
     type: 'DELETE',
   })
-  .then((response) => response, (...reasons) => reasons[0]);
+  .then((response) => response, (...reasons: any[]) => reasons[0]);
 }
 
 

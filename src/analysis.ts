@@ -1,4 +1,4 @@
-/// <reference path="typings/jquery/jquery.d.ts"/>
+/// <reference path="../typings/jquery/jquery.d.ts"/>
 /// <reference path="project.ts"/>
 
 module egrid.model {
@@ -42,7 +42,7 @@ export class Analysis extends Entity implements AnalysisData {
 
   public static get(projectKey: string, key: string) {
     return storage.get<Analysis>(TYPE, projectKey, key)
-      .then<Analysis>((data: SerializedAnalysisData) => {
+      .then<Analysis>((data: any) => {
         return load(data);
       });
   }

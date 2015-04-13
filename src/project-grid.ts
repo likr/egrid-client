@@ -1,4 +1,4 @@
-/// <reference path="typings/jquery/jquery.d.ts"/>
+/// <reference path="../typings/jquery/jquery.d.ts"/>
 /// <reference path="project-grid-node.ts"/>
 /// <reference path="project-grid-link.ts"/>
 /// <reference path="project-grid-group.ts"/>
@@ -60,9 +60,10 @@ module egrid.model {
     }
 
     static get(projectKey : string, key? : string) : JQueryPromise<ProjectGrid> {
-      return storage.get<ProjectGrid>(ProjectGrid.type, projectKey, key).then((projectGrid: ApiProjectGridData) => {
-        return ProjectGrid.load(projectGrid);
-      });
+      return storage.get<ProjectGrid>(ProjectGrid.type, projectKey, key)
+        .then((projectGrid: any) => {
+          return ProjectGrid.load(projectGrid);
+        });
     }
 
     static query(projectKey : string) : JQueryPromise<ProjectGrid> {
